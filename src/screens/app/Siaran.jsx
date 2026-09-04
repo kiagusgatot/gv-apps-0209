@@ -3,10 +3,16 @@ import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import NavTabs from '@/components/molecules/NavTabs'
 import SearchBar from '@/components/molecules/SearchBar'
+import GlassCard from '@/components/atoms/GlassCard'
+import AppButton from '@/components/atoms/AppButton'
+import Badge from '@/components/atoms/Badge'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
+import SectionHeader from '@/components/molecules/SectionHeader'
 import { Search, Play, Clock, Sparkles, Tv2, Radio, ArrowLeft as ArrowLeft2, ChevronRight, Lock, X,
   ExternalLink, Bell, Users, Crown, Headphones, CheckCircle,
   Pause, SkipBack, SkipForward, Calendar, MessageCircle, Send,
-  ArrowLeft, Video as VideoIcon, Info, Heart, Share2, Mic, Clapperboard, Home, UserCheck, User, MoreHorizontal } from 'lucide-react'
+  ArrowLeft, Video as VideoIcon, Info, Heart, Share2, Mic, Clapperboard, Home, UserCheck, User, MoreHorizontal,
+  Flame, Check, Volume2, Eye } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 import PlayerAdsBanner from '../../components/ads/PlayerAdsBanner'
 
@@ -1067,101 +1073,288 @@ function LiveHero({ data, onPlay, radioPlaying }) {
     : 'url(https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=800&q=80)'
   
   return (
-    <div className="flex-shrink-0 relative bg-cover bg-center" style={{backgroundImage: bgImage, height:160}}>
-      {/* Dark Overlay for readability */}
-      <div className="absolute inset-0 bg-black/40" />
-      
-      <div className="absolute inset-0 flex flex-col justify-between p-4 z-10">
-        <div className="flex items-center justify-between">
-          <LiveBadge/>
-          <span className="text-white/50 text-[12px]">{data.viewers} {isRadio?'pendengar':'penonton'}</span>
+    <div className="px-4 pb-2">
+      <div
+        className="relative rounded-2xl overflow-hidden shadow-lg border border-white/20 select-none"
+        style={{ height: 185 }}
+      >
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 hover:scale-105"
+          style={{ backgroundImage: bgImage }}
+        />
+
+        {/* Multi-layered cinematic gradient scrim */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/50" />
+        
+        {/* Top Control Strip */}
+        <div className="absolute top-0 inset-x-0 p-3.5 flex items-center justify-between z-10">
+          <div className="flex items-center gap-2">
+            <Badge variant="live" size="sm" />
+            <span className="text-white/80 font-bold text-[11px] px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+              {isRadio ? 'Audio Stereo HD' : '1080p Full HD'}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white/90">
+            <Users size={12} className="text-emerald-400" />
+            <span className="text-[11px] font-bold">{data.viewers} {isRadio ? 'pendengar' : 'penonton'}</span>
+          </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <button onClick={onPlay}
-            className="w-12 h-12 rounded-full flex items-center justify-center"
-            style={{background:'rgba(255,255,255,0.18)',backdropFilter:'blur(8px)'}}>
-            {isRadio&&radioPlaying?<Pause size={20} className="text-white" fill="white"/>:<Play size={20} className="text-white" fill="white"/>}
+
+        {/* Center Tactile Play / Pause Action */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <button
+            type="button"
+            onClick={onPlay}
+            className="w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 hover:scale-105 shadow-2xl"
+            style={{
+              background: 'rgba(255, 255, 255, 0.22)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1.5px solid rgba(255, 255, 255, 0.45)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
+            }}
+          >
+            {isRadio && radioPlaying ? (
+              <Pause size={24} className="text-white fill-white" />
+            ) : (
+              <Play size={24} className="text-white fill-white translate-x-0.5" />
+            )}
           </button>
         </div>
-        <div>
-          <p className="text-white/50 text-[12px] font-medium mb-0.5">{data.ch} · {data.sub}</p>
-          <p className="text-white font-extrabold text-[16px] leading-tight">{data.prog}</p>
+
+        {/* Bottom Metadata */}
+        <div className="absolute bottom-0 inset-x-0 p-3.5 flex items-end justify-between z-10">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">{data.ch}</span>
+              <span className="text-white/40 text-[10px]">•</span>
+              <span className="text-white/70 text-[11px] font-medium truncate">{data.sub}</span>
+            </div>
+            <p className="text-white font-extrabold text-[16px] leading-tight drop-shadow-md truncate">
+              {data.prog}
+            </p>
+          </div>
+
+          {/* Equalizer animation when radio is playing */}
+          {isRadio && radioPlaying && (
+            <div className="flex gap-1 items-end h-5 px-2 py-1 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 flex-shrink-0 ms-2">
+              {[4, 8, 12, 6, 10, 5, 9].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-1 rounded-full bg-emerald-400 animate-pulse"
+                  style={{
+                    height: `${h}px`,
+                    animationDuration: `${0.4 + (i % 3) * 0.2}s`,
+                    animationDelay: `${i * 0.08}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-      {isRadio&&radioPlaying&&(
-        <div className="absolute bottom-4 end-4 flex gap-0.5 items-end h-4">
-          {[3,5,7,4,6,3,5,7,4,6].map((h,i)=>(
-            <div key={i} className="w-1 rounded-full animate-pulse"
-              style={{height:`${h*2}px`,background:'rgba(255,255,255,0.6)',animationDelay:`${i*0.1}s`}}/>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
-function TabLive({ navigate }) {
-  const [sub,setSub]                   = useState('tv')
-  const [innerTab,setInnerTab]         = useState('jadwal')
-  const [radioPlaying,setRadioPlaying] = useState(false)
-  const isTV = sub==='tv'
-  const data   = isTV?GV_TV:GV_RADIO
-  const jadwal = isTV?JADWAL_TV:JADWAL_RADIO
-  const obrolan= isTV?OBROLAN_TV:OBROLAN_RADIO
-  const accent = isTV?'#1B6B3A':'#6A1B9A'
-  const INNER  = [{id:'jadwal',label:'Jadwal',Icon:Calendar},{id:'obrolan',label:'Obrolan',Icon:MessageCircle},{id:'salam',label:'Kirim Salam',Icon:Send}]
+
+function TabLive({ navigate, showToast }) {
+  const [sub, setSub]                   = useState('tv')
+  const [innerTab, setInnerTab]         = useState('jadwal')
+  const [radioPlaying, setRadioPlaying] = useState(false)
+  const [reminderSet, setReminderSet]   = useState({})
+  const isTV = sub === 'tv'
+  const data   = isTV ? GV_TV : GV_RADIO
+  const jadwal = isTV ? JADWAL_TV : JADWAL_RADIO
+  const obrolan= isTV ? OBROLAN_TV : OBROLAN_RADIO
+  const accent = isTV ? '#1B6B3A' : '#6A1B9A'
+  const INNER  = [
+    { id: 'jadwal', label: 'Jadwal Siaran', Icon: Calendar },
+    { id: 'obrolan', label: 'Obrolan Live', Icon: MessageCircle },
+    { id: 'salam', label: 'Kirim Salam', Icon: Send }
+  ]
+
+  const toggleReminder = (time, prog) => {
+    setReminderSet(prev => {
+      const next = !prev[time]
+      if (showToast) {
+        showToast(next ? `🔔 Pengingat disetel: ${prog}` : `Pengingat dibatalkan`)
+      }
+      return { ...prev, [time]: next }
+    })
+  }
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      <div className="flex-shrink-0 flex gap-2 px-4 pt-3 pb-2" style={{background:'#fff',boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
-        {[['tv','📺  GV TV'],['radio','📻  GV Radio']].map(([id,label])=>(
-          <button key={id} onClick={()=>{setSub(id);setInnerTab('jadwal')}}
-            className="flex-1 py-2 rounded-xl text-[12px] font-bold transition active:scale-[0.96]"
-            style={sub===id?{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',color:'#fff',boxShadow:'0 2px 6px rgba(27,107,58,0.3)'}:{background:'#FAFBF9',color:'#9CA3AF',border:'1px solid #E8F5E9'}}>
-            {label}
-          </button>
-        ))}
-      </div>
-      <LiveHero data={data} onPlay={()=>setRadioPlaying(!radioPlaying)} radioPlaying={radioPlaying}/>
-      
-      <PlayerAdsBanner navigate={navigate} />
-
-      <div className="flex-shrink-0 flex" style={{background:'#fff',boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
-        {INNER.map(t=>(
-          <button key={t.id} onClick={()=>setInnerTab(t.id)}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold transition ${innerTab===t.id?'':'hover:bg-gray-50'}`}
-            style={innerTab===t.id
-              ?{color:accent,borderBottom:'2.5px solid transparent',borderImage:`linear-gradient(90deg,${isTV?'#0C3E1E,#1B6B3A':'#4A148C,#6A1B9A'}) 1`}
-              :{color:'#9CA3AF',borderBottom:'2.5px solid transparent'}}>
-            <t.Icon size={12}/>{t.label}
-          </button>
-        ))}
-      </div>
-      <div className="flex-1 overflow-hidden flex flex-col" style={{background:'#FAFBF9'}}>
-        {innerTab==='jadwal'&&(
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 pb-20">
-            <p className="text-[12px] font-semibold text-gray-400 mb-3">Senin, 23 Agustus 2026</p>
-            <div className="rounded-2xl overflow-hidden" style={{background:'#fff',boxShadow:S.card}}>
-              {jadwal.map((j,i)=>(
-                <div key={j.time} className={`flex items-center gap-3 px-4 py-3 ${i<jadwal.length-1?'border-b border-gray-50':''}`}
-                  style={j.live?{background:isTV?'#F0FBF0':'#F5F0FF'}:{}}>
-                  <span className="text-[12px] font-bold w-10 flex-shrink-0" style={{color:j.live?accent:'#9CA3AF'}}>{j.time}</span>
-                  <p className="text-[12px] font-semibold flex-1" style={{color:j.live?accent:'#374151'}}>{j.prog}</p>
-                  {j.live&&<LiveBadge/>}
+      {/* Sub-channel Switcher: GV TV vs GV Radio */}
+      <div className="px-4 pt-3 pb-2 flex gap-2.5">
+        {[
+          ['tv', 'GV TV', Tv2, '1.2rb Sedang Menonton', ['#0C3E1E', '#1B6B3A']],
+          ['radio', 'GV Radio', Radio, '320 Sedang Mendengarkan', ['#3B0D5B', '#6A1B9A']]
+        ].map(([id, label, Icon, subLabel, grad]) => {
+          const active = sub === id
+          return (
+            <button
+              key={id}
+              onClick={() => { setSub(id); setInnerTab('jadwal') }}
+              className={`flex-1 py-2 px-3 rounded-2xl transition-all duration-200 flex items-center gap-2.5 active:scale-[0.97] text-left ${
+                active ? 'shadow-md ring-1 ring-white/20' : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm'
+              }`}
+              style={active ? { background: `linear-gradient(135deg, ${grad[0]}, ${grad[1]})`, color: '#fff' } : {}}
+            >
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform ${
+                  active ? 'bg-white/20 text-white shadow-inner' : 'bg-gray-100 text-gray-500'
+                }`}
+              >
+                <Icon size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <p className={`text-[12.5px] font-extrabold leading-tight truncate ${active ? 'text-white' : 'text-gray-900'}`}>
+                    {label}
+                  </p>
+                  {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0" />}
                 </div>
-              ))}
+                <p className={`text-[10px] font-medium leading-tight truncate mt-0.5 ${active ? 'text-white/80' : 'text-gray-400'}`}>
+                  {subLabel}
+                </p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Hero Broadcast Player */}
+      <LiveHero data={data} onPlay={() => setRadioPlaying(!radioPlaying)} radioPlaying={radioPlaying} />
+      
+      {/* Player Ads Banner */}
+      <div className="px-4 mb-2">
+        <PlayerAdsBanner navigate={navigate} />
+      </div>
+
+      {/* Sub-tabs Slider */}
+      <div className="px-4 pb-2">
+        <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
+          {INNER.map(t => {
+            const active = innerTab === t.id
+            return (
+              <button
+                key={t.id}
+                onClick={() => setInnerTab(t.id)}
+                className={`flex-1 py-2 rounded-xl text-[11.5px] font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                  active
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <t.Icon size={13} className={active ? (isTV ? 'text-brand' : 'text-purple-700') : 'text-gray-400'} />
+                <span>{t.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden flex flex-col bg-[#FAFBF9]">
+        {innerTab === 'jadwal' && (
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-20">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
+                <Calendar size={13} className="text-brand" />
+                <span>Senin, 23 Agustus 2026</span>
+              </div>
+              <span className="text-[10px] font-bold text-brand bg-brand/10 px-2 py-0.5 rounded-full">
+                Jadwal Hari Ini
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {jadwal.map((j) => {
+                if (j.live) {
+                  return (
+                    <div
+                      key={j.time}
+                      className="rounded-2xl p-3.5 border transition-all shadow-sm relative overflow-hidden"
+                      style={{
+                        background: isTV ? 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)' : 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+                        borderColor: isTV ? 'rgba(34, 197, 94, 0.35)' : 'rgba(168, 85, 247, 0.35)',
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="live" size="sm" />
+                          <span className="text-[11px] font-bold text-gray-600">Sedang Tayang</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[12px] font-extrabold" style={{ color: accent }}>{j.time} WIB</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[14px] font-extrabold text-gray-900 leading-tight truncate">
+                            {j.prog}
+                          </p>
+                          <p className="text-[11px] text-gray-500 mt-0.5">
+                            {isTV ? 'Siaran langsung TV Desa' : 'Siaran audio interaktif'}
+                          </p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white shadow-sm"
+                          style={{ background: accent }}>
+                          <Volume2 size={15} className="animate-pulse" />
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+
+                const isReminded = reminderSet[j.time]
+                return (
+                  <div
+                    key={j.time}
+                    className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex items-center gap-3 hover:border-gray-200 transition-colors"
+                  >
+                    <div className="w-12 text-center flex-shrink-0">
+                      <span className="text-[11.5px] font-extrabold text-gray-700 block">{j.time}</span>
+                      <span className="text-[9.5px] text-gray-400 font-medium">WIB</span>
+                    </div>
+                    <div className="h-6 w-px bg-gray-100 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12.5px] font-bold text-gray-800 leading-tight truncate">{j.prog}</p>
+                      <p className="text-[10.5px] text-gray-400 mt-0.5">Program Terjadwal</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleReminder(j.time, j.prog)}
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
+                        isReminded
+                          ? 'bg-amber-50 text-amber-600 border border-amber-200'
+                          : 'bg-gray-50 hover:bg-gray-100 text-gray-400 border border-gray-100'
+                      }`}
+                      title="Ingatkan Saya"
+                    >
+                      <Bell size={14} className={isReminded ? 'fill-amber-500 text-amber-500' : ''} />
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
-        {innerTab==='obrolan'&&(
-          <div className="flex-1 overflow-hidden flex flex-col px-4 pt-4 pb-20">
-            <div className="flex-1 overflow-hidden flex flex-col rounded-2xl" style={{background:'#fff',boxShadow:S.card}}>
-              <ObrolanPenonton initialMessages={obrolan}/>
+
+        {innerTab === 'obrolan' && (
+          <div className="flex-1 overflow-hidden flex flex-col px-4 pt-2 pb-20">
+            <div className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm">
+              <ObrolanPenonton initialMessages={obrolan} />
             </div>
           </div>
         )}
-        {innerTab==='salam'&&(
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-20">
-            <div className="rounded-2xl overflow-hidden" style={{background:'#fff',boxShadow:S.card}}>
-              <KirimSalam channel={data.ch}/>
+
+        {innerTab === 'salam' && (
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-20">
+            <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm">
+              <KirimSalam channel={data.ch} />
             </div>
           </div>
         )}
@@ -1174,6 +1367,7 @@ function TabLive({ navigate }) {
 function TabKreator({ onGVPlus, navigate, showToast, userProfile }) {
   const [selectedCreator, setSelected] = useState(null)
   const [followed, setFollowed]        = useState({k1:false,k2:false,k3:false})
+  const [category, setCategory]        = useState('semua')
 
   if (selectedCreator) {
     const creator = KREATOR.find(k=>k.id===selectedCreator)
@@ -1181,46 +1375,216 @@ function TabKreator({ onGVPlus, navigate, showToast, userProfile }) {
       onGVPlus={onGVPlus} navigate={navigate} showToast={showToast}/>
   }
 
-  return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
-      <p className="text-[11px] text-gray-400 px-4 pt-3 pb-3 leading-relaxed">
-        Ikuti kreator desa GV — atau gabung sebagai member untuk konten & komunitas eksklusif.
-      </p>
+  const CATEGORIES = [
+    { id: 'semua', label: 'Semua' },
+    { id: 'pertanian', label: '🌾 Pertanian', match: 'Pertanian' },
+    { id: 'umkm', label: '🏪 UMKM Desa', match: 'UMKM' },
+    { id: 'kesehatan', label: '🩺 Kesehatan', match: 'Kesehatan' },
+  ]
 
-      {/* Simple creator list */}
-      <div className="flex flex-col">
-        {KREATOR.map((k, i) => (
-          <div key={k.id}>
-            <div className="flex items-center gap-3 px-4 py-3.5"
-              onClick={()=>setSelected(k.id)}>
-              {/* Avatar circle */}
-              <div className="w-14 h-14 rounded-full flex items-center justify-center text-2xl flex-shrink-0 cursor-pointer"
-                style={{background:`linear-gradient(135deg,${k.bannerG[0]},${k.bannerG[1]})`}}>
-                {k.avatar}
-              </div>
-              {/* Info */}
-              <div className="flex-1 min-w-0 cursor-pointer">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[14px] font-bold text-gray-900 leading-tight">{k.name}</p>
-                  {k.hasMember && <Crown size={11} style={{color:'#F9A825'}} className="flex-shrink-0"/>}
-                </div>
-                <p className="text-[11px] text-gray-400 mt-0.5">{k.subs} pengikut</p>
-                <p className="text-[12px] text-gray-400 mt-0.5 line-clamp-1">{k.bio}</p>
-              </div>
-              {/* Follow button */}
+  const filteredCreators = KREATOR.filter(k => {
+    if (category === 'semua') return true
+    const current = CATEGORIES.find(c => c.id === category)
+    return current ? k.tags.includes(current.match) : true
+  })
+
+  const spotlightCreator = KREATOR[0]
+
+  return (
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+      {/* Category Filter Chips */}
+      <div className="px-4 pt-3 pb-2.5">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          {CATEGORIES.map(c => {
+            const active = category === c.id
+            return (
               <button
-                className="flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-bold border transition"
-                style={followed[k.id]
-                  ? {borderColor:'#D1D5DB',color:'#6B7280',background:'#F9FAFB'}
-                  : {borderColor:k.color,color:k.color,background:'transparent'}}
-                onClick={e=>{
-                  e.stopPropagation()
-                  setFollowed(p=>({...p,[k.id]:!p[k.id]}))
-                }}>
-                {followed[k.id] ? 'Diikuti' : 'Ikuti'}
+                key={c.id}
+                onClick={() => setCategory(c.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-[12px] font-bold whitespace-nowrap transition-all duration-200 active:scale-95 ${
+                  active
+                    ? 'bg-brand text-white shadow-sm ring-1 ring-brand/30'
+                    : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'
+                }`}
+              >
+                {c.label}
               </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Spotlight Hero: Kreator Pilihan Minggu Ini */}
+      {category === 'semua' && spotlightCreator && (
+        <div className="px-4 mb-4">
+          <div
+            className="rounded-3xl overflow-hidden relative shadow-md border border-white/40 cursor-pointer active:scale-[0.98] transition-all"
+            style={{
+              background: `linear-gradient(145deg, ${spotlightCreator.bannerG[0]} 0%, ${spotlightCreator.bannerG[1]} 100%)`,
+            }}
+            onClick={() => setSelected(spotlightCreator.id)}
+          >
+            {/* Ambient pattern */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            
+            <div className="relative p-4 z-10">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="flex items-center gap-1 text-[11px] font-extrabold text-amber-300 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-amber-300/20">
+                  <Flame size={12} className="fill-amber-300 text-amber-300" />
+                  Kreator Pilihan Minggu Ini
+                </span>
+                {spotlightCreator.hasMember && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-400 text-white text-[10px] font-black shadow-sm">
+                    <Crown size={10} />
+                    <span>GV+ Member</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3.5 mb-3">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 shadow-lg border-2 border-white/50"
+                  style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)' }}
+                >
+                  {spotlightCreator.avatar}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-[16px] font-extrabold text-white leading-tight truncate">
+                      {spotlightCreator.name}
+                    </h3>
+                    <CheckCircle size={14} className="text-emerald-300 fill-emerald-300/30 flex-shrink-0" />
+                  </div>
+                  <p className="text-white/70 text-[11px] mt-0.5 truncate">{spotlightCreator.handle} • {spotlightCreator.tags}</p>
+                  <p className="text-white/80 text-[11.5px] mt-1 line-clamp-1 leading-snug">
+                    {spotlightCreator.bio}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2.5 border-t border-white/15">
+                <div className="flex items-center gap-4 text-white/85 text-[11.5px] font-semibold">
+                  <span>👥 {spotlightCreator.subs} pengikut</span>
+                  <span>📹 {spotlightCreator.totalVideos} karya</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFollowed(p => {
+                      const next = !p[spotlightCreator.id]
+                      if (showToast) showToast(next ? `Mengikuti ${spotlightCreator.name}` : `Batal mengikuti`)
+                      return { ...p, [spotlightCreator.id]: next }
+                    })
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-[11.5px] font-extrabold transition active:scale-95 shadow-md ${
+                    followed[spotlightCreator.id]
+                      ? 'bg-white/20 text-white backdrop-blur-md border border-white/30'
+                      : 'bg-white text-emerald-900 hover:bg-emerald-50'
+                  }`}
+                >
+                  {followed[spotlightCreator.id] ? 'Diikuti' : 'Ikuti'}
+                </button>
+              </div>
             </div>
-            {i < KREATOR.length-1 && <div className="mx-4" style={{height:1,background:'#F0F0F0'}}/>}
+          </div>
+        </div>
+      )}
+
+      {/* Header Directory */}
+      <div className="px-4 mb-2.5 flex items-center justify-between">
+        <div>
+          <h2 className="text-[14px] font-extrabold text-gray-900 leading-tight">
+            Kreator Desa ({filteredCreators.length})
+          </h2>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            Dukung talenta lokal dan nikmati komunitas eksklusif
+          </p>
+        </div>
+      </div>
+
+      {/* Tactile Creator Cards */}
+      <div className="px-4 flex flex-col gap-3">
+        {filteredCreators.map((k) => (
+          <div
+            key={k.id}
+            onClick={() => setSelected(k.id)}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+          >
+            {/* Mini Cover Banner */}
+            <div
+              className="h-12 relative w-full px-3 pt-2 flex items-center justify-between"
+              style={{
+                background: `linear-gradient(135deg, ${k.bannerG[0]} 0%, ${k.bannerG[1]} 100%)`,
+              }}
+            >
+              <span className="text-[10px] font-bold text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                {k.tags}
+              </span>
+              {k.hasMember && (
+                <span className="flex items-center gap-1 text-[10px] font-extrabold text-amber-300 bg-black/40 backdrop-blur-sm px-2 py-0.5 rounded-full border border-amber-300/30">
+                  <Crown size={10} className="fill-amber-300 text-amber-300" />
+                  Membership Aktif
+                </span>
+              )}
+            </div>
+
+            {/* Card Content */}
+            <div className="p-3.5 pt-0 relative">
+              {/* Avatar Squircle overlapping banner */}
+              <div className="flex items-end justify-between -mt-6 mb-2">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-md border-2 border-white flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(145deg, ${k.bannerG[0]}, ${k.bannerG[1]})`,
+                  }}
+                >
+                  {k.avatar}
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setFollowed(p => {
+                      const next = !p[k.id]
+                      if (showToast) showToast(next ? `Mengikuti ${k.name}` : `Batal mengikuti`)
+                      return { ...p, [k.id]: next }
+                    })
+                  }}
+                  className={`px-4 py-1.5 rounded-full text-[11px] font-extrabold border transition active:scale-95 ${
+                    followed[k.id]
+                      ? 'border-gray-200 text-gray-500 bg-gray-50'
+                      : 'border-brand text-white bg-brand shadow-sm hover:brightness-105'
+                  }`}
+                >
+                  {followed[k.id] ? 'Diikuti' : 'Ikuti'}
+                </button>
+              </div>
+
+              {/* Creator Info */}
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[13.5px] font-extrabold text-gray-900 leading-tight truncate">{k.name}</p>
+                  <CheckCircle size={13} className="text-brand fill-brand/20 flex-shrink-0" />
+                </div>
+                <p className="text-[11px] text-gray-400 mt-0.5">{k.handle}</p>
+                <p className="text-[11.5px] text-gray-600 mt-1.5 line-clamp-2 leading-relaxed">
+                  {k.bio}
+                </p>
+              </div>
+
+              {/* Stats Bar & CTA */}
+              <div className="mt-3 pt-2.5 border-t border-gray-50 flex items-center justify-between text-[11px]">
+                <div className="flex items-center gap-3 text-gray-500 font-medium">
+                  <span>👥 <strong className="text-gray-800">{k.subs}</strong></span>
+                  <span>📹 <strong className="text-gray-800">{k.totalVideos}</strong> video</span>
+                  <span>👁️ <strong className="text-gray-800">{k.totalViews}</strong></span>
+                </div>
+                <span className="text-brand font-bold flex items-center gap-0.5 hover:translate-x-0.5 transition-transform">
+                  Profil <ChevronRight size={12} />
+                </span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -1254,29 +1618,74 @@ const ALL_GVP_VIDEOS = [
 
 function VideoGridCard({ item, onTap, onGVPlus }) {
   return (
-    <div onClick={()=>item.isGVPlus?onGVPlus(item):onTap(item)}
-      className="cursor-pointer active:scale-[0.96] transition-transform">
-      <div className="rounded-2xl overflow-hidden relative w-full"
-        style={{height:110, background:`linear-gradient(135deg,${item.g[0]},${item.g[1]})`, boxShadow:S.card}}>
-        {item.isGVPlus && (
-          <div className="absolute inset-0" style={{background:'rgba(0,0,0,0.3)'}}/>
-        )}
+    <div
+      onClick={() => item.isGVPlus ? onGVPlus(item) : onTap(item)}
+      className="group cursor-pointer active:scale-[0.96] transition-all flex flex-col"
+    >
+      <div
+        className="rounded-2xl overflow-hidden relative w-full shadow-sm border border-white/40 group-hover:shadow-md transition-shadow"
+        style={{
+          aspectRatio: '16/9',
+          background: `linear-gradient(145deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`,
+        }}
+      >
+        {/* Subtle overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+
+        {/* Center Tactile Play / Lock Glyph */}
         <div className="absolute inset-0 flex items-center justify-center">
-          {item.isGVPlus
-            ? <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{background:'rgba(249,168,37,0.25)',border:'1.5px solid rgba(249,168,37,0.6)'}}>
-                <Lock size={14} style={{color:'#F9A825'}}/>
-              </div>
-            : <Play size={20} className="text-white/60" fill="rgba(255,255,255,0.4)"/>}
+          {item.isGVPlus ? (
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+              style={{
+                background: 'rgba(249, 168, 37, 0.35)',
+                backdropFilter: 'blur(8px)',
+                border: '1.5px solid rgba(249, 168, 37, 0.8)',
+              }}
+            >
+              <Lock size={15} className="text-amber-300 drop-shadow" />
+            </div>
+          ) : (
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shadow-md group-hover:scale-110 transition-transform"
+              style={{
+                background: 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+              }}
+            >
+              <Play size={16} className="text-white fill-white translate-x-0.5 drop-shadow" />
+            </div>
+          )}
         </div>
-        {item.isGVPlus && <div className="absolute top-2 start-2"><GVPlusBadge sm/></div>}
-        <span className="absolute bottom-2 end-2 text-[11px] font-semibold text-white px-1.5 py-0.5 rounded"
-          style={{background:'rgba(0,0,0,0.6)'}}>{item.dur}</span>
+
+        {/* Top Badges */}
+        <div className="absolute top-2.5 start-2.5 z-10 flex items-center gap-1.5">
+          {item.isGVPlus ? (
+            <GVPlusBadge sm />
+          ) : (
+            <span className="text-[9.5px] font-bold text-white/90 bg-black/40 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-white/15">
+              HD
+            </span>
+          )}
+        </div>
+
+        {/* Bottom Duration Pill */}
+        <div className="absolute bottom-2 end-2 z-10">
+          <span className="flex items-center gap-1 text-[10px] font-bold text-white px-2 py-0.5 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 shadow-sm">
+            <Clock size={10} className="text-white/70" />
+            {item.dur}
+          </span>
+        </div>
       </div>
-      <div className="mt-2">
-        <p className="text-[11px] font-bold leading-snug line-clamp-2"
-          style={{color:item.isGVPlus?'#9CA3AF':'#111827'}}>{item.title}</p>
-        <p className="text-[9.5px] mt-0.5" style={{color:'#9CA3AF'}}>{item.ep}</p>
+
+      <div className="mt-2 px-0.5 flex-1 flex flex-col justify-between">
+        <h4 className="text-[12px] font-extrabold text-gray-900 leading-snug line-clamp-2 group-hover:text-brand transition-colors">
+          {item.title}
+        </h4>
+        <p className="text-[10.5px] text-gray-400 mt-1 truncate">
+          {item.ep}
+        </p>
       </div>
     </div>
   )
@@ -1286,33 +1695,31 @@ function VideoDetail({ video, onBack, onGVPlus }) {
   const isLocked = video.isGVPlus
   const related  = ALL_FREE_VIDEOS.filter(v=>v.id!==video.id).slice(0,4)
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
+    <div className="flex-1 overflow-hidden flex flex-col bg-[#FAFBF9]">
       {/* Header */}
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white"
-        style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
+      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-100">
         <button onClick={onBack}
-          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-          style={{background:'#F0F2ED'}}>
-          <ArrowLeft size={16} className="text-gray-700"/>
+          className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+          <ArrowLeft size={16} />
         </button>
-        <p className="text-[13px] font-bold text-gray-900 line-clamp-2 flex-1">{video.title}</p>
+        <p className="text-[13px] font-bold text-gray-900 line-clamp-1 flex-1">{video.title}</p>
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
         {/* Player */}
-        <div className="relative w-full flex items-center justify-center"
+        <div className="relative w-full flex items-center justify-center shadow-md"
           style={{aspectRatio:'16/9', background:`linear-gradient(155deg,${video.g[0]},${video.g[1]})`}}>
           {isLocked ? (
             <>
-              <div className="absolute inset-0" style={{background:'rgba(0,0,0,0.55)'}}/>
-              <div className="relative flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3"
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+              <div className="relative flex flex-col items-center p-4 text-center z-10">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3 shadow-lg"
                   style={{background:'linear-gradient(90deg,#F57F17,#F9A825)'}}>
                   <Lock size={22} className="text-white"/>
                 </div>
-                <p className="text-white font-bold text-[14px] mb-1">Konten Eksklusif GV+</p>
-                <p className="text-white/50 text-[12px] mb-4">Langganan untuk menonton konten ini</p>
+                <p className="text-white font-extrabold text-[15px] mb-1">Konten Eksklusif GV+</p>
+                <p className="text-white/70 text-[12px] mb-4">Langganan untuk menonton konten ini</p>
                 <button onClick={()=>onGVPlus(video)}
-                  className="px-6 py-2.5 rounded-xl text-[12px] font-extrabold text-white"
+                  className="px-6 py-2.5 rounded-xl text-[12px] font-extrabold text-white shadow-md active:scale-95 transition-transform"
                   style={{background:'linear-gradient(90deg,#F57F17,#F9A825)'}}>
                   Mulai Berlangganan GV+
                 </button>
@@ -1320,27 +1727,33 @@ function VideoDetail({ video, onBack, onGVPlus }) {
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center"
-                style={{background:'rgba(255,255,255,0.2)',backdropFilter:'blur(8px)'}}>
-                <Play size={26} className="text-white" fill="white"/>
+              <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-transform"
+                style={{background:'rgba(255,255,255,0.25)',backdropFilter:'blur(10px)',border:'1.5px solid rgba(255,255,255,0.5)'}}>
+                <Play size={26} className="text-white fill-white translate-x-0.5"/>
               </div>
             </div>
           )}
         </div>
         {/* Info */}
         <div className="px-4 pt-4 pb-2">
-          <p className="text-[16px] font-extrabold text-gray-900 leading-tight mb-1">{video.title}</p>
-          <p className="text-[12px] text-gray-400">{video.ep} · {video.dur}</p>
-          <div className="h-px my-3" style={{background:'#F0F0F0'}}/>
-          <p className="text-[11px] text-gray-500 leading-relaxed">
-            Konten ini merupakan bagian dari koleksi GV yang diproduksi langsung dari desa-desa afiliasi Global Village. Ditayangkan untuk memberikan informasi dan hiburan berkualitas bagi masyarakat desa.
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-[11px] font-bold text-brand bg-brand/10 px-2 py-0.5 rounded-md">
+              {video.ep}
+            </span>
+            <span className="text-[11px] font-medium text-gray-400">•</span>
+            <span className="text-[11px] font-medium text-gray-500">{video.dur}</span>
+          </div>
+          <h2 className="text-[17px] font-extrabold text-gray-900 leading-tight mb-2">{video.title}</h2>
+          <div className="h-px my-3 bg-gray-100" />
+          <p className="text-[12px] text-gray-600 leading-relaxed">
+            Konten ini merupakan bagian dari program dokumentasi dan hiburan warga desa afiliasi Global Village. Diproduksi secara lokal untuk memajukan potensi desa.
           </p>
         </div>
         {/* Related */}
         {!isLocked && (
-          <div className="px-4 pt-2 pb-4">
-            <p className="text-[13px] font-extrabold text-gray-900 mb-3">Video Terkait</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="px-4 pt-3 pb-4">
+            <SectionHeader title="Video Terkait" className="mb-3" />
+            <div className="grid grid-cols-2 gap-3.5">
               {related.map(v=>(
                 <VideoGridCard key={v.id} item={v} onTap={()=>{}} onGVPlus={onGVPlus}/>
               ))}
@@ -1353,9 +1766,10 @@ function VideoDetail({ video, onBack, onGVPlus }) {
 }
 
 function TabVideo({ onGVPlus, userProfile }) {
-  const [mode,setMode]                 = React.useState('semua')
-  const [selectedVideo,setSelectedVideo] = React.useState(null)
-  const showContinue = userProfile?.hasWatchHistory
+  const [mode, setMode]                   = React.useState('semua')
+  const [selectedVideo, setSelectedVideo] = React.useState(null)
+  const [genreFilter, setGenreFilter]     = React.useState('semua')
+  const showContinue = true
 
   if (selectedVideo) {
     return (
@@ -1365,48 +1779,173 @@ function TabVideo({ onGVPlus, userProfile }) {
     )
   }
 
+  const GENRES = [
+    { id: 'semua', label: 'Semua' },
+    { id: 'drama', label: '🎬 Drama Desa', match: 'Drama' },
+    { id: 'talk', label: '🎙️ Talk Show', match: 'Talk' },
+    { id: 'edukasi', label: '🌾 Edukasi Desa', match: 'Kreator' },
+    { id: 'olahraga', label: '⚽ Olahraga', match: 'Olahraga' },
+  ]
+
+  const featuredVideo = ALL_FREE_VIDEOS.find(v => v.id === 'v9') || ALL_FREE_VIDEOS[0]
+
+  const filteredVideos = ALL_FREE_VIDEOS.filter(v => {
+    if (genreFilter === 'semua') return true
+    const current = GENRES.find(g => g.id === genreFilter)
+    return current ? (v.ep.includes(current.match) || v.title.includes(current.match)) : true
+  })
+
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
-      {/* Tabs: Semua | GV+ */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex p-1 rounded-2xl" style={{background:'#F0F4F0'}}>
-          {[['semua','Semua'],['gvplus','GV+']].map(([id,label])=>(
-            <button key={id} onClick={()=>setMode(id)}
-              className="flex-1 py-2 rounded-xl text-[12px] font-bold transition flex items-center justify-center gap-1.5"
-              style={mode===id
-                ? id==='gvplus'
-                  ? {background:'linear-gradient(90deg,#F57F17,#F9A825)',color:'#fff',boxShadow:'0 2px 8px rgba(249,168,37,0.35)'}
-                  : {background:'#fff',color:'#1B6B3A',boxShadow:S.card}
-                : {color:'#9CA3AF'}}>
-              {id==='gvplus'&&<Crown size={11} style={{color:mode==='gvplus'?'#fff':'#F9A825'}}/>}
-              {label}
-            </button>
-          ))}
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+      {/* Mode Switcher: Semua | GV+ Eksklusif */}
+      <div className="px-4 pt-3 pb-2.5">
+        <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
+          {[
+            ['semua', 'Semua Tayangan'],
+            ['gvplus', 'GV+ Eksklusif']
+          ].map(([id, label]) => {
+            const active = mode === id
+            return (
+              <button
+                key={id}
+                onClick={() => setMode(id)}
+                className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                  active
+                    ? id === 'gvplus'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md'
+                      : 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {id === 'gvplus' && (
+                  <Crown size={12} className={active ? 'text-white' : 'text-amber-500'} />
+                )}
+                <span>{label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {mode==='semua' ? (
+      {mode === 'semua' ? (
         <>
-          {/* Lanjutkan menonton */}
+          {/* Genre Filter Chips */}
+          <div className="px-4 pb-3">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+              {GENRES.map(g => {
+                const active = genreFilter === g.id
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => setGenreFilter(g.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-[11.5px] font-bold whitespace-nowrap transition-all duration-200 active:scale-95 ${
+                      active
+                        ? 'bg-brand text-white shadow-sm ring-1 ring-brand/30'
+                        : 'bg-white text-gray-600 border border-gray-100 hover:bg-gray-50'
+                    }`}
+                  >
+                    {g.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Featured Spotlight Video Hero (Pilihan Editor) */}
+          {genreFilter === 'semua' && featuredVideo && (
+            <div className="px-4 mb-4">
+              <div
+                onClick={() => setSelectedVideo(featuredVideo)}
+                className="rounded-3xl overflow-hidden relative shadow-lg cursor-pointer border border-white/20 active:scale-[0.98] transition-all group"
+                style={{
+                  aspectRatio: '16/9',
+                  background: `linear-gradient(135deg, ${featuredVideo.g[0]} 0%, ${featuredVideo.g[1]} 100%)`,
+                }}
+              >
+                {/* Cinematic overlay scrim */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/25" />
+
+                <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-amber-300 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-amber-300/20">
+                      <Sparkles size={11} className="fill-amber-300 text-amber-300" />
+                      Pilihan Minggu Ini
+                    </span>
+                    <span className="text-white/80 font-bold text-[10.5px] bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+                      {featuredVideo.dur}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-emerald-300 font-extrabold text-[10.5px] uppercase tracking-wider block mb-1">
+                      {featuredVideo.ep}
+                    </span>
+                    <h3 className="text-white font-extrabold text-[17px] leading-tight drop-shadow-md mb-2">
+                      {featuredVideo.title}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[11.5px] font-extrabold text-gray-900 bg-white shadow-md group-hover:bg-emerald-50 transition-colors"
+                      >
+                        <Play size={13} className="fill-gray-900 text-gray-900" />
+                        <span>Tonton Sekarang</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Lanjutkan Menonton (Continue Watching) */}
           {showContinue && (
             <div className="mb-4">
-              <p className="text-[13px] font-extrabold text-gray-900 px-4 mb-2.5">Lanjutkan Menonton</p>
+              <div className="px-4 mb-2.5">
+                <SectionHeader
+                  title="Lanjutkan Menonton"
+                  subtitle="Lanjutkan episode terakhir yang kamu tonton"
+                  className="mb-0"
+                />
+              </div>
               <div className="overflow-x-auto no-scrollbar">
-                <div className="flex gap-3 pb-1" style={{paddingInlineStart:16,paddingInlineEnd:16}}>
-                  {CONTINUE_WATCHING.map(v=>(
-                    <div key={v.id} className="flex-shrink-0 cursor-pointer active:scale-[0.96] transition-transform" style={{width:160,minWidth:160}}>
-                      <div className="rounded-2xl overflow-hidden relative"
-                        style={{height:90,background:`linear-gradient(135deg,${v.g[0]},${v.g[1]})`,boxShadow:S.card}}>
+                <div className="flex gap-3 px-4 pb-1">
+                  {CONTINUE_WATCHING.map(v => (
+                    <div
+                      key={v.id}
+                      onClick={() => setSelectedVideo(v)}
+                      className="flex-shrink-0 cursor-pointer active:scale-[0.96] transition-transform"
+                      style={{ width: 175 }}
+                    >
+                      <div
+                        className="rounded-2xl overflow-hidden relative shadow-sm border border-white/40"
+                        style={{
+                          height: 98,
+                          background: `linear-gradient(135deg, ${v.g[0]} 0%, ${v.g[1]} 100%)`,
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-black/25" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Play size={18} className="text-white/60" fill="rgba(255,255,255,0.45)"/>
+                          <div className="w-9 h-9 rounded-full bg-white/30 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-md">
+                            <Play size={16} className="text-white fill-white translate-x-0.5" />
+                          </div>
                         </div>
-                        <div className="absolute bottom-0 start-0 end-0 h-1" style={{background:'rgba(255,255,255,0.2)'}}>
-                          <div className="h-full rounded-full" style={{width:`${v.pct}%`,background:'white'}}/>
+                        {/* Progress Bar with neon glow */}
+                        <div className="absolute bottom-0 inset-x-0 h-1.5 bg-black/40">
+                          <div
+                            className="h-full bg-emerald-400 rounded-full"
+                            style={{ width: `${v.pct}%` }}
+                          />
                         </div>
+                        <span className="absolute bottom-2.5 end-2 text-[9.5px] font-bold text-white px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm">
+                          Sisa {100 - v.pct}%
+                        </span>
                       </div>
                       <div className="mt-2 px-0.5">
-                        <p className="text-[12px] font-bold text-gray-900 line-clamp-2 leading-snug">{v.title}</p>
-                        <p className="text-[11px] text-gray-400 mt-0.5">{v.ep}</p>
+                        <h4 className="text-[12px] font-extrabold text-gray-900 leading-snug line-clamp-1">
+                          {v.title}
+                        </h4>
+                        <p className="text-[10.5px] text-gray-400 mt-0.5 truncate">{v.ep}</p>
                       </div>
                     </div>
                   ))}
@@ -1414,26 +1953,49 @@ function TabVideo({ onGVPlus, userProfile }) {
               </div>
             </div>
           )}
-          {/* Grid 2 kolom — semua video gratis */}
+
+          {/* Grid 2 Kolom Semua Video */}
           <div className="px-4 mb-2">
-            <p className="text-[13px] font-extrabold text-gray-900 mb-3">Semua Tayangan</p>
-            <div className="grid grid-cols-2 gap-3">
-              {ALL_FREE_VIDEOS.map(v=>(
-                <VideoGridCard key={v.id} item={v} onTap={setSelectedVideo} onGVPlus={onGVPlus}/>
+            <SectionHeader
+              title={`Semua Tayangan (${filteredVideos.length})`}
+              subtitle="Koleksi video dan cerita masyarakat desa"
+              className="mb-3"
+            />
+            <div className="grid grid-cols-2 gap-3.5">
+              {filteredVideos.map(v => (
+                <VideoGridCard key={v.id} item={v} onTap={setSelectedVideo} onGVPlus={onGVPlus} />
               ))}
             </div>
           </div>
         </>
       ) : (
-        /* GV+ tab — langsung tampil konten, tanpa banner */
-        <div className="pb-4 pt-4">
-          <div className="px-4">
-            <p className="text-[13px] font-extrabold text-gray-900 mb-3">Konten Eksklusif GV+</p>
-            <div className="grid grid-cols-2 gap-3">
-              {ALL_GVP_VIDEOS.map(v=>(
-                <VideoGridCard key={v.id} item={v} onTap={()=>onGVPlus(v)} onGVPlus={onGVPlus}/>
-              ))}
+        /* Mode GV+ Eksklusif */
+        <div className="px-4 pt-1 pb-4">
+          <div className="mb-4 p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-sm">
+                <Crown size={16} />
+              </div>
+              <div>
+                <h3 className="text-[13.5px] font-extrabold text-gray-900 leading-tight">
+                  Koleksi Eksklusif GV+
+                </h3>
+                <p className="text-[11px] text-gray-500">
+                  Masterclass keahlian desa dan dokumenter sinematik
+                </p>
+              </div>
             </div>
+          </div>
+
+          <SectionHeader
+            title={`Konten Premium (${ALL_GVP_VIDEOS.length})`}
+            subtitle="Langganan untuk membuka akses penuh tanpa iklan"
+            className="mb-3"
+          />
+          <div className="grid grid-cols-2 gap-3.5">
+            {ALL_GVP_VIDEOS.map(v => (
+              <VideoGridCard key={v.id} item={v} onTap={() => onGVPlus(v)} onGVPlus={onGVPlus} />
+            ))}
           </div>
         </div>
       )}
@@ -1441,74 +2003,89 @@ function TabVideo({ onGVPlus, userProfile }) {
   )
 }
 
-
 // ── Podcast: Show Detail Page ─────────────────────────────
 function PodcastShowDetail({ show, onBack, onPlayEpisode }) {
   const eps = EPISODES.filter(e => e.showId === show.id)
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
+    <div className="flex-1 overflow-hidden flex flex-col bg-[#FAFBF9]">
       {/* Header */}
-      <div className="flex-shrink-0 relative pb-5 bg-cover bg-center"
+      <div className="flex-shrink-0 relative pb-6 bg-cover bg-center"
         style={{backgroundImage: `url(https://images.unsplash.com/photo-1593697821252-0c9137d9fc45?w=800&q=80)`}}>
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/40" />
         
         <div className="relative z-10">
-          <div className="flex items-center px-4 pt-4 pb-3">
+          <div className="flex items-center px-4 pt-3.5 pb-2">
             <button onClick={onBack}
-              className="w-8 h-8 rounded-full flex items-center justify-center me-3 flex-shrink-0"
-              style={{background:'rgba(255,255,255,0.15)'}}>
-              <ArrowLeft size={16} className="text-white"/>
+              className="w-8 h-8 rounded-full flex items-center justify-center me-3 flex-shrink-0 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 transition">
+              <ArrowLeft size={16} />
             </button>
-            <p className="text-[13px] font-bold text-white line-clamp-2">Detail Acara</p>
+            <p className="text-[13px] font-bold text-white line-clamp-1">Detail Acara Podcast</p>
           </div>
-          <div className="flex items-center gap-4 px-4 mb-4">
-            <div className="w-20 h-20 rounded-[18px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden"
-              style={{background:'rgba(255,255,255,0.2)',backdropFilter:'blur(12px)',boxShadow:'0 4px 16px rgba(0,0,0,0.1) inset'}}>
-              <show.Icon size={36} className="text-white drop-shadow-md relative z-10" strokeWidth={1.5}/>
+          <div className="flex items-center gap-3.5 px-4 mb-3.5">
+            <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-xl relative flex-shrink-0 overflow-hidden border border-white/30"
+              style={{background:`linear-gradient(145deg, ${show.g[0]}, ${show.g[1]})`}}>
+              <show.Icon size={38} className="text-white drop-shadow-md relative z-10" strokeWidth={1.5}/>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[18px] font-extrabold text-white leading-tight">{show.name}</p>
-              <p className="text-[12px] text-white/60 mt-1">Global Village · {show.eps} Episode</p>
-              <p className="text-[11px] text-white/80 mt-1 leading-snug">{show.desc}</p>
+              <span className="text-[10.5px] font-bold text-emerald-300 uppercase tracking-wider block mb-0.5">
+                Serial Podcast Desa
+              </span>
+              <h1 className="text-[18px] font-extrabold text-white leading-tight truncate">{show.name}</h1>
+              <p className="text-[11.5px] text-white/70 mt-0.5">{show.eps} Episode Tersedia</p>
+              <p className="text-[11px] text-white/80 mt-1 leading-snug line-clamp-2">{show.desc}</p>
             </div>
           </div>
           <div className="px-4">
             <button onClick={()=>onPlayEpisode(eps[0]||EPISODES[0])}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-extrabold"
-              style={{background:'rgba(255,255,255,0.95)',color:show.g[0]}}>
-              <Play size={13} fill={show.g[0]} style={{color:show.g[0]}}/> Mulai Mendengarkan
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[12px] font-extrabold text-emerald-950 bg-white shadow-lg active:scale-95 transition-transform">
+              <Play size={14} className="fill-emerald-950 text-emerald-950"/>
+              <span>Mulai Mendengarkan (Eps. 1)</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* Episode list */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-20" style={{background:'#FAFBF9'}}>
-        <div className="px-4 pt-4 mb-2">
-          <p className="text-[13px] font-extrabold text-gray-900">
-            Semua Episode <span className="text-gray-400 font-normal text-[11px]">({eps.length} episode)</span>
-          </p>
-        </div>
-        {eps.length > 0 ? eps.map((ep,i) => (
-          <div key={ep.id}
-            className={`flex items-center gap-3 px-4 py-3.5 cursor-pointer active:bg-gray-50 ${i < eps.length-1 ? 'border-b border-gray-50':''}`}
-            onClick={()=>onPlayEpisode(ep)}>
-            <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden"
-              style={{background:`linear-gradient(135deg,${show.g[0]},${show.g[1]})`}}>
-              {ep.hasArt ? <show.Icon size={22} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/> : <Headphones size={22} className="text-white/80 drop-shadow-sm relative z-10" strokeWidth={1.5}/>}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">{ep.title}</p>
-              <p className="text-[12px] text-gray-400 mt-0.5">{ep.ep} · {ep.dur}</p>
-            </div>
-            <button className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{background:'#1B6B3A',boxShadow:'0 2px 6px rgba(27,107,58,0.3)'}}>
-              <Play size={13} className="text-white" fill="white"/>
-            </button>
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24 px-4 pt-3">
+        <SectionHeader
+          title={`Daftar Episode (${eps.length})`}
+          subtitle="Urut berdasarkan rilis terbaru"
+          className="mb-2.5"
+        />
+        {eps.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {eps.map((ep, i) => (
+              <div
+                key={ep.id}
+                onClick={() => onPlayEpisode(ep)}
+                className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex items-center gap-3 cursor-pointer hover:border-gray-200 transition-all active:scale-[0.98]"
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-white/50 text-white"
+                  style={{ background: `linear-gradient(135deg, ${show.g[0]}, ${show.g[1]})` }}
+                >
+                  {ep.hasArt ? <show.Icon size={20} strokeWidth={1.75} /> : <Headphones size={20} strokeWidth={1.75} />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-[12.5px] font-bold text-gray-900 leading-tight line-clamp-1">
+                    {ep.title}
+                  </h4>
+                  <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                    {ep.ep} • {ep.dur}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-brand/10 text-brand hover:bg-brand hover:text-white transition-colors"
+                >
+                  <Play size={13} className="fill-current translate-x-0.5" />
+                </button>
+              </div>
+            ))}
           </div>
-        )) : (
-          <div className="px-4 py-8 text-center">
-            <p className="text-[13px] text-gray-400">Belum ada episode tersedia.</p>
+        ) : (
+          <div className="py-12 text-center text-gray-400 text-[13px]">
+            Belum ada episode tersedia.
           </div>
         )}
       </div>
@@ -1562,7 +2139,7 @@ function GVPlusSubscribeBanner({ onSubscribe, context = 'video' }) {
   )
 }
 
-// ── Tab: Podcast — simplified with GV+ tab ───────────────
+// ── Tab: Podcast ───────────────────────────────────────────
 const GVPLUS_PODCASTS = [
   { id:'gp1', title:'Masterclass Bertani: Q&A Eksklusif', show:'Bersama Aliong',   ep:'Premium · 45:00', showId:'aliong',   isGVPlus:true },
   { id:'gp2', title:'Behind The Scene: Kampung Sukasari', show:'Kampung Sukasari', ep:'Premium · 32:00', showId:'sukasari', isGVPlus:true },
@@ -1570,113 +2147,193 @@ const GVPLUS_PODCASTS = [
 ]
 
 function TabPodcast({ onPlayEpisode, onGVPlus }) {
-  const [mode,setMode]               = React.useState('semua')
-  const [selectedShow,setSelectedShow] = React.useState(null)
+  const [mode, setMode]               = React.useState('semua')
+  const [selectedShow, setSelectedShow] = React.useState(null)
 
   if (selectedShow) {
-    const show = SHOWS.find(s=>s.id===selectedShow)
-    return <PodcastShowDetail show={show} onBack={()=>setSelectedShow(null)} onPlayEpisode={onPlayEpisode}/>
+    const show = SHOWS.find(s => s.id === selectedShow)
+    return <PodcastShowDetail show={show} onBack={() => setSelectedShow(null)} onPlayEpisode={onPlayEpisode} />
   }
 
+  const featuredShow = SHOWS[0]
+
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
-      {/* Tabs: Semua | GV+ */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex p-1 rounded-2xl" style={{background:'#F0F4F0'}}>
-          {[['semua','Semua'],['gvplus','GV+']].map(([id,label])=>(
-            <button key={id} onClick={()=>setMode(id)}
-              className="flex-1 py-2 rounded-xl text-[12px] font-bold transition flex items-center justify-center gap-1.5"
-              style={mode===id
-                ? id==='gvplus'
-                  ? {background:'linear-gradient(90deg,#F57F17,#F9A825)',color:'#fff',boxShadow:'0 2px 8px rgba(249,168,37,0.35)'}
-                  : {background:'#fff',color:'#1B6B3A',boxShadow:S.card}
-                : {color:'#9CA3AF'}}>
-              {id==='gvplus'&&<Crown size={11} style={{color:mode==='gvplus'?'#fff':'#F9A825'}}/>}
-              {label}
-            </button>
-          ))}
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+      {/* Mode Switcher: Semua | GV+ Eksklusif */}
+      <div className="px-4 pt-3 pb-2.5">
+        <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
+          {[
+            ['semua', 'Semua Podcast'],
+            ['gvplus', 'GV+ Audio Eksklusif']
+          ].map(([id, label]) => {
+            const active = mode === id
+            return (
+              <button
+                key={id}
+                onClick={() => setMode(id)}
+                className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                  active
+                    ? id === 'gvplus'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md'
+                      : 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {id === 'gvplus' && (
+                  <Crown size={12} className={active ? 'text-white' : 'text-amber-500'} />
+                )}
+                <span>{label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      {mode==='semua' ? (
+      {mode === 'semua' ? (
         <>
-          {/* Acara Unggulan */}
-          <div className="mx-4 mb-4 rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-transform spotlight-border"
-            style={{background:`linear-gradient(155deg,${SHOWS[0].g[0]},${SHOWS[0].g[1]})`,boxShadow:S.cardMd}}
-            onClick={()=>onPlayEpisode(EPISODES.find(e=>e.showId===SHOWS[0].id)||EPISODES[0])}>
-            <div className="flex items-center gap-4 p-4">
-              <div className="w-16 h-16 rounded-[16px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden"
-                style={{background:'rgba(255,255,255,0.2)',backdropFilter:'blur(8px)',boxShadow:'0 4px 12px rgba(0,0,0,0.1) inset'}}>
-                {React.createElement(SHOWS[0].Icon, {size: 30, className: "text-white drop-shadow-md relative z-10", strokeWidth: 1.5})}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white/60 text-[11px] font-bold mb-1">Acara Unggulan</p>
-                <p className="text-white font-extrabold text-[16px] leading-tight">{SHOWS[0].name}</p>
-                <p className="text-white/60 text-[12px] mt-0.5">Global Village · {SHOWS[0].eps} Episode</p>
-                <button className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold"
-                  style={{background:'rgba(255,255,255,0.95)',color:SHOWS[0].g[0]}}>
-                  <Play size={11} fill={SHOWS[0].g[0]} style={{color:SHOWS[0].g[0]}}/> Dengarkan
-                </button>
+          {/* Acara Unggulan Hero */}
+          <div className="px-4 mb-4">
+            <div
+              onClick={() => onPlayEpisode(EPISODES.find(e => e.showId === featuredShow.id) || EPISODES[0])}
+              className="rounded-3xl overflow-hidden relative shadow-md border border-white/40 cursor-pointer active:scale-[0.98] transition-all p-4 text-white"
+              style={{
+                background: `linear-gradient(145deg, ${featuredShow.g[0]} 0%, ${featuredShow.g[1]} 100%)`,
+              }}
+            >
+              {/* Subtle acoustic pattern overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between gap-2 mb-3">
+                  <span className="flex items-center gap-1.5 text-[10.5px] font-extrabold text-emerald-200 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-emerald-300/20">
+                    <Mic size={11} className="text-emerald-300" />
+                    Acara Unggulan Desa
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {[4, 8, 12, 7, 11, 6, 9].map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-0.5 rounded-full bg-emerald-300/80 animate-pulse"
+                        style={{ height: `${h}px`, animationDelay: `${i * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3.5 mb-3.5">
+                  <div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border border-white/40 flex-shrink-0"
+                    style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)' }}
+                  >
+                    {React.createElement(featuredShow.Icon, {
+                      size: 32,
+                      className: 'text-white drop-shadow-md',
+                      strokeWidth: 1.5,
+                    })}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[17px] font-extrabold text-white leading-tight truncate">
+                      {featuredShow.name}
+                    </h3>
+                    <p className="text-[11.5px] text-white/70 mt-0.5">
+                      Global Village • {featuredShow.eps} Episode
+                    </p>
+                    <p className="text-[11px] text-white/80 mt-1 line-clamp-1 leading-snug">
+                      {featuredShow.desc}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/15">
+                  <span className="text-[11px] text-white/75 font-medium">
+                    Episode 1: {EPISODES[0]?.title}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[11.5px] font-extrabold text-emerald-950 bg-white shadow-md hover:bg-emerald-50 active:scale-95 transition-all"
+                  >
+                    <Play size={12} className="fill-emerald-950 text-emerald-950" />
+                    <span>Dengarkan</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Telusuri Acara */}
+          {/* Telusuri Acara (Show Collection Rail) */}
           <div className="mb-4">
-            <div className="flex items-center gap-2 px-4 mb-3">
-              <p className="text-[14px] font-extrabold text-gray-900">Telusuri Acara</p>
-              <span className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
-                style={{background:'#1B6B3A'}}>{SHOWS.length}</span>
+            <div className="px-4 mb-2.5">
+              <SectionHeader
+                title={`Telusuri Acara (${SHOWS.length})`}
+                subtitle="Dengarkan berbagai obrolan & sandiwara desa"
+                className="mb-0"
+              />
             </div>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar px-4 pb-1">
-              {SHOWS.map(show=>(
-                <div key={show.id} onClick={()=>setSelectedShow(show.id)}
-                  className="flex-shrink-0 cursor-pointer active:scale-[0.96] transition-transform">
-                  <div className="w-28 h-28 rounded-[20px] flex items-center justify-center mb-2 relative spotlight-border shadow-inner overflow-hidden"
-                    style={{background:`linear-gradient(135deg,${show.g[0]},${show.g[1]})`,boxShadow:S.cardMd}}>
-                    <show.Icon size={46} className="text-white drop-shadow-lg relative z-10" strokeWidth={1.5}/>
-                    <div className="absolute bottom-2 end-2 w-6 h-6 rounded-full flex items-center justify-center z-20"
-                      style={{background:'rgba(255,255,255,0.9)'}}>
-                      <Play size={10} fill={show.g[0]} style={{color:show.g[0]}}/>
+            <div className="flex gap-3 overflow-x-auto no-scrollbar px-4 pb-1">
+              {SHOWS.map(show => (
+                <div
+                  key={show.id}
+                  onClick={() => setSelectedShow(show.id)}
+                  className="flex-shrink-0 cursor-pointer active:scale-[0.96] transition-transform group"
+                  style={{ width: 125 }}
+                >
+                  <div
+                    className="w-full rounded-2xl flex items-center justify-center relative shadow-sm border border-white/40 overflow-hidden group-hover:shadow-md transition-shadow"
+                    style={{
+                      height: 120,
+                      background: `linear-gradient(145deg, ${show.g[0]} 0%, ${show.g[1]} 100%)`,
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <show.Icon size={48} className="text-white/90 drop-shadow-md relative z-10 group-hover:scale-105 transition-transform" strokeWidth={1.5} />
+                    <div className="absolute bottom-2 end-2 w-7 h-7 rounded-full bg-white/90 shadow-md flex items-center justify-center z-20 text-emerald-900">
+                      <Play size={11} className="fill-current translate-x-0.5" />
                     </div>
                   </div>
-                  <p className="text-[11px] font-bold text-gray-900 w-28 line-clamp-2">{show.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{show.eps} Episode</p>
+                  <h4 className="text-[12px] font-extrabold text-gray-900 mt-2 line-clamp-1 leading-snug group-hover:text-brand transition-colors">
+                    {show.name}
+                  </h4>
+                  <p className="text-[10.5px] text-gray-400 mt-0.5">{show.eps} Episode</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Episode Terbaru */}
-          <div className="pb-4">
-            <div className="flex items-center gap-2 px-4 mb-3">
-              <p className="text-[14px] font-extrabold text-gray-900">Episode Terbaru</p>
-              <span className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] font-bold text-white"
-                style={{background:'#1B6B3A'}}>{EPISODES.length}</span>
-            </div>
-            <div className="flex flex-col">
-              {EPISODES.map((ep,i)=>{
-                const show = SHOWS.find(s=>s.id===ep.showId)||SHOWS[0]
+          {/* Episode Terbaru (Audio Playlist) */}
+          <div className="px-4 pb-2">
+            <SectionHeader
+              title={`Episode Terbaru (${EPISODES.length})`}
+              subtitle="Rilis episode audio mingguan"
+              className="mb-3"
+            />
+            <div className="flex flex-col gap-2">
+              {EPISODES.map((ep) => {
+                const show = SHOWS.find(s => s.id === ep.showId) || SHOWS[0]
                 return (
-                  <div key={ep.id}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer active:bg-gray-50 transition-colors ${i<EPISODES.length-1?'border-b border-gray-50':''}`}
-                    onClick={()=>onPlayEpisode(ep)}>
-                    {ep.hasArt
-                      ?<div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden"
-                          style={{background:`linear-gradient(135deg,${show.g[0]},${show.g[1]})`}}>
-                          <show.Icon size={24} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>
-                        </div>
-                      :<div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden" style={{background:'#E8F5E9'}}>
-                          <Headphones size={22} style={{color:'#1B6B3A'}} className="relative z-10" strokeWidth={1.5}/>
-                        </div>
-                    }
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">{ep.title}</p>
-                      <p className="text-[12px] text-gray-400 mt-0.5">{ep.ep} · {ep.dur}</p>
+                  <div
+                    key={ep.id}
+                    onClick={() => onPlayEpisode(ep)}
+                    className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex items-center gap-3 cursor-pointer hover:border-gray-200 transition-all active:scale-[0.98]"
+                  >
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-white/50 text-white"
+                      style={{ background: `linear-gradient(135deg, ${show.g[0]}, ${show.g[1]})` }}
+                    >
+                      {ep.hasArt ? <show.Icon size={20} strokeWidth={1.75} /> : <Headphones size={20} strokeWidth={1.75} />}
                     </div>
-                    <button className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{background:'#1B6B3A',boxShadow:'0 2px 6px rgba(27,107,58,0.3)'}}>
-                      <Play size={13} className="text-white" fill="white"/>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-[12.5px] font-bold text-gray-900 leading-tight line-clamp-1">
+                        {ep.title}
+                      </h4>
+                      <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                        {ep.ep} • {ep.dur}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-brand/10 text-brand hover:bg-brand hover:text-white transition-colors"
+                    >
+                      <Play size={13} className="fill-current translate-x-0.5" />
                     </button>
                   </div>
                 )
@@ -1685,29 +2342,58 @@ function TabPodcast({ onPlayEpisode, onGVPlus }) {
           </div>
         </>
       ) : (
-        /* GV+ tab — langsung tampil konten, tanpa banner */
-        <div className="pb-4 pt-4">
-          <p className="text-[13px] font-extrabold text-gray-900 px-4 mb-3">Podcast Eksklusif GV+</p>
-          <div className="flex flex-col gap-2.5 px-4">
-            {GVPLUS_PODCASTS.map(ep=>{
-              const show = SHOWS.find(s=>s.id===ep.showId)||SHOWS[0]
+        /* Mode GV+ Audio Eksklusif */
+        <div className="px-4 pt-1 pb-4">
+          <div className="mb-4 p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-sm">
+                <Crown size={16} />
+              </div>
+              <div>
+                <h3 className="text-[13.5px] font-extrabold text-gray-900 leading-tight">
+                  Podcast Eksklusif GV+
+                </h3>
+                <p className="text-[11px] text-gray-500">
+                  Wawancara khusus narasumber dan behind the scene
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <SectionHeader
+            title={`Audio Premium (${GVPLUS_PODCASTS.length})`}
+            subtitle="Audio kualitas tinggi tanpa batas"
+            className="mb-3"
+          />
+          <div className="flex flex-col gap-2.5">
+            {GVPLUS_PODCASTS.map(ep => {
+              const show = SHOWS.find(s => s.id === ep.showId) || SHOWS[0]
               return (
-                <div key={ep.id} onClick={()=>onGVPlus(ep)}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3.5 cursor-pointer active:scale-[0.96] transition-transform"
-                  style={{background:'#fff',boxShadow:S.card}}>
-                  <div className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 relative"
-                    style={{background:`linear-gradient(135deg,${show.g[0]},${show.g[1]})`}}>
-                    <Headphones size={20} className="text-white/50"/>
-                    <div className="absolute -top-1 -end-1 w-5 h-5 rounded-full flex items-center justify-center"
-                      style={{background:'linear-gradient(90deg,#F57F17,#F9A825)'}}>
-                      <Lock size={9} className="text-white"/>
+                <div
+                  key={ep.id}
+                  onClick={() => onGVPlus(ep)}
+                  className="bg-white rounded-2xl p-3.5 border border-amber-500/20 shadow-sm flex items-center gap-3.5 cursor-pointer active:scale-[0.98] transition-all hover:shadow-md"
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 relative shadow-sm"
+                    style={{ background: `linear-gradient(135deg, ${show.g[0]}, ${show.g[1]})` }}
+                  >
+                    <Headphones size={20} className="text-white/60" />
+                    <div className="absolute -top-1 -end-1 w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-r from-amber-500 to-amber-600 shadow-sm text-white">
+                      <Lock size={9} />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-gray-900 leading-tight line-clamp-2">{ep.title}</p>
-                    <p className="text-[12px] text-gray-400 mt-0.5">{ep.show} · {ep.ep}</p>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <GVPlusBadge sm />
+                      <span className="text-[10.5px] text-amber-600 font-bold">{ep.show}</span>
+                    </div>
+                    <h4 className="text-[12.5px] font-bold text-gray-900 leading-tight truncate">
+                      {ep.title}
+                    </h4>
+                    <p className="text-[11px] text-gray-400 mt-0.5">{ep.ep}</p>
                   </div>
-                  <GVPlusBadge sm/>
+                  <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
                 </div>
               )
             })}
@@ -1717,7 +2403,6 @@ function TabPodcast({ onPlayEpisode, onGVPlus }) {
     </div>
   )
 }
-
 
 // ── Main ───────────────────────────────────────────────────
 const TABS = [
@@ -1777,7 +2462,7 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
 
       {/* Content */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
-        {tab==='live'    && <TabLive navigate={navigate}/>}
+        {tab==='live'    && <TabLive navigate={navigate} showToast={showToast}/>}
         {tab==='kreator' && <TabKreator onGVPlus={setPaywall} navigate={navigate} showToast={showToast} userProfile={userProfile}/>}
         {tab==='video'   && <TabVideo   onGVPlus={setPaywall} userProfile={userProfile}/>}
         {tab==='podcast' && <TabPodcast onPlayEpisode={handlePlayEpisode} onGVPlus={setPaywall}/>}
