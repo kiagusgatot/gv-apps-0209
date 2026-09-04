@@ -129,17 +129,17 @@ export default function BerandaBentoGrid({
              Left (Col 1): Sedang Tayang Live Mini-Player
              Right (Col 1): Urgency / Action Alert / Tanya GV
       ══════════════════════════════════════════════════════════ */}
-      {/* Mini Live Player Bento (Col 1) */}
+      {/* Mini Live Player Bento (Col 1: Card GV TV) */}
       <BentoCard
         colSpan={1}
         variant="elevated"
         onClick={() => navigate('siaran')}
-        className="p-0 overflow-hidden flex flex-col justify-between group cursor-pointer"
+        className="p-0 overflow-hidden flex flex-col justify-between group cursor-pointer border border-white/80 shadow-brand-md"
         style={{
           minHeight: 168,
         }}
       >
-        <div className="relative h-24 w-full overflow-hidden bg-surface-800">
+        <div className="relative h-24 w-full overflow-hidden bg-surface-800 flex-shrink-0">
           <img
             src={activeLive.image}
             alt={activeLive.name}
@@ -172,151 +172,43 @@ export default function BerandaBentoGrid({
         </div>
       </BentoCard>
 
-      {/* Dynamic Context Bento (Col 1) */}
-      <div className="col-span-1 flex flex-col gap-2.5">
-        {/* Urgency / Notification Card */}
-        {(() => {
-          if (isSuperAdmin || (isAdmin && p.adminStats?.pendingReports > 0)) {
-            const count = p.adminStats?.pendingReports || 3
-            return (
-              <BentoCard
-                colSpan={1}
-                variant="gradient"
-                gradient={['#6A1B9A', '#8E24AA']}
-                onClick={() => navigate('komunitas')}
-                className="p-3 flex-1 flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-[10px] font-bold uppercase tracking-wider">
-                    Moderasi
-                  </span>
-                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-white text-[10px] font-black">
-                    {count}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-white text-[12px] font-bold leading-tight mt-1">
-                    {count} Laporan
-                  </p>
-                  <p className="text-white/70 text-[10px] mt-0.5">Tinjau sekarang →</p>
-                </div>
-              </BentoCard>
-            )
-          }
+      {/* Dynamic Context Bento (Col 1: Card Tanya GV & Quick Action) */}
+      <div className="col-span-1 flex flex-col gap-2.5 h-full justify-between" style={{ minHeight: 168 }}>
+        {/* Tanya GV AI Assistant Card */}
+        <BentoCard
+          colSpan={1}
+          variant="elevated"
+          onClick={onOpenTanyaGV}
+          className="p-3 flex-1 flex flex-col justify-between border border-brand/20 shadow-brand-sm group cursor-pointer"
+          style={{
+            background: 'linear-gradient(145deg, rgba(240, 253, 244, 0.95), rgba(255, 255, 255, 0.92))',
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-brand text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
+              <Sparkles size={11} className="text-brand" />
+              <span>Tanya GV</span>
+            </span>
+            <div className="w-5 h-5 rounded-md bg-brand/10 flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
+              <Bot size={13} />
+            </div>
+          </div>
+          <div className="mt-1">
+            <p className="text-surface-900 text-[12px] font-bold leading-tight">
+              Tanya GV AI
+            </p>
+            <p className="text-surface-500 text-[10px] mt-0.5">Asisten Desa Pintar →</p>
+          </div>
+        </BentoCard>
 
-          if (p.urgentOrders > 0 || isPenjual) {
-            const orders = p.urgentOrders || (p.tokoStats?.orders ?? 1)
-            return (
-              <BentoCard
-                colSpan={1}
-                variant="gradient"
-                gradient={['#E65100', '#F57C00']}
-                onClick={() => navigate('pasar-toko')}
-                className="p-3 flex-1 flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-[10px] font-bold uppercase tracking-wider">
-                    Pesanan Toko
-                  </span>
-                  <Package size={14} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-white text-[12px] font-bold leading-tight mt-1">
-                    {orders} Pesanan Baru
-                  </p>
-                  <p className="text-white/70 text-[10px] mt-0.5">Konfirmasi segera →</p>
-                </div>
-              </BentoCard>
-            )
-          }
-
-          if (isCreator && p.studioStats?.pendingContent > 0) {
-            return (
-              <BentoCard
-                colSpan={1}
-                variant="gradient"
-                gradient={['#4A148C', '#7B1FA2']}
-                onClick={() => navigate('studio')}
-                className="p-3 flex-1 flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-[10px] font-bold uppercase tracking-wider">
-                    Kreator
-                  </span>
-                  <Clock size={14} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-white text-[12px] font-bold leading-tight mt-1">
-                    Video Direview
-                  </p>
-                  <p className="text-white/70 text-[10px] mt-0.5">Lihat progres →</p>
-                </div>
-              </BentoCard>
-            )
-          }
-
-          if (p.hasActiveBills) {
-            return (
-              <BentoCard
-                colSpan={1}
-                variant="gradient"
-                gradient={['#F57F17', '#F9A825']}
-                onClick={() => navigate('bayar-listrik')}
-                className="p-3 flex-1 flex flex-col justify-between"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-white/80 text-[10px] font-bold uppercase tracking-wider">
-                    Tagihan PLN
-                  </span>
-                  <Zap size={14} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-white text-[12px] font-bold leading-tight mt-1">
-                    Jatuh Tempo 20 Agt
-                  </p>
-                  <p className="text-white/70 text-[10px] mt-0.5">Bayar sekarang →</p>
-                </div>
-              </BentoCard>
-            )
-          }
-
-          // Default helper card: Tanya GV AI Assistant
-          return (
-            <BentoCard
-              colSpan={1}
-              variant="elevated"
-              onClick={onOpenTanyaGV}
-              className="p-3 flex-1 flex flex-col justify-between border border-brand/20"
-              style={{
-                background: 'linear-gradient(145deg, rgba(240, 253, 244, 0.95), rgba(255, 255, 255, 0.9))',
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-brand text-[10px] font-extrabold uppercase tracking-wider">
-                  AI Desa
-                </span>
-                <div className="w-5 h-5 rounded-md bg-brand/10 flex items-center justify-center text-brand">
-                  <Bot size={13} />
-                </div>
-              </div>
-              <div>
-                <p className="text-surface-900 text-[12px] font-bold leading-tight mt-1">
-                  Tanya Apapun
-                </p>
-                <p className="text-surface-500 text-[10px] mt-0.5">Asisten AI Desa →</p>
-              </div>
-            </BentoCard>
-          )
-        })()}
-
-        {/* Secondary Quick Tile (Komunitas / Poin) */}
+        {/* Secondary Quick Tile (Komunitas / Warga Sekitarmu) */}
         <BentoCard
           colSpan={1}
           variant="subtle"
           onClick={() => navigate('komunitas')}
-          className="p-2.5 flex items-center justify-between active:scale-[0.98] transition cursor-pointer"
+          className="p-2.5 flex items-center justify-between active:scale-[0.98] transition cursor-pointer border border-surface-200/60"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
               <Users size={14} />
             </div>
@@ -325,7 +217,7 @@ export default function BerandaBentoGrid({
               <p className="text-[9.5px] text-surface-400 truncate">Forum & info desa</p>
             </div>
           </div>
-          <ChevronRight size={13} className="text-surface-400" />
+          <ChevronRight size={13} className="text-surface-400 flex-shrink-0" />
         </BentoCard>
       </div>
 
