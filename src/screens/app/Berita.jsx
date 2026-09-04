@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import SearchBar from '@/components/molecules/SearchBar'
 import { ArrowLeft, Search, X, Clock, ChevronRight, Share2, Heart, MessageCircle, Bookmark } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
@@ -127,48 +130,58 @@ export default function Berita({ navigate }) {
     .filter(a => !q || a.title.toLowerCase().includes(q.toLowerCase()))
 
   return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      {/* Header */}
-      <div className="flex-shrink-0"
-        style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="flex items-center justify-between px-4 pt-4 pb-3">
-          <div>
-            <p className="headline-tight text-[18px] font-extrabold text-white">Berita</p>
-            <p className="text-[11px] text-white/50 mt-0.5">Kabar terbaru dari desa dan sekitarnya</p>
-          </div>
-          <button onClick={()=>setSearch(v=>!v)}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-            style={{background:showSearch?'rgba(255,255,255,0.18)':'rgba(255,255,255,0.1)'}}>
-            {showSearch
-              ? <X size={16} className="text-white"/>
-              : <Search size={16} className="text-white/80"/>}
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      {/* Unified ScreenHeader */}
+      <ScreenHeader
+        title="Berita"
+        subtitle="Kabar terbaru dari desa dan sekitarnya"
+        actions={
+          <button
+            type="button"
+            onClick={() => setSearch((v) => !v)}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+            style={{
+              background: showSearch ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.14)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            {showSearch ? <X size={16} className="text-white" /> : <Search size={16} className="text-white/80" />}
           </button>
-        </div>
+        }
+      >
         {/* Search */}
         {showSearch && (
-          <div className="px-4 pb-3 animate-slide-down">
-            <div className="flex items-center gap-2 rounded-2xl px-3.5 py-2.5 focus-within:ring-2 focus-within:ring-white/20 transition-shadow"
-              style={{background:'rgba(255,255,255,0.1)',backdropFilter:'blur(8px)'}}>
-              <Search size={14} className="text-white/50 flex-shrink-0"/>
-              <input value={q} onChange={e=>setQ(e.target.value)} autoFocus
-                placeholder="Cari berita..." className="flex-1 text-[13px] outline-none bg-transparent text-white placeholder:text-white/40"/>
-              {q && <button onClick={()=>setQ('')}><X size={13} className="text-white/50"/></button>}
-            </div>
+          <div className="animate-slide-down">
+            <SearchBar
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onClear={() => setQ('')}
+              variant="glass-dark"
+              placeholder="Cari berita desa..."
+              autoFocus
+            />
           </div>
         )}
+
         {/* Category chips */}
-        <div className="flex gap-2 px-3 pb-3 overflow-x-auto no-scrollbar">
-          {CATS.map(c=>(
-            <button key={c} onClick={()=>setCat(c)}
-              className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-semibold border transition"
-              style={cat===c
-                ?{background:PRIMARY,color:'#fff',borderColor:PRIMARY,boxShadow:`0 4px 12px ${PRIMARY}55`}
-                :{background:'rgba(255,255,255,0.8)',color:'#6B7280',borderColor:'#E5E7EB'}}>
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pt-0.5 pb-1">
+          {CATS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setCat(c)}
+              className={`flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-bold transition active:scale-95 ${
+                cat === c
+                  ? 'bg-white text-[#1B6B3A] shadow-xs'
+                  : 'bg-white/15 text-white/70 hover:text-white'
+              }`}
+            >
               {c}
             </button>
           ))}
         </div>
-      </div>
+      </ScreenHeader>
 
       {/* Article list */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-3" style={{paddingBottom:80}}>
@@ -243,6 +256,6 @@ export default function Berita({ navigate }) {
       </div>
 
       <BottomNav active="siaran" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }

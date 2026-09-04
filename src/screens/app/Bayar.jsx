@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import { Zap, Wifi, Phone, Tv2, Droplets, ArrowRightLeft, QrCode, History,
   ChevronRight, X, ArrowLeft, Check, Copy, CreditCard, Building2,
   Smartphone, RefreshCw, Clock, TrendingDown, TrendingUp, Search, HeartPulse, Plus } from 'lucide-react'
@@ -568,9 +571,11 @@ function RiwayatScreen({ transactions, onBack }) {
         {filtered.length===0&&<div className="py-16 text-center"><p className="text-3xl mb-2">📭</p><p className="text-[13px] text-gray-400">Tidak ada transaksi</p></div>}
         {filtered.map((t,i)=>(
           <div key={i} className="flex items-center gap-3 px-4 py-3.5 bg-white border-b border-gray-50">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{background:t.bg}}>
-              {t.amount>0?<TrendingUp size={16} style={{color:t.ic}}/>:<TrendingDown size={16} style={{color:t.ic}}/>}
-            </div>
+            <SkeuoIcon
+              icon={t.amount > 0 ? TrendingUp : TrendingDown}
+              gradient={t.amount > 0 ? ['#1B5E20', '#2E7D32'] : [`${t.ic}dd`, t.ic]}
+              size="sm"
+            />
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-gray-900 line-clamp-2">{t.name}</p>
               <p className="text-[12px] text-gray-400 mt-0.5">{t.date}</p>
@@ -627,15 +632,15 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
   const handleTransfer = (amt) => { setBalance(b=>b-amt); addTrx('Transfer GV Pay', -amt, '#FFF8E1','#F57F17') }
 
   const ACTIONS = [
-    { label:'Listrik PLN',  Icon:Zap,            bg:'#FFF3E0', ic:'#E65100', screen:'listrik'  },
-    { label:'Pulsa & Data', Icon:Phone,           bg:'#E8F5E9', ic:'#1B6B3A', screen:'pulsa'    },
-    { label:'Air PDAM',     Icon:Droplets,        bg:'#E3F2FD', ic:'#1565C0', screen:'air'      },
-    { label:'BPJS',         Icon:HeartPulse,      bg:'#FCE4EC', ic:'#C62828', screen:'bpjs'     },
-    { label:'TV Kabel',     Icon:Tv2,             bg:'#F3E5F5', ic:'#6A1B9A', screen:'tv'       },
-    { label:'Internet',     Icon:Wifi,            bg:'#E8EAF6', ic:'#3949AB', screen:'internet'  },
-    { label:'Transfer',     Icon:ArrowRightLeft,  bg:'#FFF8E1', ic:'#F57F17', screen:'transfer'  },
-    { label:'Scan QRIS',    Icon:QrCode,          bg:'#FCE4EC', ic:'#AD1457', screen:'qris'     },
-    { label:'Riwayat',      Icon:History,         bg:'#EFEBE9', ic:'#5D4037', screen:'riwayat'  },
+    { label:'Listrik PLN',  Icon:Zap,            bg:'#FFF3E0', ic:'#E65100', screen:'listrik',  g: ['#E65100', '#F57C00'] },
+    { label:'Pulsa & Data', Icon:Phone,           bg:'#E8F5E9', ic:'#1B6B3A', screen:'pulsa',    g: ['#1B5E20', '#2E7D32'] },
+    { label:'Air PDAM',     Icon:Droplets,        bg:'#E3F2FD', ic:'#1565C0', screen:'air',      g: ['#0D47A1', '#1976D2'] },
+    { label:'BPJS',         Icon:HeartPulse,      bg:'#FCE4EC', ic:'#C62828', screen:'bpjs',     g: ['#B71C1C', '#D32F2F'] },
+    { label:'TV Kabel',     Icon:Tv2,             bg:'#F3E5F5', ic:'#6A1B9A', screen:'tv',       g: ['#4A148C', '#7B1FA2'] },
+    { label:'Internet',     Icon:Wifi,            bg:'#E8EAF6', ic:'#3949AB', screen:'internet', g: ['#1A237E', '#303F9F'] },
+    { label:'Transfer',     Icon:ArrowRightLeft,  bg:'#FFF8E1', ic:'#F57F17', screen:'transfer', g: ['#F57F17', '#FBC02D'] },
+    { label:'Scan QRIS',    Icon:QrCode,          bg:'#FCE4EC', ic:'#AD1457', screen:'qris',     g: ['#880E4F', '#C2185B'] },
+    { label:'Riwayat',      Icon:History,         bg:'#EFEBE9', ic:'#5D4037', screen:'riwayat',  g: ['#3E2723', '#5D4037'] },
   ]
 
   const goBack = () => setScreen('main')
@@ -653,138 +658,160 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
   }
 
   return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      {/* Header and Balance */}
-      <div className="flex-shrink-0 relative overflow-hidden" style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        {/* subtle decorative background elements */}
-        <div className="absolute -top-20 -end-20 w-52 h-52 rounded-full opacity-20 pointer-events-none" style={{background:'radial-gradient(circle, #22c55e 0%, transparent 70%)'}} />
-        
-        <div className="relative px-4 pt-4 pb-6 z-10">
-          <div className="flex items-center justify-between pt-1 pb-3 mb-3">
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      {/* Unified ScreenHeader */}
+      <ScreenHeader
+        title="GV Pay"
+        actions={
+          <button
+            type="button"
+            onClick={() => setScreen('riwayat')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 shadow-sm"
+            style={{
+              background: 'rgba(255, 255, 255, 0.14)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <History size={13} className="text-white/80" />
+            <span className="text-white font-bold text-[11.5px]">Riwayat</span>
+          </button>
+        }
+      >
+        {/* Balance card inside header */}
+        <div
+          className="rounded-2xl px-4 py-3.5"
+          style={{
+            background: 'rgba(255, 255, 255, 0.10)',
+            border: '1px solid rgba(255, 255, 255, 0.16)',
+            backdropFilter: 'blur(12px)',
+          }}
+        >
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-[20px] font-extrabold text-white tracking-tight headline-tight">GV Pay</p>
+              <p className="text-white/70 text-[11px] font-bold">Saldo GV Pay</p>
+              <p className="text-[28px] font-extrabold text-white leading-tight mt-0.5 tabular-nums drop-shadow-sm">
+                Rp {balance.toLocaleString('id')}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={()=>setScreen('riwayat')}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition active:scale-[0.96]"
-                style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
-                <History size={13} className="text-white/70"/>
-                <span className="text-white/80 font-semibold text-[11px]">Riwayat</span>
-              </button>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 border border-white/15">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
+              <span className="text-white/90 text-[11px] font-semibold">
+                {(userProfile?.points || 1240).toLocaleString('id')} Poin
+              </span>
             </div>
           </div>
 
-          {/* Balance card */}
-          <div className="rounded-2xl px-5 py-4 mb-5"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(12px)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)'
-            }}>
-            <p className="text-white/70 text-[11px] font-bold mb-1">Saldo GV Pay</p>
-            <p className="text-[32px] font-extrabold text-white leading-none mb-3 tabular-nums drop-shadow-sm">
-              Rp {balance.toLocaleString('id')}
-            </p>
-            <div className="flex items-center gap-1.5 mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block shadow-[0_0_8px_rgba(74,222,128,0.6)]"/>
-              <span className="text-white/80 text-[11px] font-semibold">{(userProfile?.points||1240).toLocaleString('id')} GV Poin aktif</span>
-            </div>
-            
-            {/* Quick actions */}
-            <div className="flex gap-3 justify-between mt-2">
-              {[
-                { lbl: 'Top Up', Icon: Plus, sc: 'topup', g: ['rgba(255,255,255,0.2)','rgba(255,255,255,0.05)'] },
-                { lbl: 'Transfer', Icon: ArrowRightLeft, sc: 'transfer', g: ['rgba(255,255,255,0.2)','rgba(255,255,255,0.05)'] },
-                { lbl: 'Scan', Icon: QrCode, sc: 'qris', g: ['rgba(255,255,255,0.2)','rgba(255,255,255,0.05)'] }
-              ].map(({lbl,Icon,sc,g}) => (
-                <button key={lbl} onClick={()=>setScreen(sc)} className="flex flex-col items-center gap-2 flex-1 active:scale-[0.96] transition-transform">
-                  <div className="w-12 h-12 rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, ${g[0]} 0%, ${g[1]} 100%)`,
-                      boxShadow: 'inset 0 1.5px 2px rgba(255,255,255,0.2), inset 0 -1px 3px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.1)'
-                    }}>
-                    <Icon size={24} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-white/90 text-[11px] font-semibold">{lbl}</span>
-                </button>
-              ))}
-            </div>
+          {/* Quick actions (Top Up, Transfer, Scan) */}
+          <div className="flex gap-2.5 justify-between mt-3 pt-3 border-t border-white/10">
+            {[
+              { lbl: 'Top Up', Icon: Plus, sc: 'topup', g: ['#1B5E20', '#2E7D32'] },
+              { lbl: 'Transfer', Icon: ArrowRightLeft, sc: 'transfer', g: ['#0D47A1', '#1976D2'] },
+              { lbl: 'Scan QRIS', Icon: QrCode, sc: 'qris', g: ['#0C3E1E', '#1B6B3A'] },
+            ].map(({ lbl, Icon, sc, g }) => (
+              <button
+                key={lbl}
+                type="button"
+                onClick={() => setScreen(sc)}
+                className="flex items-center justify-center gap-2 flex-1 py-2 px-2.5 rounded-xl transition active:scale-95"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+              >
+                <SkeuoIcon icon={Icon} size="xs" gradient={g} shape="circle" />
+                <span className="text-white text-[12px] font-bold">{lbl}</span>
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      </ScreenHeader>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pt-5">
+      <div className="flex-1 overflow-y-auto no-scrollbar pt-4 pb-20">
         {/* Services grid */}
-        <div className="bg-white mx-4 rounded-2xl p-4 mb-4 spotlight-border" style={{boxShadow:S.card}}>
-          <p className="text-[14px] font-extrabold headline-tight text-[#0F1A13] mb-4">Bayar & Beli</p>
+        <div
+          className="mx-4 rounded-3xl p-4 mb-4 border border-white/80"
+          style={{
+            background: 'rgba(255, 255, 255, 0.92)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 4px 20px rgba(27, 107, 58, 0.08)',
+          }}
+        >
+          <p className="text-[14px] font-extrabold headline-tight text-surface-900 mb-3.5">Bayar & Beli</p>
           <div className="grid grid-cols-4 gap-y-4 gap-x-2">
-            {ACTIONS.map(({label,Icon,bg,ic,screen:sc})=> {
-              const isGreen = ic === '#1B6B3A'
-              const bgGradient = isGreen ? 'linear-gradient(135deg, #1B5E20, #2E7D32)' : `linear-gradient(135deg, ${ic}dd, ${ic})`
-              return (
+            {ACTIONS.map(({label,Icon,g,ic,screen:sc})=> (
               <button key={label} onClick={()=>setScreen(sc)} className="flex flex-col items-center gap-1.5 active:scale-[0.96] transition-transform">
-                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-inner" style={{background:bgGradient}}>
-                  <Icon size={20} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                </div>
-                <span className="text-[10px] text-gray-700 font-bold text-center leading-tight w-full">{label}</span>
+                <SkeuoIcon icon={Icon} gradient={g || (ic === '#1B6B3A' ? ['#1B5E20', '#2E7D32'] : [`${ic}dd`, ic])} size="md" />
+                <span className="text-[10px] text-surface-800 font-bold text-center leading-tight w-full">{label}</span>
               </button>
-            )})}
+            ))}
           </div>
         </div>
 
         {/* Tagihan aktif */}
         <div className="mx-4 mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[14px] font-extrabold headline-tight text-[#0F1A13]">Tagihan Aktif</p>
-            <button onClick={()=>setScreen('listrik')} className="text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition" style={{color:PRIMARY}}>
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <p className="text-[13px] font-extrabold headline-tight text-surface-900">Tagihan Aktif</p>
+            <button onClick={()=>setScreen('listrik')} className="text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition text-brand" style={{color:PRIMARY}}>
               Lihat semua <ChevronRight size={14}/>
             </button>
           </div>
-          <div className="bg-white rounded-2xl overflow-hidden spotlight-border" style={{boxShadow:S.card}}>
-            {[
-              {name:'Listrik PLN', due:'20 Agt', amount:145000, urgent:true,  sc:'listrik', Icon:Zap,      bg:'#FFF3E0', ic:'#E65100'},
-              {name:'PDAM Air',    due:'25 Agt', amount:78000,  urgent:false, sc:'air',     Icon:Droplets, bg:'#E3F2FD', ic:'#1565C0'},
-            ].map((b,i)=>(
-              <div key={b.name} className={`flex items-center gap-3 px-4 py-3.5 ${i===0?'border-b border-gray-100':''}`}>
-                <div className="w-10 h-10 rounded-[12px] flex items-center justify-center flex-shrink-0 shadow-inner" style={{background:`linear-gradient(135deg, ${b.ic}dd, ${b.ic})`}}>
-                  <b.Icon size={18} className="text-white drop-shadow-sm" strokeWidth={1.5} />
+          <div
+            className="rounded-3xl overflow-hidden border border-white/80"
+            style={{
+              background: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 20px rgba(27, 107, 58, 0.08)',
+            }}
+          >
+            <div className="flex items-center gap-3 p-4">
+              <SkeuoIcon icon={Zap} gradient={['#E65100', '#F57C00']} size="sm" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">PLN Pascabayar</span>
+                  <span className="text-[10px] text-surface-400">Jatuh tempo 20 Ags</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-gray-900 leading-snug">{b.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <p className={`text-[11px] font-bold ${b.urgent?'text-red-500':'text-gray-400'}`}>
-                      {b.urgent?'⚠️ ':''}Jatuh tempo {b.due}
-                    </p>
-                    <span className="text-gray-300">·</span>
-                    <p className="text-[11px] text-gray-600 font-bold tabular-nums">Rp {b.amount.toLocaleString('id')}</p>
-                  </div>
-                </div>
-                <button onClick={()=>setScreen(b.sc)}
-                  className="px-4 py-2 rounded-xl text-[11px] font-bold text-white flex-shrink-0 active:scale-[0.96] transition-transform"
-                  style={{background:`linear-gradient(135deg, ${PRIMARY}, #15803d)`}}>Bayar</button>
+                <p className="text-[13px] font-bold text-surface-900 mt-0.5">Listrik Rumah - 5412 8890 1234</p>
+                <p className="text-[13px] font-extrabold text-brand tabular-nums mt-0.5" style={{color:PRIMARY}}>Rp 148.500</p>
               </div>
-            ))}
+              <button
+                type="button"
+                onClick={()=>setScreen('listrik')}
+                className="px-3.5 py-2 rounded-xl text-[11.5px] font-bold text-white active:scale-95 transition shadow-xs"
+                style={{background:PRIMARY}}
+              >
+                Bayar
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Recent transactions */}
         <div className="mx-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[14px] font-extrabold headline-tight text-[#0F1A13]">Transaksi Terakhir</p>
-            <button onClick={()=>setScreen('riwayat')} className="text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition" style={{color:PRIMARY}}>
+          <div className="flex items-center justify-between mb-2.5 px-1">
+            <p className="text-[13px] font-extrabold headline-tight text-surface-900">Transaksi Terakhir</p>
+            <button onClick={()=>setScreen('riwayat')} className="text-[11px] font-bold flex items-center gap-0.5 active:scale-95 transition text-brand">
               Semua <ChevronRight size={14}/>
             </button>
           </div>
-          <div className="bg-white rounded-2xl overflow-hidden spotlight-border" style={{boxShadow:S.card}}>
+          <div
+            className="rounded-3xl overflow-hidden border border-white/80"
+            style={{
+              background: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 4px 20px rgba(27, 107, 58, 0.08)',
+            }}
+          >
             {transactions.slice(0,4).map((t,i)=>(
-              <div key={i} className={`flex items-center gap-3 px-4 py-3.5 ${i<3?'border-b border-gray-50':''}`}>
-                <div className="w-10 h-10 rounded-[12px] flex items-center justify-center flex-shrink-0 shadow-inner" style={{background:`linear-gradient(135deg, ${t.ic}dd, ${t.ic})`}}>
-                  {t.amount>0 ? <TrendingUp size={18} className="text-white drop-shadow-sm" strokeWidth={1.5}/> : <TrendingDown size={18} className="text-white drop-shadow-sm" strokeWidth={1.5}/>}
-                </div>
+              <div key={i} className={`flex items-center gap-3 px-4 py-3.5 ${i<3?'border-b border-surface-100':''}`}>
+                <SkeuoIcon
+                  icon={t.amount > 0 ? TrendingUp : TrendingDown}
+                  gradient={t.amount > 0 ? ['#1B5E20', '#2E7D32'] : [`${t.ic}dd`, t.ic]}
+                  size="sm"
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-gray-900 leading-snug line-clamp-1">{t.name}</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5 font-medium">{t.date}</p>
+                  <p className="text-[13px] font-bold text-surface-900 leading-snug line-clamp-1">{t.name}</p>
+                  <p className="text-[11px] text-surface-400 mt-0.5 font-medium">{t.date}</p>
                 </div>
                 <span className="text-[13px] font-extrabold flex-shrink-0 tabular-nums" style={{color:t.amount>0?PRIMARY:'#111827'}}>
                   {t.amount>0?'+':''}Rp {Math.abs(t.amount).toLocaleString('id')}
@@ -793,9 +820,10 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
             ))}
           </div>
         </div>
+
       </div>
 
       <BottomNav active="bayar" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }

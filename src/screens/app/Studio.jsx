@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
 import { ArrowLeft, Upload, Play, Crown, BarChart2,
   Eye, TrendingUp, ChevronRight, Video as VideoIcon,
   Edit2, Trash2, Send, Heart, MessageCircle, MoreHorizontal,
@@ -1333,20 +1335,12 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
   }
 
   return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      <div className="flex-shrink-0 relative overflow-hidden animate-fade-in"
-        style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="flex items-center justify-between px-4 pt-5 pb-3 relative z-10">
-          <div className="flex items-center">
-            <button onClick={()=>navigate('profile')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center me-3 flex-shrink-0 transition active:scale-[0.96]"
-              style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
-              <ArrowLeft size={16} className="text-white/70"/>
-            </button>
-            <p className="font-extrabold text-white text-[20px] tracking-tight leading-tight">Kreator GV</p>
-          </div>
-        </div>
-        <div className="flex px-4 gap-1">
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      <ScreenHeader
+        title="Kreator GV"
+        onBack={() => navigate('profile')}
+      >
+        <div className="flex gap-1">
           {TABS.map(t=>{
             const isRestricted = !isCreator && t.id !== 'analitik'
             return (
@@ -1364,7 +1358,7 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
             )
           })}
         </div>
-      </div>
+      </ScreenHeader>
 
       <div className="flex-1 overflow-hidden flex flex-col relative">
         {tab==='konten'   && isCreator && <TabKonten showUpload={showUpload} setUpload={setUpload}/>}
@@ -1373,6 +1367,6 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
         {tab==='membership' && isCreator && <TabMembership/>}
       </div>
       <BottomNav active="profile" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }

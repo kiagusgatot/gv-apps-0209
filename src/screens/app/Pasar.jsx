@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
+import SearchBar from '@/components/molecules/SearchBar'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
@@ -1782,7 +1786,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   if (screen==='success')  return <OrderSuccess onDone={()=>{setScreen('list');navigate('beranda')}}/>
 
   return (
-    <div className="flex flex-col h-full relative" style={{background:'#FAFBF9'}}>
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
 
       {/* Sort sheet */}
       {showSort && <FilterSheet currentSort={sortBy} onSort={setSortBy} currentCats={selectedCats} onCats={setSelectedCats} onClose={()=>setShowSort(false)}/>}
@@ -1815,40 +1819,78 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
 
 
-      {/* Header */}
-      <div className="flex-shrink-0" style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="px-4 pt-5 pb-3">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <p className="text-[20px] font-extrabold text-white tracking-tight">ESTO</p>
+      {/* Unified ScreenHeader */}
+      <ScreenHeader
+        title="ESTO"
+        actions={
+          <button
+            type="button"
+            className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+            style={{
+              background: 'rgba(255, 255, 255, 0.14)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+            onClick={() => (totalCart > 0 ? setScreen('checkout') : setEmptyCart(true))}
+          >
+            <ShoppingCart size={16} className="text-white/80" />
+            {totalCart > 0 && (
+              <span
+                className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums"
+                style={{
+                  background: '#EF4444',
+                  boxShadow: '0 0 0 2px #0C3E1E',
+                }}
+              >
+                {totalCart}
+              </span>
+            )}
+          </button>
+        }
+      >
+        {activeTab === 'belanja' && (
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <SearchBar
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                onClear={() => setSearchQ('')}
+                variant="glass-dark"
+                placeholder="Cari produk desa di ESTO..."
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <button className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-[0.96]"
-                style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.06)'}}
-                onClick={()=>totalCart>0?setScreen('checkout'):setEmptyCart(true)}>
-                <ShoppingCart size={16} className="text-white/70"/>
-                {totalCart > 0 && (
-                  <span className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[11px] font-bold flex items-center justify-center tabular-nums"
-                    style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:'0 0 0 2px #0C3E1E'}}>{totalCart}</span>
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowSort(true)}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition active:scale-95 relative"
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <SlidersHorizontal size={16} className="text-white/80" />
+              {selectedCats.length > 0 && (
+                <span
+                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center"
+                  style={{ background: '#EF4444', boxShadow: '0 0 0 2px #0C3E1E' }}
+                >
+                  {selectedCats.length}
+                </span>
+              )}
+            </button>
           </div>
-          {/* Main toggle */}
-          <div className="flex rounded-xl p-1 mb-2" style={{background:'rgba(255,255,255,0.1)'}}>
-            {[['belanja','Belanja'],['pesanan','Pesanan']].map(([id,lbl])=>(
-              <button key={id} onClick={()=>setActiveTab(id)}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold transition ${activeTab===id?'bg-white shadow-sm':'text-white/70'}`}
-                style={activeTab===id?{color:PRIMARY}:{}}>
-                {lbl}
-              </button>
-            ))}
-          </div>
+        )}
 
-        </div>
-        {/* Categories removed, moved to filter sheet */}
-        {/* Seller filter chips removed per request */}
-      </div>
+        <NavTabs
+          variant="segmented"
+          tabs={[
+            { id: 'belanja', label: 'Belanja' },
+            { id: 'pesanan', label: 'Pesanan' },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
+      </ScreenHeader>
 
       {/* ── PESANAN TAB (inline, no separate screen) ── */}
       {activeTab==='pesanan' && (
@@ -1966,31 +2008,6 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       )}
       {activeTab==='belanja' && (
         <div className="flex-1 overflow-y-auto no-scrollbar" style={{paddingBottom:totalCart>0?72:16}}>
-          {/* Search and Filter */}
-          <div className="px-3 pt-3">
-            <div className="flex gap-2">
-              <div className="flex-1 flex items-center gap-2 rounded-2xl px-3 py-2.5 transition bg-gray-100 border border-gray-200">
-                <Search size={15} className="text-gray-400 flex-shrink-0"/>
-                <input value={searchQ} onChange={e=>setSearchQ(e.target.value)}
-                  placeholder="Cari produk desa..."
-                  className="flex-1 text-sm text-gray-900 placeholder-gray-400 bg-transparent outline-none"/>
-                {searchQ && (
-                  <button onClick={()=>setSearchQ('')}>
-                    <X size={13} className="text-gray-400"/>
-                  </button>
-                )}
-              </div>
-              <button onClick={()=>setShowSort(true)}
-                className="w-[42px] h-[42px] rounded-2xl flex items-center justify-center flex-shrink-0 transition relative bg-gray-100 border border-gray-200">
-                <SlidersHorizontal size={16} className="text-gray-600"/>
-                {selectedCats.length > 0 && (
-                  <span className="absolute -top-1 -end-1 w-3.5 h-3.5 rounded-full text-white text-[11px] font-bold flex items-center justify-center"
-                    style={{background:'#EF4444',boxShadow:'0 0 0 2px #FFF'}}>{selectedCats.length}</span>
-                )}
-              </button>
-            </div>
-          </div>
-
           {/* Promo banners */}
           <div className="px-3 pt-3 pb-2">
             <div className="rounded-2xl overflow-hidden h-24 relative cursor-pointer"
@@ -2167,6 +2184,6 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
       )}
       <BottomNav active="pasar" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }

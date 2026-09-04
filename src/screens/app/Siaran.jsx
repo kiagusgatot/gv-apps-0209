@@ -1,4 +1,8 @@
 import React, { useState } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
+import SearchBar from '@/components/molecules/SearchBar'
 import { Search, Play, Clock, Sparkles, Tv2, Radio, ArrowLeft as ArrowLeft2, ChevronRight, Lock, X,
   ExternalLink, Bell, Users, Crown, Headphones, CheckCircle,
   Pause, SkipBack, SkipForward, Calendar, MessageCircle, Send,
@@ -1736,43 +1740,40 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
   const handleStopEpisode = () => { setPlayingEp(null); setExpanded(false) }
 
   return (
-    <div className="flex flex-col h-full relative" style={{background:'#FAFBF9'}}>
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
       {/* Search overlay — at root to cover full screen including header */}
       {showSearch && <SearchScreen onClose={()=>setShowSearch(false)} onGVPlus={c=>{setPaywall(c);setShowSearch(false)}} navigate={navigate}/>}
-      {/* Header */}
-      <div className="flex-shrink-0 relative"
-        style={{background:'linear-gradient(155deg,#061A0D 0%,#0C3E1E 55%,#1B6B3A 100%)'}}>
-        <div className="absolute -top-8 -end-8 w-36 h-36 rounded-full pointer-events-none"
-          style={{background:'rgba(255,255,255,0.04)',zIndex:0}}/>
-        <div className="flex items-center justify-between px-4 pt-5 pb-3 relative z-10">
-          <div>
-            <p className="text-[20px] font-extrabold text-white tracking-tight">GV Media</p>
-          </div>
-          <div className="flex gap-2 items-center">
-            <button onClick={()=>setPaywall({title:null})}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition active:scale-[0.96]"
-              style={{background:'linear-gradient(90deg,#F57F17,#F9A825)',boxShadow:'0 2px 8px rgba(249,168,37,0.4)'}}>
-              <Crown size={12} className="text-white"/>
-              <span className="text-white font-extrabold text-[11px]">GV+</span>
-            </button>
-          </div>
-        </div>
-        <div className="px-4 mb-3 mt-1 relative z-10">
-          <button onClick={()=>setShowSearch(true)} className="flex items-center gap-2 w-full px-3.5 py-2.5 rounded-xl" style={{background:'rgba(255,255,255,0.15)'}}>
-            <Search size={15} className="text-white/70"/>
-            <span className="text-[13px] text-white/70">Cari siaran, video, kreator...</span>
+      {/* Unified ScreenHeader */}
+      <ScreenHeader
+        title="GV Media"
+        actions={
+          <button
+            type="button"
+            onClick={() => setPaywall({ title: null })}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 shadow-sm"
+            style={{
+              background: 'linear-gradient(90deg, #F57F17, #F9A825)',
+              boxShadow: '0 2px 8px rgba(249, 168, 37, 0.3)',
+            }}
+          >
+            <Crown size={12} className="text-white" />
+            <span className="text-white font-extrabold text-[11px]">GV+</span>
           </button>
-        </div>
-        <div className="flex overflow-x-auto no-scrollbar px-4 gap-1 pb-0 relative z-10">
-          {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)}
-              className="flex-shrink-0 px-4 py-2.5 text-[12px] font-bold transition"
-              style={tab===t.id?{color:'white',borderBottom:'2.5px solid white'}:{color:'rgba(255,255,255,0.4)',borderBottom:'2.5px solid transparent'}}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+        }
+      >
+        <SearchBar
+          readOnly
+          variant="glass-dark"
+          placeholder="Cari siaran, video, kreator..."
+          onClick={() => setShowSearch(true)}
+        />
+        <NavTabs
+          variant="underline-dark"
+          tabs={TABS}
+          activeTab={tab}
+          onChange={setTab}
+        />
+      </ScreenHeader>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
@@ -1791,7 +1792,7 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
       )}
 
       <BottomNav active="siaran" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }
 

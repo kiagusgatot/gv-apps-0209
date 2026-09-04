@@ -1,4 +1,8 @@
 import React, { useState, useRef } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
+import SearchBar from '@/components/molecules/SearchBar'
 import { ChevronRight, Search, Sparkles, Wheat, ShoppingBag, HeartPulse,
   GraduationCap, Users, Palette, ArrowLeft,
   Plus, Heart, MessageCircle, Send, ChevronDown,
@@ -1531,42 +1535,50 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-0" style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="flex items-center justify-between pt-1 pb-3">
-          <div>
-            <p className="text-[20px] font-extrabold text-white tracking-tight">Komunitas</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={()=>setCreateComm(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition active:scale-[0.96]"
-              style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
-              <Plus size={13} className="text-white/70"/>
-              <span className="text-white/80 font-semibold text-[11px]">Buat Komunitas</span>
-            </button>
-          </div>
-        </div>
-        <button onClick={()=>setShowSearch(true)} className="flex items-center gap-2 w-full px-3.5 py-2.5 rounded-xl mb-3 mt-1" style={{background:'rgba(255,255,255,0.15)'}}>
-          <Search size={15} className="text-white/70"/>
-          <span className="text-[13px] text-white/70">Cari komunitas atau diskusi...</span>
-        </button>
-        <div className="flex gap-1">
-          {[['post','Post'],['mine','Komunitasku'],['explore','Jelajahi']].map(([id,label])=>(
-            <button key={id} onClick={()=>setTab(id)}
-              className="flex-1 py-2.5 text-[12px] font-semibold transition"
-              style={tab===id?{color:'white',borderBottom:'2.5px solid white'}:{color:'rgba(255,255,255,0.45)',borderBottom:'2.5px solid transparent'}}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      {/* Unified ScreenHeader */}
+      <ScreenHeader
+        title="Komunitas"
+        actions={
+          <button
+            type="button"
+            onClick={() => setCreateComm(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 shadow-sm"
+            style={{
+              background: 'rgba(255, 255, 255, 0.14)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Plus size={13} className="text-white/90" />
+            <span className="text-white font-bold text-[11.5px]">Buat Komunitas</span>
+          </button>
+        }
+      >
+        <SearchBar
+          readOnly
+          variant="glass-dark"
+          placeholder="Cari komunitas atau diskusi..."
+          onClick={() => setShowSearch(true)}
+        />
+        <NavTabs
+          variant="underline-dark"
+          tabs={[
+            { id: 'post', label: 'Post' },
+            { id: 'mine', label: 'Komunitasku' },
+            { id: 'explore', label: 'Jelajahi' },
+          ]}
+          activeTab={tab}
+          onChange={setTab}
+        />
+      </ScreenHeader>
 
       {tab==='post' && <PostTab joined={joined} onOpenCommunity={handleOpenCommunity}/>}
       {tab==='mine' && <KomunitaskuTab joined={joined} managedIds={managedIds} onOpenCommunity={handleOpenCommunity} onToggleJoin={handleToggleJoin}/>}
       {tab==='explore' && <JelajahiTab joined={joined} onOpenCommunity={handleOpenCommunity} onToggleJoin={handleToggleJoin}/>}
       {showSearch && <SearchScreen onClose={()=>setShowSearch(false)} navigate={navigate}/>}
       <BottomNav active="komunitas" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }
+

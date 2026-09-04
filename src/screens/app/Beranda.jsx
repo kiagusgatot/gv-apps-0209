@@ -1,5 +1,10 @@
 import React, { useState } from 'react'
 import TanyaGV from '../../components/TanyaGV'
+import AppScreenLayout from '@/components/templates/AppScreenLayout'
+import AppHeader from '@/components/organisms/AppHeader'
+import SearchBar from '@/components/molecules/SearchBar'
+import BerandaBentoGrid from '@/components/organisms/BerandaBentoGrid'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import {
   Search, Bell, ChevronRight, CreditCard, Zap, ArrowRightLeft,
   Tv2, QrCode, Grid3x3, Package, Play, Mic, Receipt, BarChart2, Upload,
@@ -115,10 +120,7 @@ function NotifScreen({ notifs, onClose, navigate }) {
         {notifs.map(n => (
           <div key={n.id} className="flex items-start gap-3 px-5 py-4"
             style={{ background: n.unread ? 'rgba(240,253,244,0.5)' : 'transparent', borderBottom: '1px solid #F3F5F1' }}>
-            <div className="w-10 h-10 rounded-[10px] flex items-center justify-center shadow-inner relative flex-shrink-0 overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${n.g[0]}, ${n.g[1]})` }}>
-              <n.Icon size={20} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} />
-            </div>
+            <SkeuoIcon icon={n.Icon} gradient={n.g} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold leading-snug" style={{ color: '#0F1A13' }}>{n.title}</p>
               <p className="text-[11px] mt-0.5" style={{ color: '#6B7269' }}>{n.sub}</p>
@@ -313,13 +315,7 @@ function MoreModal({ onClose, navigate, userProfile }) {
                   <button key={item.label} onClick={() => { onClose(); navigate(item.to) }}
                     className="flex flex-col items-center gap-1.5 py-3 rounded-2xl active:scale-[0.96] transition spotlight-border"
                     style={{ background: '#FAFBF9', border: '1px solid #E8EBE5' }}>
-                      <div className="w-12 h-12 rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden" 
-                        style={{ 
-                          background: `linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`,
-                          boxShadow: 'inset 0 1.5px 2px rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.06)'
-                        }}>
-                        <item.Icon size={24} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                      </div>
+                    <SkeuoIcon icon={item.Icon} gradient={item.g} size="md" />
                     <span className="text-[9.5px] font-semibold text-center leading-tight px-1" style={{ color: '#3A4038' }}>{item.label}</span>
                   </button>
                 ))}
@@ -434,547 +430,48 @@ export default function Beranda({ navigate, userData, userProfile }) {
       <TanyaGV currentScreen="beranda" navigate={navigate}
         openFromParent={tanyaOpen} onCloseParent={() => setTanyaOpen(false)} />
 
-      <div className="flex-1 overflow-y-auto no-scrollbar">
-
-        {/* ── Header ─────────────────────────────────────── */}
-        <div className="relative overflow-hidden"
-          style={{ background: 'linear-gradient(160deg,#061A0D 0%,#0C3E1E 30%,#1B6B3A 100%)' }}>
-          {/* Ambient glow */}
-          <div className="absolute -top-20 -end-20 w-52 h-52 rounded-full opacity-20"
-            style={{ background: 'radial-gradient(circle, #22c55e 0%, transparent 70%)' }} />
-
-          <div className="relative px-5 pt-5 pb-5">
-            {/* Top row */}
-            <div className="flex items-start justify-between mb-5">
-              <div>
-                <p className="text-[11px] text-white/40 tracking-wide font-medium">{greeting},</p>
-                <p className="text-[18px] font-extrabold text-white leading-tight headline-tight mt-0.5">{p.name}</p>
-                {(isSeller || isCreator || isAdmin) && (
-                  <div className="flex gap-1.5 mt-1.5">
-                    {isSeller && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>Penjual</span>}
-                    {isCreator && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>Kreator</span>}
-                    {isAdmin && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>Admin</span>}
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-2 items-center">
-                <button onClick={() => setTanyaOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl transition active:scale-[0.96]"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <Bot size={13} className="text-white/70" />
-                  <span className="text-white/80 font-semibold text-[11px]">Tanya GV</span>
-                </button>
-                <button onClick={() => setNotif(true)}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center relative active:scale-[0.96] transition-transform"
-                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <Bell size={16} className="text-white/70" />
-                  {unread > 0 && (
-                    <span className="absolute -top-0.5 -end-0.5 w-4 h-4 rounded-full flex items-center justify-center"
-                      style={{ background: '#EF4444', boxShadow: '0 2px 6px rgba(239,68,68,0.4)' }}>
-                      <span className="text-white text-[11px] font-bold">{unread}</span>
-                    </span>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Search Bar */}
-            <button onClick={() => setSearch(true)} className="flex items-center gap-2 w-full px-3.5 py-2.5 rounded-xl mb-4" style={{ background: 'rgba(255,255,255,0.15)' }}>
-              <Search size={15} className="text-white/70" />
-              <span className="text-[13px] text-white/70">Cari di G-Village...</span>
-            </button>
-
-            {/* GV Pay card */}
-            <div className="rounded-2xl px-4 py-4 mb-5"
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(12px)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-              }}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[12px] text-white/40 mb-1 font-medium">Saldo GV Pay</p>
-                  <p className="text-[26px] font-extrabold text-white leading-none tabular-nums headline-display">
-                    {p.balance > 0 ? `Rp ${p.balance.toLocaleString('id')}` : 'Rp 0'}
-                  </p>
-                  {p.points > 0 && (
-                    <p className="text-[12px] text-white/35 mt-1.5 flex items-center gap-1.5 font-medium">
-                      <Star size={10} className="text-yellow-400/70" fill="currentColor" />
-                      {p.points.toLocaleString('id')} GV Poin
-                    </p>
-                  )}
-                </div>
-                <button onClick={() => navigate('bayar')}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-[0.96] transition-transform"
-                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <ChevronRight size={18} className="text-white/60" />
-                </button>
-              </div>
-            </div>
-
-            {/* Shortcuts — 4 icon */}
-            <div className="grid grid-cols-4 gap-3">
-              {shortcuts.map(sc => (
-                <button key={sc.label} onClick={() => handleShortcut(sc)}
-                  className="flex flex-col items-center gap-2 active:scale-[0.96] transition-transform">
-                  <div className="w-12 h-12 rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden"
-                    style={{
-                      background: `linear-gradient(135deg, ${sc.g[0]} 0%, ${sc.g[1]} 100%)`,
-                      boxShadow: 'inset 0 1.5px 2px rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.06)'
-                    }}>
-                    <sc.Icon size={24} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-white/60 text-[12px] font-semibold">{sc.label}</span>
-                </button>
-              ))}
+      <AppScreenLayout
+        bgVariant="main"
+        bgOverlay="dark-scrim"
+        activeTab="beranda"
+        navigate={navigate}
+        showBottomNav={true}
+        header={
+          <div className="pt-1 pb-1">
+            <AppHeader
+              userName={p.name}
+              userRole={userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : isAdmin ? 'Admin' : null)}
+              userColor={userProfile?.color}
+              unreadCount={unread}
+              greeting={greeting}
+              onOpenTanyaGV={() => setTanyaOpen(true)}
+              onOpenNotif={() => setNotif(true)}
+            />
+            <div className="px-4 pb-2">
+              <SearchBar
+                readOnly
+                variant="glass-dark"
+                placeholder="Cari berita, produk ESTO, atau warga..."
+                onClick={() => setSearch(true)}
+              />
             </div>
           </div>
-        </div>
-
-        {/* ═══ BODY — per persona ══════════════════════════ */}
-        <div className="px-4 pt-5 pb-6 flex flex-col gap-5">
-
-          {/* ── WARGA BARU — Onboarding ── */}
-          {isNewUser && (
-            <div>
-              <SectionHead title="Mulai perjalananmu" sub="3 langkah untuk memulai" navigate={navigate} />
-              <div className="flex flex-col gap-2.5">
-                {[
-                  { step: 1, done: false, title: 'Top Up GV Pay', sub: 'Isi saldo untuk mulai bertransaksi', Icon: Plus, g: ['#1B5E20', '#2E7D32'], to: 'bayar' },
-                  { step: 2, done: false, title: 'Bergabung komunitas', sub: 'Temukan warga desa di sekitarmu', Icon: MessageCircle, g: ['#0D47A1', '#1976D2'], to: 'komunitas' },
-                  { step: 3, done: false, title: 'Jelajahi produk ESTO', sub: 'Belanja dari penjual lokal desa', Icon: ShoppingCart, g: ['#E65100', '#F57C00'], to: 'pasar' },
-                ].map(s => (
-                  <button key={s.step} onClick={() => navigate(s.to)}
-                    className="flex items-center gap-3 p-4 rounded-2xl text-left active:scale-[0.96] transition spotlight-border"
-                    style={{ background: '#fff', boxShadow: S.card }}>
-                    {s.done ? (
-                      <div className="w-12 h-12 rounded-[16px] flex items-center justify-center flex-shrink-0" style={{ background: '#E8F5E9' }}>
-                        <Check size={24} style={{ color: '#2E7D32' }} strokeWidth={1.5} />
-                      </div>
-                    ) : (
-                      <div className="w-12 h-12 rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden" 
-                        style={{ 
-                          background: `linear-gradient(135deg, ${s.g[0]} 0%, ${s.g[1]} 100%)`,
-                          boxShadow: 'inset 0 1.5px 2px rgba(255,255,255,0.25), inset 0 -2px 5px rgba(0,0,0,0.15), 0 4px 10px rgba(0,0,0,0.06)'
-                        }}>
-                        <s.Icon size={24} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <p className="text-[13px] font-bold" style={{ color: '#0F1A13' }}>{s.title}</p>
-                      <p className="text-[11px] mt-0.5" style={{ color: '#9CA39A' }}>{s.sub}</p>
-                    </div>
-                    <ChevronRight size={16} style={{ color: '#D4D8D0' }} className="flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── URGENCY CARD ── */}
-          {(() => {
-            if (isSuperAdmin) return (
-              <div className="flex flex-col gap-2">
-                {p.adminStats?.pendingReports > 0 && (
-                  <button onClick={() => navigate('komunitas')}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left w-full active:scale-[0.96] transition-transform"
-                    style={{ background: 'linear-gradient(135deg,#6A1B9A,#8E24AA)', boxShadow: '0 4px 16px rgba(106,27,154,0.25)' }}>
-                    <AlertCircle size={18} className="text-white flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-[12px] font-bold text-white">{p.adminStats.pendingReports} laporan menunggu moderasi</p>
-                      <p className="text-[12px] text-white/70 mt-0.5">Komunitas · perlu ditindaklanjuti</p>
-                    </div>
-                    <ChevronRight size={16} className="text-white/60" />
-                  </button>
-                )}
-                {p.urgentOrders > 0 && (
-                  <button onClick={() => navigate('pasar-toko')}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left w-full active:scale-[0.96] transition-transform"
-                    style={{ background: 'linear-gradient(135deg,#F57F17,#F9A825)', boxShadow: '0 4px 16px rgba(245,127,23,0.25)' }}>
-                    <Package size={18} className="text-white flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-[12px] font-bold text-white">{p.urgentOrders} pesanan menunggu konfirmasi</p>
-                      <p className="text-[12px] text-white/70 mt-0.5">ESTO · konfirmasi sebelum jam 12.00</p>
-                    </div>
-                    <ChevronRight size={16} className="text-white/60" />
-                  </button>
-                )}
-                {p.studioStats?.pendingContent > 0 && (
-                  <button onClick={() => navigate('studio')}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left w-full active:scale-[0.96] transition-transform"
-                    style={{ background: 'linear-gradient(135deg,#E65100,#F4511E)', boxShadow: '0 4px 16px rgba(230,81,0,0.25)' }}>
-                    <Clock size={18} className="text-white flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-[12px] font-bold text-white">{p.studioStats.pendingContent} video sedang direview</p>
-                      <p className="text-[12px] text-white/70 mt-0.5">Studio · estimasi tayang 2 jam</p>
-                    </div>
-                    <ChevronRight size={16} className="text-white/60" />
-                  </button>
-                )}
-              </div>
-            )
-            if (isAdmin && p.adminStats?.pendingReports > 0) return (
-              <button onClick={() => navigate('komunitas')}
-                className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left active:scale-[0.96] transition-transform w-full"
-                style={{ background: 'linear-gradient(135deg,#6A1B9A,#8E24AA)', boxShadow: '0 4px 16px rgba(106,27,154,0.25)' }}>
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                  <AlertCircle size={20} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold text-white">{p.adminStats.pendingReports} laporan menunggu tindakanmu</p>
-                  <p className="text-[12px] text-white/70 mt-0.5">Tinjau dan moderasi komunitas</p>
-                </div>
-                <ChevronRight size={18} className="text-white/60" />
-              </button>
-            )
-            if (p.urgentOrders > 0) return (
-              <button onClick={() => navigate('pasar-toko')}
-                className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left active:scale-[0.96] transition-transform w-full"
-                style={{ background: 'linear-gradient(135deg,#F57F17,#F9A825)', boxShadow: '0 4px 16px rgba(245,127,23,0.25)' }}>
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                  <Package size={20} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold text-white">{p.urgentOrders} pesanan menunggu konfirmasi</p>
-                  <p className="text-[12px] text-white/70 mt-0.5">Konfirmasi sebelum jam 12.00</p>
-                </div>
-                <ChevronRight size={18} className="text-white/60" />
-              </button>
-            )
-            if (p.hasActiveOrder) return (
-              <button onClick={() => navigate('pasar-pesanan')}
-                className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left active:scale-[0.96] transition-transform w-full"
-                style={{ background: 'linear-gradient(135deg,#1565C0,#1976D2)', boxShadow: '0 4px 16px rgba(21,101,192,0.25)' }}>
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                  <Package size={20} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold text-white">Pesanan dalam perjalanan</p>
-                  <p className="text-[12px] text-white/70 mt-0.5">Estimasi tiba hari ini</p>
-                </div>
-                <ChevronRight size={18} className="text-white/60" />
-              </button>
-            )
-            if (p.studioStats?.pendingContent > 0) return (
-              <button onClick={() => navigate('studio')}
-                className="flex items-center gap-3 rounded-2xl px-4 py-4 text-left active:scale-[0.96] transition-transform w-full"
-                style={{ background: 'linear-gradient(135deg,#E65100,#F4511E)', boxShadow: '0 4px 16px rgba(230,81,0,0.25)' }}>
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(255,255,255,0.2)' }}>
-                  <Clock size={20} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[13px] font-bold text-white">{p.studioStats.pendingContent} video sedang direview</p>
-                  <p className="text-[12px] text-white/70 mt-0.5">Estimasi tayang dalam 2 jam</p>
-                </div>
-                <ChevronRight size={18} className="text-white/60" />
-              </button>
-            )
-            return null
-          })()}
-
-          {/* ── SUPER ADMIN WIDGET ── */}
-          {isSuperAdmin && (
-            <div>
-              <p className="text-[11px] font-bold text-[#9CA39A] uppercase tracking-wider mb-3">Dashboard</p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {[
-                  { label: 'Pesanan Toko', val: String(p.urgentOrders || 0), sub: 'Menunggu konfirmasi', g: ['#F57F17', '#F9A825'], to: 'pasar-toko' },
-                  { label: 'Laporan', val: String(p.adminStats?.pendingReports || 0), sub: 'Perlu moderasi', g: ['#6A1B9A', '#8E24AA'], to: 'komunitas' },
-                  { label: 'Video Review', val: String(p.studioStats?.pendingContent || 0), sub: 'Sedang diproses', g: ['#E65100', '#F4511E'], to: 'studio' },
-                  { label: 'Total Anggota', val: p.adminStats?.totalMembers || '0', sub: 'Di semua komunitas', g: ['#1B6B3A', '#2E7D32'], to: 'komunitas' },
-                ].map(w => (
-                  <button key={w.label} onClick={() => navigate(w.to)}
-                    className="rounded-2xl p-4 text-left active:scale-[0.96] transition-transform"
-                    style={{
-                      background: `linear-gradient(145deg,${w.g[0]},${w.g[1]})`,
-                      boxShadow: `0 4px 16px ${w.g[0]}30`
-                    }}>
-                    <p className="text-white text-[24px] font-extrabold leading-none mb-1 tabular-nums headline-display">{w.val}</p>
-                    <p className="text-white font-bold text-[11px]">{w.label}</p>
-                    <p className="text-white/50 text-[11px] mt-0.5">{w.sub}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── CAPABILITY WIDGET ── */}
-          {isSeller && !isSuperAdmin && p.tokoStats && (
-            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: S.cardMd }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #F3F5F1' }}>
-                <span className="text-[12px] font-bold flex items-center gap-1.5" style={{ color: PRIMARY }}>
-                  <Package size={14} /> Toko hari ini
-                </span>
-                <button onClick={() => navigate('pasar-toko')}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg active:scale-[0.96] transition-transform"
-                  style={{ background: '#E8F5E9', color: '#1B5E20' }}>Buka Toko →</button>
-              </div>
-              <div className="flex divide-x divide-surface-100">
-                {[['Pesanan baru', p.tokoStats.orders], ['Omzet', `Rp ${Math.round(p.tokoStats.revenue / 1000)}rb`], ['Produk', p.tokoStats.products]].map(([l, v]) => (
-                  <div key={l} className="flex-1 text-center py-4">
-                    <p className="text-[17px] font-extrabold text-[#0F1A13] tabular-nums">{v}</p>
-                    <p className="text-[11px] text-[#9CA39A] mt-0.5 font-medium">{l}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {isCreator && !isSuperAdmin && p.studioStats && (
-            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: S.cardMd }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #F3F5F1' }}>
-                <span className="text-[12px] font-bold flex items-center gap-1.5" style={{ color: '#BF360C' }}>
-                  <VideoIcon size={14} /> Studio saya
-                </span>
-                <button onClick={() => navigate('studio')}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg active:scale-[0.96] transition-transform"
-                  style={{ background: '#FFEBEE', color: '#BF360C' }}>Buka Studio →</button>
-              </div>
-              <div className="flex divide-x divide-surface-100">
-                {[['Ditonton', p.studioStats.views?.toLocaleString('id')], ['Poin', p.studioStats.points], ['Konten', p.studioStats.content]].map(([l, v]) => (
-                  <div key={l} className="flex-1 text-center py-4">
-                    <p className="text-[17px] font-extrabold text-[#0F1A13] tabular-nums">{v}</p>
-                    <p className="text-[11px] text-[#9CA39A] mt-0.5 font-medium">{l}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {isAdmin && !isSuperAdmin && p.adminStats && (
-            <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: S.cardMd }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #F3F5F1' }}>
-                <span className="text-[12px] font-bold flex items-center gap-1.5" style={{ color: '#6A1B9A' }}>
-                  <Users size={14} /> Admin Komunitas
-                </span>
-                <button onClick={() => navigate('komunitas')}
-                  className="text-[12px] font-bold px-2.5 py-1 rounded-lg active:scale-[0.96] transition-transform"
-                  style={{ background: '#F3E5F5', color: '#6A1B9A' }}>Kelola →</button>
-              </div>
-              <div className="flex divide-x divide-surface-100">
-                {[['Komunitas', p.adminStats.communities], ['Anggota', p.adminStats.totalMembers], ['Thread', p.adminStats.threads]].map(([l, v]) => (
-                  <div key={l} className="flex-1 text-center py-4">
-                    <p className="text-[17px] font-extrabold text-[#0F1A13] tabular-nums">{v}</p>
-                    <p className="text-[11px] text-[#9CA39A] mt-0.5 font-medium">{l}</p>
-                  </div>
-                ))}
-              </div>
-              {p.adminStats.pendingReports > 0 && (
-                <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: '#FAF5FF', borderTop: '1px solid #F3E5F5' }}>
-                  <span className="text-[11px] font-semibold" style={{ color: '#6A1B9A' }}>⚠️ {p.adminStats.pendingReports} laporan perlu ditinjau</span>
-                  <button onClick={() => navigate('komunitas')}
-                    className="text-[12px] font-bold px-2.5 py-1 rounded-lg text-white active:scale-[0.96] transition-transform" style={{ background: '#6A1B9A' }}>Tinjau</button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── TAGIHAN AKTIF — hanya Warga Aktif & Penjual ── */}
-          {p.hasActiveBills && !isCreator && !isAdmin && (
-            <div>
-              <SectionHead title="Tagihan aktif" to="bayar" navigate={navigate} />
-              <div className="rounded-2xl overflow-hidden bg-white" style={{ boxShadow: S.card }}>
-                {[
-                  { name: 'Listrik PLN', due: '20 Agt', amount: 145000, urgent: true, Icon: Zap, bg: '#FFF3E0', ic: '#E65100', to: 'bayar' },
-                  { name: 'PDAM Air', due: '25 Agt', amount: 78000, urgent: false, Icon: Droplets, bg: '#E3F2FD', ic: '#1565C0', to: 'bayar' },
-                ].map((t, i) => (
-                  <div key={t.name} className={`flex items-center gap-3 px-4 py-3.5 ${i === 0 ? 'border-b border-surface-100' : ''}`}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: t.bg }}>
-                      <t.Icon size={16} style={{ color: t.ic }} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[13px] font-semibold text-[#0F1A13]">{t.name}</p>
-                      <p className={`text-[12px] mt-0.5 ${t.urgent ? 'text-red-500 font-medium' : 'text-[#9CA39A]'}`}>
-                        {t.urgent ? '⚠️ ' : ''}{t.urgent ? 'Jatuh tempo ' : ''}{t.due} · Rp {t.amount.toLocaleString('id')}
-                      </p>
-                    </div>
-                    <button onClick={() => navigate('bayar')}
-                      className="px-3.5 py-2 rounded-xl text-[11px] font-bold text-white flex-shrink-0 active:scale-[0.96] transition-transform"
-                      style={{
-                        background: `linear-gradient(135deg, ${PRIMARY}, #15803d)`,
-                        boxShadow: '0 2px 8px rgba(27,107,58,0.2)'
-                      }}>Bayar</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── KOMUNITAS — thread aktif ── */}
-          {!isNewUser && (
-            <div>
-              <SectionHead
-                title={isAdmin ? 'Komunitas dikelola' : 'Di komunitasmu'}
-                sub={isAdmin ? 'Pantau aktivitas & moderasi' : 'Diskusi terbaru'}
-                to="komunitas" navigate={navigate} />
-              {isAdmin ? (
-                <div className="flex flex-col gap-2.5">
-                  {[
-                    { name: 'Komunitas Tani', members: '12.4rb', Icon: Wheat, bg: '#E8F5E9', ic: '#2E7D32', reports: 2 },
-                    { name: 'Komunitas Pemuda', members: '4.2rb', Icon: GraduationCap, bg: '#E3F2FD', ic: '#1565C0', reports: 1 },
-                  ].map(k => (
-                    <button key={k.name} onClick={() => navigate('komunitas')}
-                      className="flex items-center gap-3 rounded-2xl px-4 py-3.5 text-left active:scale-[0.96] transition-transform spotlight-border"
-                      style={{ background: '#fff', boxShadow: S.card, borderInlineStart: `3px solid ${k.ic}` }}>
-                      <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: k.bg }}>
-                        <k.Icon size={18} style={{ color: k.ic }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-[#0F1A13]">{k.name}</p>
-                        <p className="text-[12px] text-[#9CA39A]">{k.members} anggota</p>
-                      </div>
-                      {k.reports > 0 && (
-                        <span className="text-[11px] font-bold px-2 py-1 rounded-full text-white flex-shrink-0"
-                          style={{ background: '#C62828' }}>{k.reports} laporan</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2.5">
-                  {threads.map(t => (
-                    <button key={t.id} onClick={() => navigate('komunitas')}
-                      className="rounded-2xl px-4 py-3.5 text-left active:scale-[0.96] transition-transform spotlight-border"
-                      style={{ background: '#fff', boxShadow: S.card, borderInlineStart: `3px solid ${t.ic}` }}>
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <div className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0" style={{ background: t.bg }}>
-                          <t.Icon size={9} style={{ color: t.ic }} />
-                        </div>
-                        <span className="text-[9.5px] font-bold" style={{ color: t.ic }}>{t.community}</span>
-                        <span className="text-[#D4D8D0]">·</span>
-                        <span className="text-[11px] text-[#9CA39A]">{t.time} lalu</span>
-                      </div>
-                      <p className="text-[12.5px] font-semibold text-[#0F1A13] leading-snug mb-2">{t.text}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[9.5px] text-[#9CA39A]">💬 {t.replies}</span>
-                        <span className="text-[9.5px] text-[#9CA39A]">❤️ {t.likes}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── PRODUK ESTO ── */}
-          {!isNewUser && (
-            <div>
-              <SectionHead
-                title="Produk dari desamu"
-                sub={isSuperAdmin || isSeller ? 'Kebutuhan usaha & UMKM' : isCreator ? 'Perlengkapan kreator lokal' : 'Langsung dari petani & penjual desa'}
-                to="pasar" navigate={navigate} />
-              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
-                {(isSuperAdmin || isSeller ? ESTO_PRODUCTS.penjual : isCreator ? ESTO_PRODUCTS.kreator : ESTO_PRODUCTS.default).map(prod => (
-                  <button key={prod.id} onClick={() => navigate('pasar')}
-                    className="flex-shrink-0 w-36 bg-white rounded-2xl overflow-hidden text-left active:scale-[0.96] transition-transform spotlight-border"
-                    style={{ boxShadow: S.card }}>
-                    <div className="h-24 flex items-center justify-center relative bg-surface-100">
-                      {prod.image ? (
-                        <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shadow-inner" style={{ background: `linear-gradient(135deg, ${prod.g[0]} 0%, ${prod.g[1]} 100%)` }}>
-                          <prod.Icon size={24} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="px-2.5 pt-2 pb-3">
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md mb-1 inline-block"
-                        style={{ background: `${prod.g[0]}22`, color: prod.g[1] }}>{prod.cat}</span>
-                      <p className="text-[11px] font-bold text-[#0F1A13] leading-snug line-clamp-2 mb-1">{prod.name}</p>
-                      <p className="text-[12px] text-[#9CA39A] mb-1.5">{prod.seller}</p>
-                      <p className="text-[13px] font-extrabold tabular-nums" style={{ color: PRIMARY }}>Rp {prod.price.toLocaleString('id')}</p>
-                    </div>
-                  </button>
-                ))}
-                {/* Lihat semua card */}
-                <button onClick={() => navigate('pasar')}
-                  className="flex-shrink-0 w-24 bg-white rounded-2xl flex flex-col items-center justify-center gap-2 active:scale-[0.96] transition-transform"
-                  style={{ boxShadow: S.card }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ background: `${PRIMARY}12` }}>
-                    <ChevronRight size={18} style={{ color: PRIMARY }} />
-                  </div>
-                  <p className="text-[12px] font-bold text-center leading-tight" style={{ color: PRIMARY }}>Lihat Semua</p>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── REKOMENDASI KONTEN — per persona ── */}
-          {(isCreator || isSeller || !isNewUser) && (
-            <div>
-              <SectionHead
-                title="Rekomendasi untukmu"
-                sub={isSeller ? 'Konten untuk penjual' : isCreator ? 'Inspirasi kreator' : 'Konten pilihan minggu ini'}
-                to="siaran" navigate={navigate} />
-              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
-                {(isCreator ? REKOM_CREATOR : isSeller ? REKOM_SELLER : REKOM_DEFAULT).map((r, i) => (
-                  <button key={i} onClick={() => navigate('siaran')}
-                    className="flex-shrink-0 w-36 rounded-2xl overflow-hidden text-left active:scale-[0.96] transition-transform bg-white spotlight-border"
-                    style={{ boxShadow: S.card }}>
-                    <div className="h-20 flex items-center justify-center relative bg-surface-100">
-                      {r.image ? (
-                        <img src={r.image} alt={r.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="absolute inset-0" style={{ background: `linear-gradient(145deg,${r.g[0]},${r.g[1]})` }} />
-                      )}
-                      
-                      <div className="absolute inset-0 bg-black/10" />
-                      <div className="relative z-10 p-1.5 rounded-full" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)' }}>
-                        {r.type === 'VOD'
-                          ? <Play size={18} className="text-white" style={{ fill: 'rgba(255,255,255,0.8)' }} />
-                          : <Mic size={18} className="text-white" />}
-                      </div>
-
-                      <span className="absolute top-2 start-2 text-[11px] font-bold text-white px-1.5 py-0.5 rounded-md z-10"
-                        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>{r.type}</span>
-                    </div>
-                    <div className="p-2.5">
-                      <p className="text-[12px] font-bold text-[#0F1A13] leading-snug line-clamp-2 mb-1">{r.title}</p>
-                      <p className="text-[11px] text-[#9CA39A] tabular-nums">{r.dur}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── SEDANG TAYANG — selaras data Siaran ── */}
-          <div>
-            <SectionHead title="Sedang tayang" sub="Live sekarang di GV Media" to="siaran" navigate={navigate} />
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 -mx-4 px-4">
-              {LIVE_CHANNELS.map(ch => (
-                <button key={ch.id} onClick={() => navigate('siaran')}
-                  className="flex-shrink-0 w-40 rounded-2xl overflow-hidden text-left active:scale-[0.96] transition-transform bg-white spotlight-border"
-                  style={{ boxShadow: S.cardMd }}>
-                  <div className="flex items-center justify-center relative bg-surface-100" style={{ height: 72 }}>
-                    {ch.image ? (
-                      <img src={ch.image} alt={ch.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0" style={{ background: `linear-gradient(145deg,${ch.g[0]},${ch.g[1]})` }} />
-                    )}
-                    <div className="absolute inset-0 bg-black/20" />
-                    <ch.Icon size={24} className="text-white/70 relative z-10" />
-                    <span className="absolute top-2 start-2 flex items-center gap-1 text-white text-[11px] font-extrabold px-1.5 py-0.5 rounded-md z-10"
-                      style={{ background: 'rgba(229,57,53,0.9)', boxShadow: '0 2px 6px rgba(229,57,53,0.3)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse inline-block" />LIVE
-                    </span>
-                    <span className="absolute top-2 end-2 text-[11px] text-white font-semibold px-1.5 py-0.5 rounded-md z-10"
-                      style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>{ch.type}</span>
-                  </div>
-                  <div className="p-3">
-                    <p className="text-[11px] font-bold text-[#0F1A13] line-clamp-2">{ch.name}</p>
-                    <p className="text-[9.5px] text-[#6B7269] line-clamp-2 mt-0.5">{ch.prog}</p>
-                    <p className="text-[11px] text-[#9CA39A] mt-1 tabular-nums">{ch.viewers} penonton</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <BottomNav active="beranda" navigate={navigate} />
+        }
+      >
+        <BerandaBentoGrid
+          userProfile={userProfile}
+          userData={userData}
+          navigate={navigate}
+          onOpenQris={() => setQris(true)}
+          onOpenMore={() => setMore(true)}
+          onOpenTanyaGV={() => setTanyaOpen(true)}
+          liveChannels={LIVE_CHANNELS}
+          estoProducts={isSuperAdmin || isSeller ? ESTO_PRODUCTS.penjual : isCreator ? ESTO_PRODUCTS.kreator : ESTO_PRODUCTS.default}
+          threads={threads}
+          rekomendasi={isCreator ? REKOM_CREATOR : isSeller ? REKOM_SELLER : REKOM_DEFAULT}
+        />
+      </AppScreenLayout>
     </div>
   )
 }
+

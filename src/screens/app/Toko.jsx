@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
 import { ArrowLeft, Plus, Pencil, Check, Wheat, Leaf, Egg, User, UserCheck, Package } from 'lucide-react'
 import TanyaGV from '../../components/TanyaGV'
 import BottomNav from '../../components/BottomNav'
@@ -144,21 +147,12 @@ export default function Toko({ navigate }) {
     : selProdsData.filter(p=>p.stock===0)
 
   return (
-    <div className="flex flex-col h-full bg-[#FAFBF9]">
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
       {/* ── HEADER ── */}
-      <div className="flex-shrink-0 relative overflow-hidden"
-        style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="flex items-center justify-between px-4 pt-5 pb-4 relative z-10">
-          <div className="flex items-center">
-            <button onClick={()=>navigate('profile')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center me-3 flex-shrink-0 transition active:scale-[0.96]"
-              style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
-              <ArrowLeft size={16} className="text-white/70"/>
-            </button>
-            <p className="font-extrabold text-white text-[20px] tracking-tight leading-tight">Toko Saya</p>
-          </div>
-        </div>
-      </div>
+      <ScreenHeader
+        title="Toko Saya"
+        onBack={() => navigate('profile')}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* Seller Order Sheet */}
@@ -183,19 +177,20 @@ export default function Toko({ navigate }) {
         </div>
         
         {/* Sub-tabs */}
-        <div className="flex border-b border-gray-100 bg-white flex-shrink-0">
-          {[['orders','Pesanan Masuk'],['all','Produk Saya']].map(([id,lbl])=>(
-            <button key={id} onClick={()=>setSelFilter(id)}
-              className="flex-1 py-2.5 text-[12px] font-semibold transition relative"
-              style={selFilter===id?{color:PRIMARY,borderBottom:`2.5px solid ${PRIMARY}`}:{color:'#9CA3AF',borderBottom:'2.5px solid transparent'}}>
-              {lbl}
-              {id==='orders'&&sellerOrders.filter(o=>o.status==='waiting').length>0&&(
-                <span className="ms-1.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-red-500 text-white">
-                  {sellerOrders.filter(o=>o.status==='waiting').length}
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="bg-white border-b border-gray-100 px-2 flex-shrink-0">
+          <NavTabs
+            variant="underline-light"
+            tabs={[
+              {
+                id: 'orders',
+                label: 'Pesanan Masuk',
+                count: sellerOrders.filter(o=>o.status==='waiting').length,
+              },
+              { id: 'all', label: 'Produk Saya' },
+            ]}
+            activeTab={selFilter}
+            onChange={setSelFilter}
+          />
         </div>
 
         {/* Pesanan Masuk */}
@@ -295,6 +290,6 @@ export default function Toko({ navigate }) {
       <TanyaGV currentScreen="toko" navigate={navigate}
         openFromParent={tanyaOpen} onCloseParent={()=>setTanyaOpen(false)}/>
       <BottomNav active="profile" navigate={navigate}/>
-    </div>
+    </ScreenBackground>
   )
 }

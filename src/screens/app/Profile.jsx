@@ -1,9 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
+import ScreenBackground from '@/components/atoms/ScreenBackground'
 import { ChevronRight, Award, HelpCircle, LogOut, Shield, Bell,
   Store, Tv2, MapPin, Crown, CheckCircle, X, ChevronDown,
   ChevronUp, Globe, Trash2, Camera, Star, Gift, Zap, Package,
   ToggleLeft, ToggleRight, ArrowLeft, Check, Plus, Edit3,
-  Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone } from 'lucide-react'
+  Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone,
+  Sparkles, Clapperboard } from 'lucide-react'
+import ScreenHeader from '@/components/molecules/ScreenHeader'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
+import NavTabs from '@/components/molecules/NavTabs'
 import BottomNav from '../../components/BottomNav'
 import TanyaGV from '../../components/TanyaGV'
 import AdsSubmissionForm from '../../components/ads/AdsSubmissionForm'
@@ -16,20 +21,7 @@ const S = { card: '0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)' }
 function SubScreen({ title, onBack, children, actions, navigate }) {
   return (
     <div className="flex flex-col h-full bg-[#FAFBF9]">
-      <div className="flex-shrink-0 relative overflow-hidden"
-        style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-        <div className="flex items-center justify-between px-4 pt-5 pb-4 relative z-10">
-          <div className="flex items-center">
-            <button onClick={onBack}
-              className="w-9 h-9 rounded-xl flex items-center justify-center me-3 flex-shrink-0 transition active:scale-[0.96]"
-              style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
-              <ArrowLeft size={16} className="text-white/70"/>
-            </button>
-            <p className="font-extrabold text-white text-[20px] tracking-tight leading-tight">{title}</p>
-          </div>
-          {actions}
-        </div>
-      </div>
+      <ScreenHeader title={title} onBack={onBack} actions={actions} />
       <div className="flex-1 overflow-y-auto no-scrollbar">{children}</div>
       {navigate && <BottomNav active="profile" navigate={navigate}/>}
     </div>
@@ -218,14 +210,16 @@ function GVPoinScreen({ points=1240, onBack, navigate }) {
         </div>
       </div>
       {/* Tabs */}
-      <div className="flex bg-white border-b border-gray-100 mx-4 rounded-2xl mb-4 overflow-hidden">
-        {[['tukar','Tukar Poin'],['riwayat','Riwayat']].map(([id,lbl])=>(
-          <button key={id} onClick={()=>setTab(id)}
-            className="flex-1 py-2.5 text-[12px] font-bold transition"
-            style={tab===id?{color:PRIMARY,background:`${PRIMARY}08`}:{color:'#9CA3AF'}}>
-            {lbl}
-          </button>
-        ))}
+      <div className="mx-4 mb-4">
+        <NavTabs
+          variant="segmented-light"
+          tabs={[
+            { id: 'tukar', label: 'Tukar Poin' },
+            { id: 'riwayat', label: 'Riwayat Poin' },
+          ]}
+          activeTab={tab}
+          onChange={setTab}
+        />
       </div>
       {tab==='tukar' ? (
         <div className="grid grid-cols-2 gap-3 px-4 pb-6">
@@ -1028,29 +1022,16 @@ function IklanBarisScreen({ onBack, navigate }) {
 
   return (
     <SubScreen title="Iklan Baris" onBack={onBack} navigate={navigate}>
-      <div className="bg-white border-b border-surface-200 sticky top-0 z-10">
-        <div className="flex px-4">
-          <button
-            className={`flex-1 py-3.5 text-[13px] font-bold text-center border-b-[2.5px] transition-colors ${
-              activeTab === 'buat'
-                ? 'border-brand text-brand'
-                : 'border-transparent text-surface-500 hover:text-surface-700'
-            }`}
-            onClick={() => setActiveTab('buat')}
-          >
-            Buat Iklan
-          </button>
-          <button
-            className={`flex-1 py-3.5 text-[13px] font-bold text-center border-b-[2.5px] transition-colors ${
-              activeTab === 'riwayat'
-                ? 'border-brand text-brand'
-                : 'border-transparent text-surface-500 hover:text-surface-700'
-            }`}
-            onClick={() => setActiveTab('riwayat')}
-          >
-            Riwayat Iklan
-          </button>
-        </div>
+      <div className="bg-white sticky top-0 z-10 px-2">
+        <NavTabs
+          variant="underline-light"
+          tabs={[
+            { id: 'buat', label: 'Buat Iklan' },
+            { id: 'riwayat', label: 'Riwayat Iklan' },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
       </div>
       
       <div className="p-4 flex flex-col gap-4 min-h-[500px]">
@@ -1103,12 +1084,12 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   } else if (appStatus === 'pending') {
     creatorSub = 'Pengajuan sedang ditinjau'
     creatorBadge = 'Ditinjau'
-    creatorBadgeColor = '#E65100' // Using same orange as Nonaktif for consistency
+    creatorBadgeColor = '#E65100'
     creatorBadgeBg = '#FFF3E0'
   } else if (appStatus === 'revision') {
     creatorSub = 'Pengajuan perlu diperbaiki'
     creatorBadge = 'Perlu Perbaikan'
-    creatorBadgeColor = '#E65100' // Same orange
+    creatorBadgeColor = '#E65100'
     creatorBadgeBg = '#FFF3E0'
   }
 
@@ -1137,138 +1118,286 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   }
 
   // ── Main screen ──
-  const MENU = [
-    { section:'Akun', items:[
-      { label:'Edit Profil',    sub:'Ubah foto, nama, dan bio',           to:'edit-profil'  },
-      { label:'Notifikasi',     sub:'Atur jenis pemberitahuan',           to:'notifikasi'   },
-      { label:'Pengaturan',     sub:'Bahasa, privasi, keamanan',          to:'pengaturan'   },
-    ]},
-    { section:'Fitur', items:[
-      { 
-        label:'Toko Saya',  
-        sub: sellerSub,
-        to: isSeller ? 'toko' : 'aktivasi-penjual',      
-        nav: isSeller, 
-        badge: sellerBadge,
-        badgeColor: sellerBadgeColor,
-        badgeBg: sellerBadgeBg
-      },
-      { 
-        label:'Kreator GV',  
-        sub: creatorSub,
-        to:'studio',      
-        nav:true, 
-        badge: creatorBadge,
-        badgeColor: creatorBadgeColor,
-        badgeBg: creatorBadgeBg
-      },
-      { label:'Iklan Baris',      sub:'Pasang iklan & kelola iklan',           to:'iklan-baris', nav:false },
-      { label:'GV+',              sub:'Konten premium tanpa iklan',            to:'gvplus'       },
-    ]},
-    { section:'Lainnya', items:[
-      { label:'Bantuan & FAQ',  sub:'Pusat bantuan G-Village',            to:'bantuan'      },
-      { label:'Keluar',         sub:'Keluar dari akun ini',               to:'logout', danger:true },
-    ]},
+  const MENU_SECTIONS = [
+    {
+      section: 'Fitur & Bisnis Desa',
+      items: [
+        { 
+          label: 'Toko Saya',  
+          sub: sellerSub,
+          to: isSeller ? 'toko' : 'aktivasi-penjual',      
+          nav: isSeller, 
+          badge: sellerBadge,
+          badgeColor: sellerBadgeColor,
+          badgeBg: sellerBadgeBg,
+          Icon: Store,
+          g: ['#E65100', '#F57C00'],
+        },
+        { 
+          label: 'Kreator GV',  
+          sub: creatorSub,
+          to: 'studio',      
+          nav: true, 
+          badge: creatorBadge,
+          badgeColor: creatorBadgeColor,
+          badgeBg: creatorBadgeBg,
+          Icon: Clapperboard,
+          g: ['#4A148C', '#7B1FA2'],
+        },
+        { 
+          label: 'Iklan Baris',      
+          sub: 'Pasang iklan produk & jasa warga',           
+          to: 'iklan-baris', 
+          nav: false,
+          Icon: Megaphone,
+          g: ['#0D47A1', '#1976D2'],
+        },
+        { 
+          label: 'GV+ Premium',              
+          sub: 'Siaran & video eksklusif tanpa iklan',            
+          to: 'gvplus',
+          badge: 'GV+',
+          badgeColor: '#fff',
+          badgeBg: 'linear-gradient(90deg, #F57F17, #F9A825)',
+          Icon: Crown,
+          g: ['#F57F17', '#FBC02D'],
+        },
+      ]
+    },
+    {
+      section: 'Akun & Preferensi',
+      items: [
+        { label: 'Edit Profil', sub: 'Ubah foto profil, nama, dan info desa', to: 'edit-profil', Icon: Edit3, g: ['#00695C', '#00897B'] },
+        { label: 'Notifikasi', sub: 'Atur jenis notifikasi & pemberitahuan', to: 'notifikasi', Icon: Bell, g: ['#C62828', '#E53935'] },
+        { label: 'Pengaturan & Keamanan', sub: 'Bahasa, privasi, PIN GV Pay & keamanan', to: 'pengaturan', Icon: Settings, g: ['#37474F', '#546E7A'] },
+      ]
+    },
+    {
+      section: 'Bantuan & Informasi',
+      items: [
+        { label: 'Tanya GV (AI Desa)', sub: 'Bantuan instan dari asisten cerdas', to: 'tanya-gv', Icon: Sparkles, g: ['#1B5E20', '#2E7D32'] },
+        { label: 'Pusat Bantuan & FAQ', sub: 'Panduan penggunaan & kendala aplikasi', to: 'bantuan', Icon: HelpCircle, g: ['#1565C0', '#1E88E5'] },
+      ]
+    },
   ]
 
   return (
-    <div className="flex flex-col h-full relative" style={{background:'#FAFBF9'}}>
-      <TanyaGV currentScreen="profile" navigate={navigate}
-        openFromParent={tanyaOpen} onCloseParent={()=>setTanyaOpen(false)}/>
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      <TanyaGV
+        currentScreen="profile"
+        navigate={navigate}
+        openFromParent={tanyaOpen}
+        onCloseParent={() => setTanyaOpen(false)}
+      />
 
-      <div className="flex-1 overflow-y-auto no-scrollbar">
-        {/* Header */}
-        <div className="relative px-4 pt-5 pb-6 overflow-hidden"
-          style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
-          <div className="absolute pointer-events-none" style={{top:'-20%',right:'-10%',width:'60%',height:'60%',background:'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)'}}/>
-          <div className="relative flex items-center mb-5">
-            <p className="text-[20px] font-extrabold text-white tracking-tight">Profil Saya</p>
+      {/* ── Standard Screen Header matching other screens ── */}
+      <ScreenHeader
+        title="Profil Saya"
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => setTanyaOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              <Sparkles size={13} className="text-amber-300" />
+              <span className="text-[11.5px] font-bold text-white">Tanya GV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setScreen('pengaturan')}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+            >
+              <Settings size={16} className="text-white/80" />
+            </button>
+          </>
+        }
+      >
+        {/* User Profile Card inside header */}
+        <div className="flex items-center gap-3.5 pt-0.5 pb-1">
+          <div className="relative flex-shrink-0">
+            <div
+              className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center"
+              style={{
+                background: 'rgba(255, 255, 255, 0.18)',
+                border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              {localPhoto ? (
+                <img src={localPhoto} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-black text-white">{name.charAt(0).toUpperCase()}</span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setScreen('edit-profil')}
+              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center transition active:scale-90 shadow-sm"
+              style={{
+                background: '#16a34a',
+                border: '1.5px solid #0C3E1E',
+              }}
+            >
+              <Camera size={10} className="text-white" />
+            </button>
           </div>
-          {/* Avatar + info */}
-          <button onClick={()=>setScreen('edit-profil')} className="relative flex items-center gap-4 w-full">
-            <div className="relative flex-shrink-0">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
-                style={{background:'rgba(255,255,255,0.2)',border:'2px solid rgba(255,255,255,0.2)'}}>
-                {localPhoto
-                  ? <img src={localPhoto} alt="" className="w-full h-full object-cover border border-black/10"/>
-                  : <span className="text-2xl font-bold text-white">{name.charAt(0).toUpperCase()}</span>}
-              </div>
-              <div className="absolute -bottom-1 -end-1 w-5 h-5 rounded-full flex items-center justify-center"
-                style={{background:'linear-gradient(135deg,#2E7D32,#1B6B3A)',border:'2px solid #1B6B3A'}}>
-                <Edit3 size={9} className="text-white"/>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-[16px] font-extrabold text-white truncate tracking-tight">
+                {name}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setScreen('edit-profil')}
+                className="text-white/60 hover:text-white transition p-0.5"
+              >
+                <Edit3 size={13} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 mt-0.5 text-emerald-200/80 text-[11px]">
+              <MapPin size={11} className="text-emerald-400 flex-shrink-0" />
+              <span className="truncate">{desa}</span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
+                {userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : 'Warga GV')}
+              </span>
+              <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 flex items-center gap-1">
+                <CheckCircle size={9.5} /> Terverifikasi
+              </span>
+            </div>
+          </div>
+        </div>
+      </ScreenHeader>
+
+      <div className="flex-1 overflow-y-auto no-scrollbar pt-3.5">
+        {/* ── GV Poin Card (Harmonious with canvas) ── */}
+        <div className="px-4 mb-3.5">
+          <div
+            className="rounded-2xl p-4 bg-white border border-surface-200/80 flex items-center justify-between transition-shadow hover:shadow-brand-sm"
+            style={{
+              boxShadow: '0 2px 10px rgba(27, 107, 58, 0.05)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <SkeuoIcon icon={Award} gradient={['#F57F17', '#FBC02D']} size="md" />
+              <div>
+                <span className="text-[10.5px] font-bold uppercase tracking-wider text-surface-400">
+                  Saldo GV Poin
+                </span>
+                <div className="flex items-baseline gap-1.5 mt-0.5">
+                  <p className="text-[19px] font-extrabold text-surface-900 tabular-nums leading-none">
+                    {points.toLocaleString('id')}
+                  </p>
+                  <span className="text-[11px] font-medium text-surface-500">
+                    ≈ Rp {(points * 10).toLocaleString('id')}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex-1 min-w-0 text-left">
-              <p className="font-extrabold text-white text-[16px] leading-tight">{name}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <MapPin size={10} className="text-white/40 flex-shrink-0"/>
-                <p className="text-white/40 text-[11px] line-clamp-2">{desa}</p>
-              </div>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {isSeller  && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{background:'rgba(255,255,255,0.18)',color:'#fff'}}>● Penjual</span>}
-                {isCreator && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{background:'rgba(255,255,255,0.18)',color:'#fff'}}>● Kreator</span>}
-                {!isSeller&&!isCreator && <span className="text-[11px] px-2 py-0.5 rounded-full font-bold" style={{background:'rgba(255,255,255,0.18)',color:'#fff'}}>● Warga</span>}
-              </div>
-            </div>
-            <ChevronRight size={16} className="text-white/30 flex-shrink-0"/>
-          </button>
+
+            <button
+              type="button"
+              onClick={() => setScreen('poin')}
+              className="px-4 py-2 rounded-xl text-[12px] font-bold text-white transition active:scale-95 shadow-sm"
+              style={{
+                background: 'linear-gradient(135deg, #16a34a, #15803d)',
+              }}
+            >
+              Tukar Poin
+            </button>
+          </div>
         </div>
 
-        {/* GV Poin card */}
-        <div className="mx-4 -mt-4 mb-4">
-          <button onClick={()=>setScreen('poin')}
-            className="w-full glass rounded-2xl px-4 py-3.5 flex items-center gap-3"
-            style={{background:'rgba(255,255,255,0.85)',backdropFilter:'blur(12px)',boxShadow:'0 8px 24px rgba(27,107,58,0.12), 0 2px 4px rgba(0,0,0,0.04)'}}>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{background:'#FFF8E1'}}>
-              <Award size={20} style={{color:'#F57F17'}}/>
-            </div>
-            <div className="flex-1">
-              <p className="text-[12px] text-gray-400">GV Poin</p>
-              <p className="text-[17px] font-extrabold text-gray-900 tabular-nums">{points.toLocaleString('id')} Poin</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold px-3 py-1.5 rounded-xl text-white"
-                style={{background:PRIMARY}}>Tukar</span>
-              <ChevronRight size={15} className="text-gray-300"/>
-            </div>
-          </button>
-        </div>
-
-        {/* Menu sections */}
-        <div className="stagger-in">
-          {MENU.map(({section,items})=>(
-            <div key={section} className="mb-4">
-              <SectionLabel label={section}/>
-              <Card>
-                {items.map(({label,sub,to,nav,badge,badgeColor,badgeBg,danger},i)=>(
-                  <button key={label}
-                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition duration-150 hover:bg-gray-50 active:scale-[0.99] ${i<items.length-1?'border-b border-gray-100':''}`}
-                    onClick={()=>{
-                      if (to==='logout') navigate('welcome')
+        {/* ── Categorized Menu Sections ── */}
+        <div className="space-y-4 px-4 pb-24">
+          {MENU_SECTIONS.map(({ section, items }) => (
+            <div key={section}>
+              <p className="text-[11.5px] font-extrabold uppercase tracking-wider text-surface-400 px-1 mb-2">
+                {section}
+              </p>
+              <div
+                className="rounded-2xl overflow-hidden bg-white border border-surface-200/80 divide-y divide-surface-100"
+                style={{
+                  boxShadow: '0 2px 12px rgba(27, 107, 58, 0.04)',
+                }}
+              >
+                {items.map(({ label, sub, to, nav, badge, badgeColor, badgeBg, Icon, g }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className="w-full flex items-center gap-3.5 px-4 py-3.5 text-left transition duration-150 hover:bg-surface-50 active:scale-[0.99]"
+                    onClick={() => {
+                      if (to === 'logout') navigate('welcome')
+                      else if (to === 'tanya-gv') setTanyaOpen(true)
                       else if (nav) navigate(to)
                       else setScreen(to)
-                    }}>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[13px] font-semibold ${danger?'text-red-500':'text-gray-900'}`}>{label}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-2">{sub}</p>
-                    </div>
-                    {badge && (
-                      <span className="text-[12px] font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-                        style={{background:badgeBg,color:badgeColor}}>{badge}</span>
+                    }}
+                  >
+                    {Icon && (
+                      <SkeuoIcon icon={Icon} gradient={g || ['#37474F', '#546E7A']} size="sm" />
                     )}
-                    {!danger && <ChevronRight size={15} className="text-gray-300 flex-shrink-0"/>}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-bold text-surface-900 leading-snug">{label}</p>
+                        {badge && (
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: badgeBg, color: badgeColor }}
+                          >
+                            {badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-surface-400 mt-0.5 line-clamp-1">{sub}</p>
+                    </div>
+                    <ChevronRight size={15} className="text-surface-300 flex-shrink-0" />
                   </button>
+
                 ))}
-              </Card>
+              </div>
             </div>
           ))}
-        </div>
 
-        <p className="text-center text-[11px] text-gray-400 pb-6 mt-2">G-Village v0.1.0 · Prototype</p>
+          {/* Logout Section */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => navigate('welcome')}
+              className="w-full py-3.5 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition active:scale-95"
+              style={{
+                background: '#FEF2F2',
+                color: '#DC2626',
+                border: '1px solid #FEE2E2',
+              }}
+            >
+              <LogOut size={16} />
+              <span>Keluar dari Akun</span>
+            </button>
+          </div>
+
+          <p className="text-center text-[11px] text-surface-400 pt-2 pb-2">
+            G-Village v0.1.0 · Ekosistem Desa Digital
+          </p>
+        </div>
       </div>
 
-      <BottomNav active="profile" navigate={navigate}/>
-    </div>
+      <BottomNav active="profile" navigate={navigate} />
+    </ScreenBackground>
   )
 }
+

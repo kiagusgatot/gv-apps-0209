@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
-import { ArrowLeft, User, Phone } from 'lucide-react'
+import { User, Phone, Lightbulb } from 'lucide-react'
+import OnboardingLayout from '@/components/templates/OnboardingLayout'
+import AppButton from '@/components/atoms/AppButton'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 
 export default function Register({ navigate, userData, updateUser }) {
   const [name, setName]   = useState(userData.name)
@@ -21,98 +24,75 @@ export default function Register({ navigate, userData, updateUser }) {
   }
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#FAFBF9' }}>
-      {/* Header */}
-      <div
-        className="px-5 pt-4 pb-5 relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(180deg, #061A0D 0%, #0C3E1E 40%, #1B6B3A 100%)',
-        }}
-      >
-        {/* Ambient glow */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(circle at 70% 60%, #22c55e, transparent 70%)',
-            opacity: 0.2,
-          }}
-        />
-
-        <div className="relative">
-          <button
-            onClick={() => navigate('welcome')}
-            className="mb-3 flex items-center justify-center w-8 h-8 rounded-xl transition-transform active:scale-90"
-            style={{
-              background: 'rgba(255,255,255,0.12)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
+    <OnboardingLayout
+      currentStep={1}
+      totalSteps={4}
+      title="Buat Akun Baru"
+      subtitle="Bergabunglah dengan ekosistem digital desa masa depan"
+      onBack={() => navigate('welcome')}
+      footer={
+        <div>
+          <AppButton
+            variant="primary"
+            size="lg"
+            fullWidth
+            onClick={handleContinue}
           >
-            <ArrowLeft size={18} className="text-white/80" />
-          </button>
-          <p className="text-[11px] font-semibold text-white/50 mb-0.5">Langkah 1 dari 4</p>
-          <h1 className="text-[22px] font-extrabold text-white leading-tight headline-display">
-            Buat akun baru
-          </h1>
-          <div className="flex gap-1.5 mt-4">
-            {[1, 2, 3, 4].map(i => (
-              <div
-                key={i}
-                className="h-1 rounded-full flex-1"
-                style={{
-                  background: i === 1
-                    ? 'linear-gradient(90deg, #22c55e, #4ade80)'
-                    : 'rgba(255,255,255,0.15)',
-                }}
-              />
-            ))}
-          </div>
+            Lanjutkan Verifikasi
+          </AppButton>
+          <p className="text-center text-[11px] text-surface-400 mt-2.5 leading-relaxed">
+            Dengan mendaftar, kamu menyetujui{' '}
+            <span className="text-brand font-semibold">Syarat & Ketentuan</span> G-Village.
+          </p>
         </div>
-      </div>
-
-      {/* Form */}
-      <div className="flex-1 px-6 pt-8 pb-6 flex flex-col animate-fade-in">
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-surface-700 mb-2">Nama lengkap</label>
+      }
+    >
+      <div className="flex flex-col gap-4 animate-fade-in pt-1">
+        <div>
+          <label className="block text-[13px] font-bold text-surface-800 mb-1.5">
+            Nama Lengkap
+          </label>
           <div
-            className={`spotlight-border flex items-center gap-3 border-2 rounded-2xl px-4 py-3.5 transition-all ${
+            className={`flex items-center gap-3 border-2 rounded-2xl px-3.5 py-3 transition-all ${
               errors.name
-                ? 'border-red-400'
+                ? 'border-red-400 bg-red-50/50'
                 : name
-                  ? 'border-brand'
-                  : 'border-surface-200 focus-within:border-brand'
+                ? 'border-brand bg-brand/5 shadow-brand-xs'
+                : 'border-surface-200 bg-surface-50 focus-within:border-brand focus-within:bg-white'
             }`}
-            style={name && !errors.name ? { boxShadow: '0 2px 8px rgba(27,107,58,0.08)' } : undefined}
           >
-            <User size={18} className={name ? 'text-brand' : 'text-surface-300'} />
+            <User size={18} className={name ? 'text-brand' : 'text-surface-400'} />
             <input
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Masukkan nama lengkap"
-              className="flex-1 text-sm text-surface-900 placeholder-surface-400 outline-none bg-transparent"
+              placeholder="Contoh: Budi Santoso"
+              className="flex-1 text-[13.5px] font-medium text-surface-900 placeholder-surface-400 outline-none bg-transparent"
             />
           </div>
           {errors.name && (
-            <p className="text-red-500 text-xs mt-1.5 ms-1 animate-slide-up">{errors.name}</p>
+            <p className="text-red-500 text-[11px] font-semibold mt-1 ms-1 animate-slide-up">
+              {errors.name}
+            </p>
           )}
         </div>
 
-        <div className="mb-8">
-          <label className="block text-sm font-semibold text-surface-700 mb-2">Nomor HP</label>
+        <div>
+          <label className="block text-[13px] font-bold text-surface-800 mb-1.5">
+            Nomor WhatsApp / HP
+          </label>
           <div
-            className={`spotlight-border flex items-center gap-3 border-2 rounded-2xl px-4 py-3.5 transition-all ${
+            className={`flex items-center gap-2.5 border-2 rounded-2xl px-3.5 py-3 transition-all ${
               errors.phone
-                ? 'border-red-400'
+                ? 'border-red-400 bg-red-50/50'
                 : phone
-                  ? 'border-brand'
-                  : 'border-surface-200 focus-within:border-brand'
+                ? 'border-brand bg-brand/5 shadow-brand-xs'
+                : 'border-surface-200 bg-surface-50 focus-within:border-brand focus-within:bg-white'
             }`}
-            style={phone && !errors.phone ? { boxShadow: '0 2px 8px rgba(27,107,58,0.08)' } : undefined}
           >
-            <div className="flex items-center gap-2 border-e border-surface-200 pe-3 flex-shrink-0">
+            <div className="flex items-center gap-1.5 border-e border-surface-300 pe-2.5 flex-shrink-0">
               <Phone size={16} className="text-surface-400" />
-              <span className="text-sm text-surface-500 font-semibold tabular-nums">+62</span>
+              <span className="text-[13px] text-surface-700 font-bold tabular-nums">+62</span>
             </div>
             <input
               type="tel"
@@ -120,34 +100,28 @@ export default function Register({ navigate, userData, updateUser }) {
               onChange={e => setPhone(e.target.value.replace(/\D/g, ''))}
               placeholder="8xx-xxxx-xxxx"
               maxLength={13}
-              className="flex-1 text-sm text-surface-900 placeholder-surface-400 outline-none bg-transparent tabular-nums"
+              className="flex-1 text-[13.5px] font-medium text-surface-900 placeholder-surface-400 outline-none bg-transparent tabular-nums"
             />
           </div>
           {errors.phone && (
-            <p className="text-red-500 text-xs mt-1.5 ms-1 animate-slide-up">{errors.phone}</p>
+            <p className="text-red-500 text-[11px] font-semibold mt-1 ms-1 animate-slide-up">
+              {errors.phone}
+            </p>
           )}
-          <p className="text-surface-400 text-xs mt-2 ms-1">Kode OTP akan dikirim ke nomor ini</p>
+          <p className="text-surface-500 text-[11.5px] mt-1.5 ms-1">
+            Kode OTP verifikasi akan dikirim ke nomor ini.
+          </p>
         </div>
 
-        <div className="mt-auto">
-          <button
-            onClick={handleContinue}
-            className="w-full py-4 font-semibold text-white rounded-2xl transition-transform active:scale-[0.97]"
-            style={{
-              background: 'linear-gradient(135deg, #0C3E1E 0%, #1B6B3A 50%, #15803d 100%)',
-              boxShadow: '0 4px 20px rgba(27,107,58,0.30), 0 1px 3px rgba(27,107,58,0.15)',
-              fontSize: '15px',
-            }}
-          >
-            Lanjutkan
-          </button>
-          <p className="text-center text-xs text-surface-400 mt-4 leading-relaxed">
-            Dengan mendaftar, kamu menyetujui{' '}
-            <span className="text-brand font-medium">Syarat & Ketentuan</span> dan{' '}
-            <span className="text-brand font-medium">Kebijakan Privasi</span> G-Village.
+        <div className="rounded-2xl p-3.5 bg-brand/5 border border-brand/15 mt-2 flex items-start gap-3">
+          <SkeuoIcon icon={Lightbulb} gradient={['#F57F17', '#FBC02D']} size="xs" className="mt-0.5" />
+          <p className="text-[11.5px] text-surface-700 leading-relaxed font-medium flex-1">
+            <strong className="text-brand">Akun Terintegrasi</strong>: Satu akun G-Village untuk
+            media, komunitas desa, belanja hasil bumi ESTO, dan dompet digital GV Pay.
           </p>
         </div>
       </div>
-    </div>
+    </OnboardingLayout>
   )
 }
+
