@@ -3458,39 +3458,6 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           </button>
         }
       >
-        {activeTab === 'belanja' && (
-          <div className="flex gap-2 items-center">
-            <div className="flex-1">
-              <SearchBar
-                value={searchQ}
-                onChange={(e) => setSearchQ(e.target.value)}
-                onClear={() => setSearchQ('')}
-                variant="glass-dark"
-                placeholder="Cari produk desa di ESTO..."
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowSort(true)}
-              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition active:scale-95 relative"
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-              }}
-            >
-              <SlidersHorizontal size={16} className="text-white/80" />
-              {selectedCats.length > 0 && (
-                <span
-                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center"
-                  style={{ background: '#EF4444', boxShadow: '0 0 0 2px #0C3E1E' }}
-                >
-                  {selectedCats.length}
-                </span>
-              )}
-            </button>
-          </div>
-        )}
-
         <NavTabs
           variant="segmented"
           tabs={[
@@ -3618,8 +3585,38 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       {/* ── BELANJA TAB (Product catalog & promotions) ── */}
       {activeTab === 'belanja' && (
         <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
+          {/* Search Bar & Filter Row (Moved from header into Belanja area) */}
+          <div className="px-3.5 pt-3 pb-1 flex gap-2 items-center">
+            <div className="flex-1">
+              <SearchBar
+                value={searchQ}
+                onChange={(e) => setSearchQ(e.target.value)}
+                onClear={() => setSearchQ('')}
+                variant="surface"
+                placeholder="Cari produk desa di ESTO..."
+                className="bg-white border border-gray-200/90 shadow-2xs"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSort(true)}
+              aria-label="Filter Kategori"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition active:scale-95 relative bg-white border border-gray-200/90 shadow-2xs hover:bg-gray-50 text-gray-700"
+            >
+              <SlidersHorizontal size={17} className="text-gray-700" />
+              {selectedCats.length > 0 && (
+                <span
+                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center"
+                  style={{ background: '#1B6B3A', boxShadow: '0 0 0 2px #fff' }}
+                >
+                  {selectedCats.length}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Promo banners with integrated pagination */}
-          <div className="px-3.5 pt-3 pb-1.5">
+          <div className="px-3.5 pt-1.5 pb-1.5">
             <div
               className="rounded-2xl overflow-hidden h-26 relative cursor-pointer shadow-xs active:scale-[0.99] transition-transform"
               style={{
@@ -3682,7 +3679,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             />
           </div>
 
-          {/* Section Header with result count & sort trigger */}
+          {/* Section Header with result count & single down arrow */}
           <div className="px-3.5 pt-1.5 pb-2">
             <SectionHeader
               title={
@@ -3693,7 +3690,8 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                   : `Kategori: ${selectedCats.join(', ')}`
               }
               subtitle={`${filtered.length} produk segar & alami`}
-              actionLabel={`${SORT_OPTIONS.find((s) => s.id === sortBy)?.label || 'Terlaris'} ▾`}
+              actionLabel={SORT_OPTIONS.find((s) => s.id === sortBy)?.label || 'Terlaris'}
+              actionIcon={ChevronDown}
               onAction={() => setShowSort(true)}
               className="mb-0"
             />
@@ -3760,15 +3758,15 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
       )}
 
-      {/* Product Detail Bottom Sheet (with strict stock limit handling & full overlay) */}
+      {/* Product Detail Bottom Sheet (confined to PhoneFrame) */}
       {detail && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="absolute inset-0 z-50 flex flex-col justify-end">
           {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in cursor-pointer"
             onClick={() => setDetail(null)}
           />
-          <div className="relative bg-white flex flex-col rounded-t-3xl max-h-[90vh] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200 z-10">
+          <div className="relative bg-white flex flex-col rounded-t-3xl max-h-[85%] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200 z-10">
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1.5 rounded-full bg-gray-200" />
             </div>

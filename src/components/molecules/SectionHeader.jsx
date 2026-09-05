@@ -9,6 +9,7 @@ export default function SectionHeader({
   title,
   subtitle,
   actionLabel = 'Lihat Semua',
+  actionIcon: ActionIcon = ChevronRight,
   onAction,
   to,
   navigate,
@@ -53,7 +54,7 @@ export default function SectionHeader({
           className="flex items-center gap-0.5 text-[11.5px] font-bold text-brand hover:text-brand-700 transition active:scale-95 flex-shrink-0 py-0.5"
         >
           <span>{actionLabel}</span>
-          <ChevronRight size={13} className="opacity-80" />
+          {ActionIcon && <ActionIcon size={13} className="opacity-80" />}
         </button>
       )}
     </div>
