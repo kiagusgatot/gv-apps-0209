@@ -3,6 +3,10 @@ import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import NavTabs from '@/components/molecules/NavTabs'
 import SearchBar from '@/components/molecules/SearchBar'
+import SectionHeader from '@/components/molecules/SectionHeader'
+import ProductCard from '@/components/molecules/ProductCard'
+import OrderCard from '@/components/molecules/OrderCard'
+import CategoryPills from '@/components/molecules/CategoryPills'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
@@ -3536,24 +3540,27 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             />
           )}
 
-          {/* Filter tabs */}
-          <div className="flex border-b border-gray-100 bg-white flex-shrink-0">
-            {[
-              ['all', 'Semua'],
-              ['active', 'Berlangsung'],
-              ['done', 'Selesai'],
-              ['cancelled', 'Dibatalkan'],
-            ].map(([id, lbl]) => (
-              <button key={id} onClick={() => setOrderFilter(id)}
-                className="flex-1 py-3 text-[12px] font-bold transition text-center"
-                style={orderFilter === id ? { color: PRIMARY, borderBottom: `2.5px solid ${PRIMARY}` } : { color: '#9CA3AF', borderBottom: '2.5px solid transparent' }}>
-                {lbl}
-              </button>
-            ))}
+          {/* Filter tabs using unified NavTabs Molecule */}
+          <div className="bg-white border-b border-gray-100 flex-shrink-0 px-2">
+            <NavTabs
+              variant="underline-light"
+              tabs={[
+                { id: 'all', label: 'Semua' },
+                {
+                  id: 'active',
+                  label: 'Berlangsung',
+                  count: buyerOrders.filter((o) => !['done', 'cancelled'].includes(o.status)).length,
+                },
+                { id: 'done', label: 'Selesai' },
+                { id: 'cancelled', label: 'Dibatalkan' },
+              ]}
+              activeTab={orderFilter}
+              onChange={setOrderFilter}
+            />
           </div>
 
-          {/* Order list */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 flex flex-col gap-3">
+          {/* Order list using unified OrderCard Molecule */}
+          <div className="flex-1 overflow-y-auto no-scrollbar px-3.5 py-3 flex flex-col gap-3">
             {(() => {
               const filteredList = orderFilter === 'all' ? buyerOrders
                 : orderFilter === 'active' ? buyerOrders.filter(o => !['done', 'cancelled'].includes(o.status))
@@ -3562,116 +3569,47 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
               if (filteredList.length === 0) {
                 return (
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <p className="text-4xl mb-3">🛍️</p>
-                    <p className="text-[14px] font-bold text-gray-900 mb-1">
+                  <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+                    <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center text-2xl mb-3 shadow-xs">
+                      🛍️
+                    </div>
+                    <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
                       {orderFilter === 'cancelled' ? 'Tidak ada pesanan dibatalkan' : 'Belum ada pesanan'}
                     </p>
-                    <p className="text-[12px] text-gray-400">
-                      {orderFilter === 'cancelled' ? 'Semua pesananmu berjalan dengan lancar.' : 'Yuk mulai belanja aneka produk segar desa!'}
+                    <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-5">
+                      {orderFilter === 'cancelled' ? 'Semua pesananmu berjalan dengan lancar.' : 'Yuk mulai belanja aneka produk segar desa berkualitas langsung dari petaninya!'}
                     </p>
+                    <button
+                      onClick={() => setActiveTab('belanja')}
+                      className="px-5 py-2.5 rounded-xl bg-[#1B6B3A] text-white text-[12px] font-bold shadow-sm active:scale-95 transition"
+                    >
+                      Mulai Belanja Sekarang
+                    </button>
                   </div>
                 )
               }
 
-              return filteredList.map(order => {
-                const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.waiting
-                const isTrackable = ['confirmed', 'preparing', 'shipped'].includes(order.status)
-
-                return (
-                  <div key={order.id} onClick={() => setOrderDetail(order)}
-                    className="bg-white rounded-2xl p-4 text-left w-full cursor-pointer active:scale-[0.98] transition shadow-xs border border-gray-100">
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-[11px] font-bold text-gray-400">{order.id}</p>
-                        <p className="text-[12px] text-gray-400 mt-0.5">{order.date}</p>
-                      </div>
-                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ms-2 flex items-center gap-1.5"
-                        style={{ background: st.bg, color: st.color }}>
-                        {isTrackable && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />}
-                        {st.label}
-                      </span>
-                    </div>
-
-                    {/* Items */}
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className="flex -space-x-2">
-                        {order.items.slice(0, 3).map((item, i) => (
-                          <div key={i} className="w-10 h-10 rounded-[12px] flex items-center justify-center border-2 border-white shadow-inner relative overflow-hidden"
-                            style={{ background: item.g ? `linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)` : '#F5F5F5', zIndex: order.items.length - i }}>
-                            {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover border border-black/10" /> : (item.Icon ? <item.Icon size={18} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} /> : <Package size={18} className="text-gray-400" />)}
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-gray-900 line-clamp-2">
-                          {order.items[0]?.name}{order.items.length > 1 ? ` +${order.items.length - 1} lainnya` : ''}
-                        </p>
-                        <p className="text-[11px] text-gray-400">dari {order.seller}</p>
-                      </div>
-                    </div>
-
-                    {/* Cancellation & Refund Info Preview */}
-                    {order.status === 'cancelled' && (
-                      <div className="p-2.5 rounded-xl bg-red-50 border border-red-100 text-[11px] text-red-700 mb-2.5">
-                        <span className="font-bold">Dibatalkan:</span> {order.cancelReason || 'Permintaan pembeli'}
-                        <p className="text-emerald-700 font-semibold mt-0.5">✓ Dana telah kembali ke GV Pay</p>
-                      </div>
-                    )}
-
-                    {/* Rating preview */}
-                    {order.rating && (
-                      <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-xl"
-                        style={{ background: '#FFF8E1' }}>
-                        {[1, 2, 3, 4, 5].map(s => (
-                          <span key={s} className="text-sm" style={{ color: s <= order.rating ? '#F9A825' : '#E0E0E0' }}>★</span>
-                        ))}
-                        <span className="text-[11px] text-gray-600 ms-1 truncate">
-                          {order.ratingComment ? `"${order.ratingComment}"` : 'Ulasan selesai'}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="flex items-center justify-between pt-2.5 border-t border-gray-50">
-                      <p className="text-[11px] text-gray-400">{order.delivery} · {order.payment}</p>
-                      <p className="text-[14px] font-extrabold" style={{ color: PRIMARY }}>
-                        Rp {order.total.toLocaleString('id')}
-                      </p>
-                    </div>
-
-                    {/* Card Actions */}
-                    {isTrackable && (
-                      <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
-                        <span className="text-[11px] text-emerald-800 font-semibold flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>GV Man sedang aktif</span>
-                        </span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setActiveTrackingOrder(order)
-                            setScreen('tracking')
-                          }}
-                          className="px-3.5 py-1.5 rounded-xl bg-emerald-700 text-white text-[11px] font-bold active:scale-95 transition shadow-sm flex items-center gap-1.5"
-                        >
-                          <Navigation size={12} />
-                          <span>Lacak Live</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {order.status === 'done' && !order.rating && (
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-50 flex justify-end">
-                        <span className="text-[11px] font-bold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
-                          ★ Beri Rating
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )
-              })
+              return filteredList.map(order => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onClick={(o) => setOrderDetail(o)}
+                  onTrack={(o) => {
+                    setActiveTrackingOrder(o)
+                    setScreen('tracking')
+                  }}
+                  onRate={(o) => {
+                    setOrderToRate(o)
+                  }}
+                  onCancelPrompt={(o) => {
+                    setOrderToCancel(o)
+                  }}
+                  onBuyAgain={(o) => {
+                    o.items.forEach(item => { if (item.id) addToCart(item.id, item.qty || 1) })
+                    setScreen('cart')
+                  }}
+                />
+              ))
             })()}
           </div>
         </div>
@@ -3679,152 +3617,126 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
       {/* ── BELANJA TAB (Product catalog & promotions) ── */}
       {activeTab === 'belanja' && (
-        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 16 }}>
-          {/* Promo banners */}
-          <div className="px-3 pt-3 pb-2">
-            <div className="rounded-2xl overflow-hidden h-24 relative cursor-pointer"
+        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
+          {/* Promo banners with integrated pagination */}
+          <div className="px-3.5 pt-3 pb-1.5">
+            <div
+              className="rounded-2xl overflow-hidden h-26 relative cursor-pointer shadow-xs active:scale-[0.99] transition-transform"
               style={{
-                background: `linear-gradient(135deg,${BANNERS_ESTO[bannerIdx].g[0]},${BANNERS_ESTO[bannerIdx].g[1]})`,
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-              }}>
+                background: `linear-gradient(135deg, ${BANNERS_ESTO[bannerIdx].g[0]}, ${BANNERS_ESTO[bannerIdx].g[1]})`,
+              }}
+            >
               <div className="absolute inset-0 flex items-center px-4 gap-3">
-                <div className="flex-shrink-0 relative z-10">
-                  {React.createElement(BANNERS_ESTO[bannerIdx].Icon, { size: 36, className: 'text-white drop-shadow-md', strokeWidth: 1.5 })}
+                <div className="flex-shrink-0 relative z-10 w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center">
+                  {React.createElement(BANNERS_ESTO[bannerIdx].Icon, {
+                    size: 24,
+                    className: 'text-white drop-shadow-md',
+                    strokeWidth: 1.8,
+                  })}
                 </div>
-                <div className="flex-1">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md"
-                    style={{ background: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.9)' }}>
+                <div className="flex-1 min-w-0 pr-8">
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-white/20 text-white tracking-wide">
                     {BANNERS_ESTO[bannerIdx].tag}
                   </span>
-                  <p className="text-white font-extrabold text-[14px] leading-snug mt-1">{BANNERS_ESTO[bannerIdx].title}</p>
-                  <p className="text-white/70 text-[11px] mt-0.5">{BANNERS_ESTO[bannerIdx].sub}</p>
+                  <p className="text-white font-extrabold text-[13.5px] leading-snug mt-1 truncate">
+                    {BANNERS_ESTO[bannerIdx].title}
+                  </p>
+                  <p className="text-white/80 text-[11px] mt-0.5 truncate">
+                    {BANNERS_ESTO[bannerIdx].sub}
+                  </p>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-center gap-1.5 mt-2">
-              {BANNERS_ESTO.map((_, i) => (
-                <button key={i} onClick={() => setBannerIdx(i)}
-                  className="h-1.5 rounded-full transition"
-                  style={{ width: i === bannerIdx ? 20 : 5, background: i === bannerIdx ? PRIMARY : '#C8D8C8' }} />
-              ))}
+
+              {/* Integrated pagination dots */}
+              <div className="absolute bottom-2 end-3 flex items-center gap-1.5 z-10">
+                {BANNERS_ESTO.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setBannerIdx(i)
+                    }}
+                    className="h-1.5 rounded-full transition-all duration-200"
+                    style={{
+                      width: i === bannerIdx ? 16 : 5,
+                      background: i === bannerIdx ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Sort indicator + result count */}
-          <div className="flex items-center justify-between px-3 py-2">
-            <p className="text-[12px] font-bold text-gray-700 truncate mr-2">
-              {searchQ ? `"${searchQ}" — ${filtered.length} produk` : `${selectedCats.length === 0 ? 'Semua Produk' : selectedCats.join(', ')} (${filtered.length})`}
-            </p>
-            <button onClick={() => setShowSort(true)}
-              className="flex items-center gap-1 text-[11px] font-semibold flex-shrink-0"
-              style={{ color: '#1B6B3A' }}>
-              {SORT_OPTIONS.find(s => s.id === sortBy)?.label} <ChevronDown size={12} />
-            </button>
+          {/* Quick Category Filter Pills */}
+          <div className="px-3.5 pt-1 pb-1">
+            <CategoryPills
+              categories={CATS}
+              selectedCategory={selectedCats.length === 0 ? 'Semua' : selectedCats}
+              onSelect={(cat) => {
+                if (cat === 'Semua') {
+                  setSelectedCats([])
+                } else {
+                  setSelectedCats([cat])
+                }
+              }}
+            />
+          </div>
+
+          {/* Section Header with result count & sort trigger */}
+          <div className="px-3.5 pt-1.5 pb-2">
+            <SectionHeader
+              title={
+                searchQ
+                  ? `Hasil "${searchQ}"`
+                  : selectedCats.length === 0
+                  ? 'Katalog Produk Desa'
+                  : `Kategori: ${selectedCats.join(', ')}`
+              }
+              subtitle={`${filtered.length} produk segar & alami`}
+              actionLabel={`${SORT_OPTIONS.find((s) => s.id === sortBy)?.label || 'Terlaris'} ▾`}
+              onAction={() => setShowSort(true)}
+              className="mb-0"
+            />
           </div>
 
           {/* Empty state */}
           {filtered.length === 0 && (
-            <div className="py-16 text-center px-8">
-              <p className="text-3xl mb-3">🔍</p>
-              <p className="text-[14px] font-bold text-gray-900 mb-1">Produk tidak ditemukan</p>
-              <p className="text-[12px] text-gray-400">Coba kata kunci lain atau ubah filter kategori</p>
+            <div className="py-16 text-center px-8 flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl mb-3">
+                🔍
+              </div>
+              <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
+                Produk tidak ditemukan
+              </p>
+              <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-4">
+                Coba kata kunci lain atau pilih kategori produk yang berbeda.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQ('')
+                  setSelectedCats([])
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-[11.5px] font-bold border border-emerald-200 active:scale-95 transition"
+              >
+                Reset Filter
+              </button>
             </div>
           )}
 
-          {/* Product grid */}
-          <div className="grid grid-cols-2 gap-3 px-3 pb-3">
-            {filtered.map(p => {
-              const isOutOfStock = p.stock === 0
-              const isLowStock = p.stock > 0 && p.stock <= 3
-
-              return (
-                <div key={p.id} className="spotlight-border bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs flex flex-col justify-between">
-                  <div onClick={() => openDetail(p)} className="w-full text-left cursor-pointer">
-                    <div className="h-32 relative flex items-center justify-center shadow-inner" style={{ background: p.image ? 'transparent' : (p.g ? `linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)` : '#F5F5F5') }}>
-                      {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover border border-black/10" /> : (p.Icon ? <p.Icon size={48} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} /> : <Package size={48} className="text-gray-400" />)}
-                      
-                      <button onClick={e => { e.stopPropagation(); toggleLike(p.id) }}
-                        className="absolute top-2.5 end-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-sm">
-                        <Heart size={14} className={liked.has(p.id) ? 'fill-red-500 text-red-500' : 'text-gray-300'} />
-                      </button>
-
-                      {p.orig && !isOutOfStock && (
-                        <div className="absolute top-2.5 start-2.5 px-2 py-0.5 rounded-lg text-white text-[10px] font-bold" style={{ background: '#E53935' }}>
-                          DISKON
-                        </div>
-                      )}
-
-                      {/* Out of Stock Overlay */}
-                      {isOutOfStock && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-2">
-                          <span className="text-white text-xs font-black bg-red-600/90 px-2.5 py-1 rounded-lg shadow-sm">
-                            Stok Habis
-                          </span>
-                          <span className="text-[10px] text-white/80 mt-1">Segera restok</span>
-                        </div>
-                      )}
-
-                      {/* Low Stock Badge */}
-                      {isLowStock && (
-                        <div className="absolute bottom-2 start-2 px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold shadow-xs">
-                          Sisa {p.stock}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-3 pb-2">
-                      <p className="text-[11px] text-gray-400 mb-0.5 truncate">{p.cat} · {p.seller}</p>
-                      <p className="text-[13px] font-bold text-gray-900 leading-snug line-clamp-2 mb-1">{p.name}</p>
-                      <p className="text-[11px] text-gray-400 mb-2">{p.unit}</p>
-                      <div className="flex items-center gap-1 mb-2">
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <span className="text-[11px] text-gray-600 font-semibold">{p.rating} · {p.sold} terjual</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="px-3 pb-3 flex items-center justify-between pt-1">
-                    <div>
-                      <p className="text-sm font-extrabold tabular-nums" style={{ color: PRIMARY }}>
-                        Rp {p.price.toLocaleString('id')}
-                      </p>
-                      {p.orig && <p className="text-[11px] text-gray-400 line-through">Rp {p.orig.toLocaleString('id')}</p>}
-                    </div>
-
-                    {isOutOfStock ? (
-                      <span className="text-[11px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-200">
-                        Habis
-                      </span>
-                    ) : cart[p.id] ? (
-                      <div className="flex items-center gap-1.5 bg-emerald-50 rounded-full p-0.5 border border-emerald-200">
-                        <button onClick={() => updateCartQty(p.id, cart[p.id] - 1)}
-                          className="w-6 h-6 rounded-full bg-white border border-emerald-600 flex items-center justify-center shadow-xs active:scale-90">
-                          <Minus size={11} style={{ color: PRIMARY }} />
-                        </button>
-                        <span className="text-xs font-bold text-emerald-950 w-4 text-center tabular-nums">
-                          {cart[p.id]}
-                        </span>
-                        <button
-                          onClick={() => addToCart(p.id, 1)}
-                          disabled={cart[p.id] >= p.stock}
-                          className={`w-6 h-6 rounded-full flex items-center justify-center text-white shadow-xs active:scale-90 ${
-                            cart[p.id] >= p.stock ? 'bg-gray-300' : 'bg-emerald-700'
-                          }`}
-                        >
-                          <Plus size={11} />
-                        </button>
-                      </div>
-                    ) : (
-                      <button onClick={() => addToCart(p.id)}
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm active:scale-90 transition"
-                        style={{ background: PRIMARY }}>
-                        <Plus size={15} />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+          {/* Product grid with ProductCard Molecule */}
+          <div className="grid grid-cols-2 gap-3 px-3.5 pb-4">
+            {filtered.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                inCartQty={cart[p.id] || 0}
+                isLiked={liked.has(p.id)}
+                onToggleLike={toggleLike}
+                onOpenDetail={openDetail}
+                onAddToCart={(id, qty) => addToCart(id, qty)}
+                onUpdateQty={(id, qty) => updateCartQty(id, qty)}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -3848,66 +3760,102 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
       )}
 
-      {/* Product Detail Bottom Sheet (with strict stock limit handling) */}
+      {/* Product Detail Bottom Sheet (with strict stock limit handling & full overlay) */}
       {detail && (
-        <div className="absolute inset-0 z-30 flex flex-col justify-end" style={{ background: 'rgba(0,0,0,.45)' }}>
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
           {/* Backdrop */}
-          <div className="flex-1" onClick={() => setDetail(null)} />
-          <div className="bg-white flex flex-col rounded-t-3xl max-h-[85%] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200">
-            <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setDetail(null)}
+          />
+          <div className="relative bg-white flex flex-col rounded-t-3xl max-h-[90vh] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200 z-10">
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1.5 rounded-full bg-gray-200" />
             </div>
 
             <div className="overflow-y-auto no-scrollbar px-5 pb-6">
               {/* Product hero banner */}
-              <div className="rounded-2xl h-44 flex items-center justify-center shadow-inner mb-4 relative overflow-hidden"
-                style={{ background: detail.image ? 'transparent' : (detail.g ? `linear-gradient(135deg, ${detail.g[0]} 0%, ${detail.g[1]} 100%)` : '#F5F5F5') }}>
+              <div
+                className="rounded-2xl h-48 flex items-center justify-center shadow-inner mb-4 relative overflow-hidden"
+                style={{
+                  background: detail.image
+                    ? 'transparent'
+                    : detail.g
+                    ? `linear-gradient(135deg, ${detail.g[0]} 0%, ${detail.g[1]} 100%)`
+                    : '#F5F5F5',
+                }}
+              >
                 {detail.image ? (
-                  <img src={detail.image} alt="" className="w-full h-full object-cover border border-black/10" />
+                  <img
+                    src={detail.image}
+                    alt={detail.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : detail.Icon ? (
+                  <detail.Icon
+                    size={64}
+                    className="text-white drop-shadow-md relative z-10"
+                    strokeWidth={1.5}
+                  />
                 ) : (
-                  detail.Icon ? <detail.Icon size={64} className="text-white drop-shadow-md relative z-10" strokeWidth={1.5} /> : <Package size={64} className="text-gray-400" />
+                  <Package size={64} className="text-gray-400" />
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => setDetail(null)}
+                  className="absolute top-3 start-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center shadow-xs active:scale-90 transition text-gray-700"
+                >
+                  <X size={16} />
+                </button>
+
                 <span
-                  className={`absolute top-3 end-3 text-xs font-bold px-3 py-1 rounded-xl shadow-xs ${
+                  className={`absolute top-3 end-3 text-xs font-extrabold px-3 py-1 rounded-xl shadow-xs ${
                     detail.stock === 0
                       ? 'bg-red-600 text-white'
                       : detail.stock <= 3
                       ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                      : 'bg-white/90 text-emerald-800'
+                      : 'bg-white/95 text-emerald-800'
                   }`}
                 >
-                  {detail.stock === 0 ? 'Stok Habis' : `Tersedia: ${detail.stock} ${detail.unit}`}
+                  {detail.stock === 0
+                    ? 'Stok Habis'
+                    : `Stok: ${detail.stock} (${detail.unit})`}
                 </span>
               </div>
 
-              <h2 className="text-lg font-extrabold text-gray-900 mb-2 leading-snug">{detail.name}</h2>
+              <h2 className="text-[18px] font-extrabold text-gray-900 mb-2 leading-snug">
+                {detail.name}
+              </h2>
 
               {/* Seller details badge */}
-              <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100 font-bold text-emerald-800">
+              <div className="flex items-center gap-3 pb-3 mb-3.5 border-b border-gray-100">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100 font-extrabold text-emerald-800 text-[14px] shadow-2xs">
                   {detail.seller[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-gray-900">{detail.seller}</p>
+                  <p className="text-[12.5px] font-bold text-gray-900">{detail.seller}</p>
                   <p className="text-[11px] text-gray-400">Desa Sukamaju · Petani Mitra Resmi ESTO</p>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200/60">
                   <Star size={12} className="fill-amber-400 text-amber-400" />
-                  <span className="text-xs font-bold text-gray-700">{detail.rating} ({detail.sold})</span>
+                  <span className="text-[11.5px] font-bold text-gray-800">
+                    {detail.rating} ({detail.sold})
+                  </span>
                 </div>
               </div>
 
               {/* Low stock alert */}
               {detail.stock > 0 && detail.stock <= 3 && (
-                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 mb-3 flex items-center gap-2 text-[11px] text-amber-900 font-semibold">
-                  <AlertTriangle size={15} className="text-amber-700 flex-shrink-0" />
+                <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200/80 mb-3.5 flex items-center gap-2.5 text-[11.5px] text-amber-900 font-bold">
+                  <AlertTriangle size={16} className="text-amber-700 flex-shrink-0" />
                   <span>Sisa {detail.stock} unit lagi! Segera pesan sebelum kehabisan.</span>
                 </div>
               )}
 
               {/* Out of stock alert */}
               {detail.stock === 0 && (
-                <div className="p-3 rounded-2xl bg-red-50 border border-red-200 mb-3 flex items-center gap-2.5 text-[12px] text-red-700 font-bold">
+                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 mb-3.5 flex items-center gap-3 text-[12px] text-red-700 font-bold">
                   <AlertTriangle size={18} className="text-red-600 flex-shrink-0" />
                   <div>
                     <p>Produk Ini Sedang Habis</p>
@@ -3919,42 +3867,46 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               )}
 
               {/* Description */}
-              <p className="text-[12px] text-gray-600 leading-relaxed mb-4">{detail.desc}</p>
+              <p className="text-[12.5px] text-gray-600 leading-relaxed mb-4">{detail.desc}</p>
 
               {/* Trust Badge */}
-              <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center gap-2.5 mb-5 text-[11px] text-emerald-900">
+              <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center gap-2.5 mb-5 text-[11.5px] text-emerald-900 font-medium">
                 <ShieldCheck size={18} className="text-emerald-700 flex-shrink-0" />
                 <span>Jaminan Panen Segar & 100% Produk Asli Desa Tanpa Bahan Pengawet</span>
               </div>
 
               {/* Price & Quantity Stepper */}
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center justify-between pt-1 mb-2">
                 <div>
-                  <p className="text-2xl font-black tabular-nums" style={{ color: PRIMARY }}>
+                  <p className="text-2xl font-black tabular-nums text-[#1B6B3A]">
                     Rp {detail.price.toLocaleString('id')}
                   </p>
-                  <p className="text-[11px] text-gray-400">per {detail.unit}</p>
+                  <p className="text-[11.5px] text-gray-400 font-medium">per {detail.unit}</p>
                 </div>
 
                 {detail.stock > 0 && (
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2 bg-emerald-50/70 p-1 rounded-2xl border border-emerald-200/80">
                     <button
-                      onClick={() => setDQty(q => Math.max(1, q - 1))}
+                      onClick={() => setDQty((q) => Math.max(1, q - 1))}
                       disabled={detailQty <= 1}
-                      className={`w-9 h-9 rounded-xl border-2 flex items-center justify-center transition active:scale-95 ${
-                        detailQty <= 1 ? 'border-gray-200 text-gray-300' : 'border-emerald-700 text-emerald-700'
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 ${
+                        detailQty <= 1
+                          ? 'bg-white text-gray-300 border border-gray-200'
+                          : 'bg-white text-emerald-800 border border-emerald-600 shadow-2xs'
                       }`}
                     >
                       <Minus size={16} />
                     </button>
-                    <span className="text-lg font-bold text-gray-900 w-7 text-center tabular-nums">
+                    <span className="text-[16px] font-black text-emerald-950 w-7 text-center tabular-nums">
                       {detailQty}
                     </span>
                     <button
-                      onClick={() => setDQty(q => Math.min(detail.stock, q + 1))}
+                      onClick={() => setDQty((q) => Math.min(detail.stock, q + 1))}
                       disabled={detailQty >= detail.stock}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition active:scale-95 ${
-                        detailQty >= detail.stock ? 'bg-gray-300 cursor-not-allowed' : 'bg-emerald-700'
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition active:scale-95 shadow-2xs ${
+                        detailQty >= detail.stock
+                          ? 'bg-gray-300 cursor-not-allowed'
+                          : 'bg-[#1B6B3A]'
                       }`}
                     >
                       <Plus size={16} />
@@ -3962,23 +3914,25 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* CTA Buttons */}
+            {/* Sticky Bottom Actions inside Bottom Sheet */}
+            <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0 pb-6">
               {detail.stock === 0 ? (
                 <button
                   disabled
-                  className="w-full py-3.5 rounded-2xl text-sm font-bold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                  className="w-full py-3.5 rounded-2xl text-[13px] font-extrabold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                 >
                   Stok Habis
                 </button>
               ) : (
-                <div className="flex gap-3">
+                <>
                   <button
                     onClick={() => {
                       addToCart(detail.id, detailQty)
                       setDetail(null)
                     }}
-                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold border-2 active:scale-95 transition"
+                    className="flex-1 py-3.5 rounded-2xl text-[13px] font-extrabold border-2 active:scale-95 transition"
                     style={{ borderColor: PRIMARY, color: PRIMARY }}
                   >
                     + Keranjang
@@ -3989,12 +3943,14 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                       setDetail(null)
                       setScreen('checkout')
                     }}
-                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white active:scale-95 transition shadow-md"
-                    style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)' }}
+                    className="flex-1 py-3.5 rounded-2xl text-[13px] font-extrabold text-white active:scale-95 transition shadow-md"
+                    style={{
+                      background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
+                    }}
                   >
                     Beli Sekarang
                   </button>
-                </div>
+                </>
               )}
             </div>
           </div>
