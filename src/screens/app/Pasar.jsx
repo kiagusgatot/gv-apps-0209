@@ -3576,37 +3576,21 @@ function StoreDetailScreen({
   totalCart = 0,
   totalPrice = 0,
 }) {
-  const [activeStoreTab, setActiveStoreTab] = useState('toko') // 'toko' | 'produk' | 'kategori' | 'ulasan'
-  const [storeSort, setStoreSort] = useState('populer') // 'populer' | 'terbaru' | 'terlaris' | 'harga_asc' | 'harga_desc'
+  const [activeStoreTab, setActiveStoreTab] = useState('produk') // 'produk' | 'ulasan'
   const [storeSearch, setStoreSearch] = useState('')
   const [isFollowing, setIsFollowing] = useState(false)
   const [claimedVoucher, setClaimedVoucher] = useState(false)
   const [toastMsg, setToastMsg] = useState(null)
-  const [selectedCatFilter, setSelectedCatFilter] = useState('Semua')
 
   const showToast = (msg) => {
     setToastMsg(msg)
     setTimeout(() => setToastMsg(null), 2500)
   }
 
-  // Filter store products
-  let displayProducts = (store?.products || []).filter((p) => {
-    const matchesSearch = !storeSearch || p.name.toLowerCase().includes(storeSearch.toLowerCase())
-    const matchesCat = selectedCatFilter === 'Semua' || p.cat === selectedCatFilter
-    return matchesSearch && matchesCat
-  })
-
-  if (storeSort === 'harga_asc') {
-    displayProducts.sort((a, b) => a.price - b.price)
-  } else if (storeSort === 'harga_desc') {
-    displayProducts.sort((a, b) => b.price - a.price)
-  } else if (storeSort === 'terlaris') {
-    displayProducts.sort((a, b) => parseInt(b.sold) - parseInt(a.sold))
-  } else if (storeSort === 'terbaru') {
-    displayProducts = [...displayProducts].reverse()
-  }
-
-  const storeCategories = ['Semua', ...new Set((store?.products || []).map((p) => p.cat))]
+  // Filter store products simply by search query without redundant filter chips
+  const displayProducts = (store?.products || []).filter((p) =>
+    !storeSearch || p.name.toLowerCase().includes(storeSearch.toLowerCase())
+  )
 
   const REVIEWS_DUMMY = [
     {
@@ -3708,91 +3692,95 @@ function StoreDetailScreen({
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         </div>
 
-        {/* Store Profile Card (Floats over hero banner) */}
-        <div className="px-3.5 -mt-8 relative z-10">
-          <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex flex-col gap-3">
-            <div className="flex items-start gap-3">
-              {/* Logo Squircle */}
+        {/* Store Profile Card (Floats over hero cover banner) */}
+        <div className="px-4 -mt-9 relative z-10">
+          <div className="bg-white rounded-3xl p-4 shadow-[0_8px_30px_rgba(27,107,58,0.08)] border border-gray-100/90 flex flex-col gap-3.5">
+            {/* Top row: Squircle Logo + Store Name + Badges */}
+            <div className="flex items-start gap-3.5">
+              {/* Logo Squircle with Depth, Inner Glow & Ambient Shine */}
               <div
-                className="w-13 h-13 rounded-2xl flex items-center justify-center text-white font-black text-sm tracking-wider shadow-sm flex-shrink-0"
-                style={{ background: store?.logoBg || 'linear-gradient(135deg, #1B6B3A, #2E7D32)' }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-[16px] tracking-wide shadow-md flex-shrink-0 relative overflow-hidden mt-0.5"
+                style={{
+                  background: store?.logoBg || 'linear-gradient(135deg, #1B6B3A 0%, #2E7D32 100%)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.35)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.14), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
+                }}
               >
-                {store?.logoText || 'GV'}
+                <div
+                  className="absolute -top-3 -end-3 w-8 h-8 rounded-full pointer-events-none opacity-40"
+                  style={{ background: 'radial-gradient(circle, #ffffff 0%, transparent 70%)' }}
+                />
+                <span className="drop-shadow-xs">{store?.logoText || 'GV'}</span>
               </div>
 
-              {/* Store Identity */}
+              {/* Store Title, Type & Rating */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <h2 className="text-[15px] font-extrabold text-gray-900 leading-tight">
-                    {store?.name}
-                  </h2>
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-1">
-                  <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200 flex items-center gap-0.5">
-                    <ShieldCheck size={10} />
-                    {store?.type || 'Resmi'}
-                  </span>
-                  <span>·</span>
-                  <span className="flex items-center gap-0.5 text-amber-500 font-bold">
-                    <Star size={11} className="fill-amber-400 text-amber-400" />
-                    {store?.rating}
-                  </span>
-                  <span>·</span>
-                  <span>{store?.soldCount}</span>
-                </div>
+                <h2 className="text-[16px] font-extrabold text-gray-900 leading-snug">
+                  {store?.name}
+                </h2>
 
-                <div className="flex items-center gap-3 text-[11px] text-gray-500 mt-1.5 font-medium">
-                  <span className="flex items-center gap-1">
-                    <Zap size={11} className="text-amber-500" />
-                    {store?.eta || '30 mnt'}
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[10.5px] font-bold border border-emerald-200/80">
+                    <ShieldCheck size={11} className="text-emerald-700" />
+                    <span>{store?.type || 'Grosir Resmi'}</span>
                   </span>
-                  <span>·</span>
-                  <span className="flex items-center gap-1">
-                    <MapPin size={11} className="text-gray-400" />
-                    {store?.distance || '2 km'} ({store?.address})
+
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 text-[10.5px] font-extrabold border border-amber-200/70">
+                    <Star size={11} className="fill-amber-400 text-amber-500" />
+                    <span>{store?.rating || '4.9'}</span>
+                  </span>
+
+                  <span className="text-[11px] text-gray-500 font-medium">
+                    ({store?.soldCount || '1.2rb+ terjual'})
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Store Bio / Description */}
+            {/* Logistics & Location Pill Bar (Structured & Highly Readable) */}
+            <div className="flex items-center gap-2 text-[11.5px] text-gray-600 bg-gray-50/90 px-3 py-2 rounded-xl border border-gray-200/70 flex-wrap">
+              <span className="inline-flex items-center gap-1 font-semibold text-gray-800">
+                <Zap size={12} className="text-amber-500 fill-amber-400 flex-shrink-0" />
+                <span>Pengiriman {store?.eta || '30 mnt'}</span>
+              </span>
+              <span className="text-gray-300">·</span>
+              <span className="inline-flex items-center gap-1 text-gray-600 min-w-0">
+                <MapPin size={11.5} className="text-emerald-700 flex-shrink-0" />
+                <span className="font-semibold text-gray-800">{store?.distance || '2.1 km'}</span>
+                <span className="text-gray-300">·</span>
+                <span className="truncate">{store?.address || store?.region}</span>
+              </span>
+            </div>
+
+            {/* Store Description / Bio (Clean Typography) */}
             {store?.desc && (
-              <p className="text-[11.5px] text-gray-600 leading-relaxed bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+              <p className="text-[12px] text-gray-600 leading-relaxed font-normal">
                 {store.desc}
               </p>
             )}
 
             {/* Actions: Follow + Chat */}
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
+            <div className="grid grid-cols-2 gap-2.5 pt-0.5">
               <button
                 onClick={() => {
                   setIsFollowing(!isFollowing)
                   showToast(isFollowing ? 'Batal mengikuti toko' : 'Berhasil mengikuti toko!')
                 }}
-                className={`py-2 rounded-xl text-[12px] font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 ${
+                className={`py-2.5 rounded-xl text-[12px] font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 ${
                   isFollowing
                     ? 'bg-gray-100 text-gray-700 border border-gray-200'
-                    : 'bg-[#1B6B3A] text-white shadow-xs'
+                    : 'bg-[#1B6B3A] text-white shadow-xs hover:bg-[#155d31]'
                 }`}
               >
-                {isFollowing ? (
-                  <>
-                    <Check size={14} />
-                    <span>Mengikuti</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus size={14} />
-                    <span>Ikuti Toko</span>
-                  </>
-                )}
+                {isFollowing ? <Check size={14} /> : <Plus size={14} />}
+                <span>{isFollowing ? 'Mengikuti' : 'Ikuti Toko'}</span>
               </button>
 
               <button
                 onClick={() => showToast('Membuka obrolan resmi dengan penjual...')}
-                className="py-2 rounded-xl text-[12px] font-extrabold border border-[#1B6B3A] text-[#1B6B3A] bg-emerald-50/40 hover:bg-emerald-50 flex items-center justify-center gap-1.5 transition active:scale-95"
+                className="py-2.5 rounded-xl text-[12px] font-extrabold border border-emerald-300 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/60 flex items-center justify-center gap-1.5 transition active:scale-95"
               >
-                <MessageCircle size={14} />
+                <MessageCircle size={14} className="text-emerald-700" />
                 <span>Chat Penjual</span>
               </button>
             </div>
@@ -3800,7 +3788,7 @@ function StoreDetailScreen({
         </div>
 
         {/* Store Voucher Strip */}
-        <div className="px-3.5 pt-3">
+        <div className="px-4 pt-3">
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-2.5 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
@@ -3830,22 +3818,20 @@ function StoreDetailScreen({
           </div>
         </div>
 
-        {/* Store Tabs: [Toko, Produk, Kategori, Ulasan] */}
-        <div className="px-3.5 pt-3">
-          <div className="bg-white rounded-xl p-1 shadow-2xs border border-gray-100 flex items-center gap-1">
+        {/* Store Tabs: [Katalog Produk, Ulasan Pembeli] */}
+        <div className="px-4 pt-3">
+          <div className="bg-gray-100/90 p-1 rounded-2xl flex items-center gap-1 border border-gray-200/60">
             {[
-              { id: 'toko', label: 'Toko' },
-              { id: 'produk', label: `Produk (${store?.products?.length || 0})` },
-              { id: 'kategori', label: 'Kategori' },
-              { id: 'ulasan', label: 'Ulasan (4.9)' },
+              { id: 'produk', label: `Katalog Produk (${store?.products?.length || 0})` },
+              { id: 'ulasan', label: `Ulasan Pembeli (${store?.rating || '4.9'})` },
             ].map((t) => (
               <button
                 key={t.id}
                 onClick={() => setActiveStoreTab(t.id)}
-                className={`flex-1 py-2 text-center rounded-lg text-[11.5px] font-bold transition ${
+                className={`flex-1 py-2 text-center rounded-xl text-[12px] font-bold transition-all ${
                   activeStoreTab === t.id
-                    ? 'bg-[#1B6B3A] text-white shadow-xs'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-gray-900 shadow-xs'
+                    : 'text-gray-500 hover:text-gray-900'
                 }`}
               >
                 {t.label}
@@ -3854,78 +3840,33 @@ function StoreDetailScreen({
           </div>
         </div>
 
-        {/* Tab 1: Toko & Tab 2: Produk */}
-        {(activeStoreTab === 'toko' || activeStoreTab === 'produk') && (
-          <div className="px-3.5 pt-3">
+        {/* Tab: Produk */}
+        {activeStoreTab === 'produk' && (
+          <div className="px-4 pt-3">
             {/* Search inside store */}
-            <div className="mb-2.5">
+            <div className="mb-3">
               <SearchBar
                 value={storeSearch}
                 onChange={(e) => setStoreSearch(e.target.value)}
                 onClear={() => setStoreSearch('')}
-                placeholder={`Cari di ${store?.name}...`}
+                placeholder={`Cari produk di ${store?.name}...`}
                 className="w-full bg-white border border-gray-200/90 shadow-2xs text-[12px]"
               />
             </div>
 
-            {/* Sub-sort chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2">
-              {[
-                { id: 'populer', label: 'Populer' },
-                { id: 'terbaru', label: 'Terbaru' },
-                { id: 'terlaris', label: 'Terlaris' },
-                { id: 'harga_asc', label: 'Harga: Terendah' },
-                { id: 'harga_desc', label: 'Harga: Tertinggi' },
-              ].map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setStoreSort(s.id)}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition ${
-                    storeSort === s.id
-                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
-                      : 'bg-white text-gray-600 border border-gray-200'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Category filter if multiple categories */}
-            {storeCategories.length > 2 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5">
-                {storeCategories.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setSelectedCatFilter(c)}
-                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold whitespace-nowrap transition ${
-                      selectedCatFilter === c
-                        ? 'bg-[#1B6B3A] text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Product Grid */}
+            {/* Direct Product Grid without filter clutter */}
             {displayProducts.length === 0 ? (
               <div className="py-12 text-center text-gray-400">
                 <p className="text-sm font-semibold">Tidak ada produk ditemukan</p>
                 <button
-                  onClick={() => {
-                    setStoreSearch('')
-                    setSelectedCatFilter('Semua')
-                  }}
+                  onClick={() => setStoreSearch('')}
                   className="mt-2 text-xs text-[#1B6B3A] font-bold"
                 >
-                  Reset Filter
+                  Tampilkan Semua Produk
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 pb-4">
+              <div className="grid grid-cols-2 gap-3 pb-6">
                 {displayProducts.map((p) => (
                   <ProductCard
                     key={p.id}
@@ -3940,36 +3881,6 @@ function StoreDetailScreen({
                 ))}
               </div>
             )}
-          </div>
-        )}
-
-        {/* Tab 3: Kategori */}
-        {activeStoreTab === 'kategori' && (
-          <div className="px-3.5 pt-3 pb-6 flex flex-col gap-2.5">
-            {storeCategories.filter(c => c !== 'Semua').map((cat) => {
-              const catCount = (store?.products || []).filter(p => p.cat === cat).length
-              return (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setSelectedCatFilter(cat)
-                    setActiveStoreTab('produk')
-                  }}
-                  className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-2xs flex items-center justify-between hover:bg-gray-50 active:scale-[0.99] transition text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#1B6B3A] flex items-center justify-center font-bold text-sm">
-                      {cat[0]}
-                    </div>
-                    <div>
-                      <p className="text-[13.5px] font-extrabold text-gray-900">{cat}</p>
-                      <p className="text-[11px] text-gray-400">{catCount} produk siap dikirim</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={16} className="text-gray-400" />
-                </button>
-              )
-            })}
           </div>
         )}
 
