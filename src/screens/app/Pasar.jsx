@@ -65,14 +65,13 @@ export const ESTO_STORES = [
     promoText: 'Beli Rp0, diskon Gratis Ongkir s/d Rp15RB',
     logo: STORE_LOGOS['store-1'],
     logoText: 'EGM',
-    logoBg: 'linear-gradient(135deg, #1B5E20, #2E7D32)',
-    cardVariant: 'showcase',
+    logoBg: 'linear-gradient(135deg, #093E1B, #145A2C)',
     coverImage: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop',
     desc: 'Pusat grosir sembako resmi ESTO Magelang. Melayani pasokan beras, minyak goreng sawit, gula, dan kebutuhan pangan desa dengan harga grosir langsung petani.',
     products: [
-      { id: 201, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 32000, orig: 36000, discount: '-11%', unit: '2 Liter', stock: 50, rating: 4.9, sold: '420+', location: 'Magelang', eta: '30 mnt', desc: 'Minyak goreng kelapa sawit higienis bermutu tinggi untuk memasak sehari-hari.' },
-      { id: 202, name: 'Beras Pandan Wangi Premium 5kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 65000, orig: 72000, discount: '-10%', unit: '5 kg', stock: 35, rating: 4.9, sold: '680+', location: 'Magelang', eta: '30 mnt', desc: 'Beras pandan wangi pulen, bersih, dan harum dari sawah pilihan mitra binaan.' },
-      { id: 203, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 16500, orig: 18000, discount: '-8%', unit: '1 kg', stock: 60, rating: 4.8, sold: '310+', location: 'Magelang', eta: '30 mnt', desc: 'Gula pasir kristal putih murni manis alami untuk sajian minuman dan kue keluarga.' },
+      { id: 201, name: 'Beras Pandan Wangi Premium 5kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 65000, orig: 74000, discount: '-12%', unit: '5 kg', stock: 35, rating: 4.9, sold: '680+', location: 'Magelang', eta: '30 mnt', desc: 'Beras pandan wangi pulen, bersih, dan harum dari sawah pilihan mitra binaan.' },
+      { id: 202, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 32000, orig: 35500, discount: '-10%', unit: '2 Liter', stock: 50, rating: 4.9, sold: '420+', location: 'Magelang', eta: '30 mnt', desc: 'Minyak goreng kelapa sawit higienis bermutu tinggi untuk memasak sehari-hari.' },
+      { id: 203, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 17000, orig: 20000, discount: '-15%', unit: '1 kg', stock: 60, rating: 4.8, sold: '310+', location: 'Magelang', eta: '30 mnt', desc: 'Gula pasir kristal putih murni manis alami untuk sajian minuman dan kue keluarga.' },
       { id: 204, name: 'Tepung Terigu Serbaguna 1kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 12000, orig: 13500, discount: '-11%', unit: '1 kg', stock: 40, rating: 4.8, sold: '240+', location: 'Magelang', eta: '30 mnt', desc: 'Tepung terigu serbaguna protein sedang untuk aneka olahan kue dan gorengan.' },
       { id: 205, name: 'Mie Instan Kuah & Goreng (isi 5)', cat: 'Pangan', seller: 'ESTO Graha Mandala', price: 14500, orig: 16000, discount: '-9%', unit: '5 bungkus', stock: 80, rating: 4.9, sold: '520+', location: 'Magelang', eta: '30 mnt', desc: 'Paket 5 bungkus mie instan rasa favorit keluarga desa, praktis dan lezat.' },
       { id: 206, name: 'Telur Ayam Kampung (12 butir)', cat: 'Pangan', seller: 'ESTO Graha Mandala', price: 32000, orig: null, unit: '12 butir', stock: 25, rating: 4.9, sold: '190+', location: 'Magelang', eta: '30 mnt', desc: 'Telur ayam kampung segar organik dengan kuning telur pekat penuh nutrisi.' },
@@ -93,47 +92,20 @@ export const ESTO_STORES = [
     promoText: 'Gratis Ongkir Min. Belanja Rp0',
     logo: STORE_LOGOS['store-2'],
     logoText: 'GVS',
-    logoBg: 'linear-gradient(135deg, #0D47A1, #1976D2)',
-    cardVariant: 'accent',
+    logoBg: 'linear-gradient(135deg, #0B429A, #1565C0)',
     coverImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop',
     desc: 'Pusat grosir dan distributor kebutuhan pokok warga di Sleman & Yogyakarta. Produk selalu baru setiap minggu.',
     products: [
-      { id: 207, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 31500, orig: 35000, discount: '-10%', unit: '2 Liter', stock: 45, rating: 4.8, sold: '380+', location: 'Sleman', eta: '25 mnt', desc: 'Minyak goreng sawit jernih tidak mudah hitam untuk memasak.' },
-      { id: 208, name: 'Susu UHT Full Cream 1L', cat: 'Minuman', seller: 'Grosir GV Sleman', price: 19500, orig: 22000, discount: '-11%', unit: '1 Liter', stock: 30, rating: 4.9, sold: '290+', location: 'Sleman', eta: '25 mnt', desc: 'Susu sapi segar full cream berkualitas tinggi kalsium untuk keluarga.' },
-      { id: 209, name: 'Deterjen Bubuk Konsentrat 800g', cat: 'Kebutuhan Rumah', seller: 'Grosir GV Sleman', price: 18000, orig: 20000, discount: '-10%', unit: '800 gram', stock: 35, rating: 4.8, sold: '210+', location: 'Sleman', eta: '25 mnt', desc: 'Deterjen konsentrat ampuh membersihkan noda membandel dan harum tahan lama.' },
-      { id: 210, name: 'Sabun Cuci Piring Jeruk Nipis', cat: 'Kebutuhan Rumah', seller: 'Grosir GV Sleman', price: 10500, orig: null, unit: '750 ml', stock: 40, rating: 4.7, sold: '340+', location: 'Sleman', eta: '25 mnt', desc: 'Cairan pencuci piring ekstrak jeruk nipis wangi segar kesat seketika.' },
-      { id: 211, name: 'Garam Beryodium Halus 500g', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 4500, orig: null, unit: '500 gram', stock: 70, rating: 4.9, sold: '460+', location: 'Sleman', eta: '25 mnt', desc: 'Garam dapur beryodium bersih halus untuk penambah cita rasa masakan.' },
-      { id: 212, name: 'Teh Celup Melati Kotak (25 bag)', cat: 'Minuman', seller: 'Grosir GV Sleman', price: 7500, orig: null, unit: '25 kantong', stock: 55, rating: 4.8, sold: '180+', location: 'Sleman', eta: '25 mnt', desc: 'Teh wangi melati khas Jawa dengan aroma sedap menenangkan.' },
+      { id: 207, name: 'Telur Ayam Kampung', cat: 'Pangan', seller: 'Grosir GV Sleman', price: 32000, orig: 35500, discount: '-10%', unit: '12 butir', stock: 45, rating: 4.8, sold: '380+', location: 'Sleman', eta: '25 mnt', desc: 'Telur ayam kampung segar dan bernutrisi tinggi.' },
+      { id: 208, name: 'Mie Instan 1 Dus', cat: 'Pangan', seller: 'Grosir GV Sleman', price: 98000, orig: 106500, discount: '-8%', unit: '1 karton (40 bks)', stock: 30, rating: 4.9, sold: '290+', location: 'Sleman', eta: '25 mnt', desc: 'Mie instan 1 dus isi 40 bungkus varian kuah & goreng favorit warga.' },
+      { id: 209, name: 'Susu Kental Manis', cat: 'Minuman', seller: 'Grosir GV Sleman', price: 15500, orig: 17600, discount: '-12%', unit: '370 gr', stock: 35, rating: 4.8, sold: '210+', location: 'Sleman', eta: '25 mnt', desc: 'Susu kental manis lezat untuk minuman hangat, es campur, dan aneka kue.' },
+      { id: 210, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 31500, orig: 35000, discount: '-10%', unit: '2 Liter', stock: 45, rating: 4.8, sold: '380+', location: 'Sleman', eta: '25 mnt', desc: 'Minyak goreng sawit jernih tidak mudah hitam untuk memasak.' },
+      { id: 211, name: 'Deterjen Bubuk Konsentrat 800g', cat: 'Kebutuhan Rumah', seller: 'Grosir GV Sleman', price: 18000, orig: 20000, discount: '-10%', unit: '800 gram', stock: 35, rating: 4.8, sold: '210+', location: 'Sleman', eta: '25 mnt', desc: 'Deterjen konsentrat ampuh membersihkan noda membandel dan harum tahan lama.' },
+      { id: 212, name: 'Garam Beryodium Halus 500g', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 4500, orig: null, unit: '500 gram', stock: 70, rating: 4.9, sold: '460+', location: 'Sleman', eta: '25 mnt', desc: 'Garam dapur beryodium bersih halus untuk penambah cita rasa masakan.' },
     ],
   },
   {
     id: 'store-3',
-    name: 'Toko GV Bantul',
-    type: 'Kios Resmi',
-    category: 'Kios Sembako & Kelontong Warga',
-    address: 'Bantul, D.I. Yogyakarta',
-    region: 'D.I. Yogyakarta',
-    rating: 4.8,
-    soldCount: '680+ terjual',
-    followers: 76,
-    eta: '30 mnt',
-    distance: '3.2 km',
-    promoText: 'Voucher Diskon s/d Rp10RB',
-    logo: STORE_LOGOS['store-3'],
-    logoText: 'TGB',
-    logoBg: 'linear-gradient(135deg, #E65100, #F57C00)',
-    cardVariant: 'standard',
-    coverImage: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=800&auto=format&fit=crop',
-    desc: 'Kios sembako andalan warga Bantul. Belanja kebutuhan dapur dan rumah tangga serba lengkap dan cepat antar.',
-    products: [
-      { id: 213, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'Toko GV Bantul', price: 16000, orig: 17500, discount: '-9%', unit: '1 kg', stock: 40, rating: 4.8, sold: '270+', location: 'Bantul', eta: '30 mnt', desc: 'Gula pasir kristal putih bersih dan higienis.' },
-      { id: 214, name: 'Telur Ayam Kampung (12 butir)', cat: 'Pangan', seller: 'Toko GV Bantul', price: 31000, orig: 33000, discount: '-6%', unit: '12 butir', stock: 20, rating: 4.9, sold: '180+', location: 'Bantul', eta: '30 mnt', desc: 'Telur ayam kampung segar dari peternak lokal Bantul.' },
-      { id: 215, name: 'Kopi Robusta Segar', cat: 'Minuman', seller: 'Toko GV Bantul', price: 34000, orig: null, unit: '250 gr', stock: 15, rating: 4.8, sold: '95+', location: 'Bantul', eta: '30 mnt', desc: 'Bubuk kopi robusta sangrai alami rasa mantap.' },
-      { id: 216, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Toko GV Bantul', price: 32500, orig: 35000, discount: '-7%', unit: '2 Liter', stock: 25, rating: 4.8, sold: '150+', location: 'Bantul', eta: '30 mnt', desc: 'Minyak goreng kemasan bantal isi 2 liter.' },
-    ],
-  },
-  {
-    id: 'store-4',
     name: 'Toko GV Jogja Malioboro',
     type: 'Kios Resmi',
     category: 'Toko Pangan & Oleh-Oleh Desa',
@@ -145,17 +117,43 @@ export const ESTO_STORES = [
     eta: '20 mnt',
     distance: '0.9 km',
     promoText: 'Cashback 10% Semua Produk',
-    logo: STORE_LOGOS['store-4'],
+    logo: STORE_LOGOS['store-3'],
     logoText: 'TJM',
-    logoBg: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
-    cardVariant: 'showcase',
+    logoBg: 'linear-gradient(135deg, #4A148C, #6A1B9A)',
     coverImage: 'https://images.unsplash.com/photo-1568644396922-5c3bfae12521?q=80&w=800&auto=format&fit=crop',
     desc: 'Kios resmi ESTO Malioboro menyediakan ragam pangan sehat desa, madu murni, kopi lereng Merapi, dan kerajinan khas lokal.',
     products: [
-      { id: 217, name: 'Madu Hutan Murni', cat: 'Lainnya', seller: 'Toko GV Jogja Malioboro', price: 65000, orig: 75000, discount: '-13%', unit: '250 ml', stock: 18, rating: 4.9, sold: '210+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Madu hutan alam murni tanpa pemanis buatan.' },
-      { id: 218, name: 'Keripik Singkong Pedas', cat: 'Camilan', seller: 'Toko GV Jogja Malioboro', price: 15000, orig: null, unit: '200 gr', stock: 35, rating: 4.8, sold: '430+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Keripik renyah rasa pedas gurih khas desa.' },
-      { id: 219, name: 'Batik Tulis Lokal', cat: 'Kerajinan', seller: 'Toko GV Jogja Malioboro', price: 85000, orig: 95000, discount: '-11%', unit: '1 lembar', stock: 8, rating: 4.9, sold: '60+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Kain batik tulis karya pembatik senior binaan Global Village.' },
-      { id: 220, name: 'Kopi Robusta Segar', cat: 'Minuman', seller: 'Toko GV Jogja Malioboro', price: 35000, orig: null, unit: '250 gr', stock: 22, rating: 4.8, sold: '180+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Kopi robusta harum segar dipetik merah.' },
+      { id: 213, name: 'Tempe Mendoan', cat: 'Pangan', seller: 'Toko GV Jogja Malioboro', price: 12000, orig: 13800, discount: '-13%', unit: '5 pcs', stock: 40, rating: 4.9, sold: '520+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Tempe mendoan kedelai asli dengan bumbu rempah daun bawang siap goreng.' },
+      { id: 214, name: 'Pisang Cavendish', cat: 'Buah', seller: 'Toko GV Jogja Malioboro', price: 18000, orig: 20000, discount: '-10%', unit: '1 sisir', stock: 25, rating: 4.8, sold: '230+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Pisang cavendish segar manis mulus kualitas ekspor dari kebun mitra binaan.' },
+      { id: 215, name: 'Bawang Merah 250gr', cat: 'Sayur', seller: 'Toko GV Jogja Malioboro', price: 22000, orig: 25800, discount: '-15%', unit: '250 gram', stock: 30, rating: 4.9, sold: '310+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Bawang merah lokal Brebes segar harum tajam untuk bumbu masakan lezat.' },
+      { id: 216, name: 'Madu Hutan Murni', cat: 'Lainnya', seller: 'Toko GV Jogja Malioboro', price: 65000, orig: 75000, discount: '-13%', unit: '250 ml', stock: 18, rating: 4.9, sold: '210+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Madu hutan alam murni tanpa pemanis buatan.' },
+      { id: 217, name: 'Keripik Singkong Pedas', cat: 'Camilan', seller: 'Toko GV Jogja Malioboro', price: 15000, orig: null, unit: '200 gr', stock: 35, rating: 4.8, sold: '430+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Keripik renyah rasa pedas gurih khas desa.' },
+      { id: 218, name: 'Batik Tulis Lokal', cat: 'Kerajinan', seller: 'Toko GV Jogja Malioboro', price: 85000, orig: 95000, discount: '-11%', unit: '1 lembar', stock: 8, rating: 4.9, sold: '60+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Kain batik tulis karya pembatik senior binaan Global Village.' },
+    ],
+  },
+  {
+    id: 'store-4',
+    name: 'Kios Desa Makmur',
+    type: 'Kios Resmi',
+    category: 'Sembako & Produk Pertanian',
+    address: 'Bantul, D.I. Yogyakarta',
+    region: 'D.I. Yogyakarta',
+    rating: 4.7,
+    soldCount: '680+ terjual',
+    followers: 128,
+    eta: '35 mnt',
+    distance: '3.5 km',
+    promoText: 'Diskon Hasil Tani s/d Rp12RB',
+    logo: STORE_LOGOS['store-4'],
+    logoText: 'KDM',
+    logoBg: 'linear-gradient(135deg, #E8F5E9, #F1F8E9)',
+    coverImage: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=800&auto=format&fit=crop',
+    desc: 'Kios produk pertanian dan kebutuhan dapur binaan Gapoktan Desa Makmur. Panen segar setiap hari langsung dari sawah dan kebun warga.',
+    products: [
+      { id: 219, name: 'Tomat Segar 1kg', cat: 'Sayur', seller: 'Kios Desa Makmur', price: 16000, orig: 18000, discount: '-11%', unit: '1 kg', stock: 40, rating: 4.8, sold: '420+', location: 'Bantul', eta: '35 mnt', desc: 'Tomat merah segar padat kaya vitamin langsung dari ladang kebun sayur desa.' },
+      { id: 220, name: 'Cabai Merah 250gr', cat: 'Sayur', seller: 'Kios Desa Makmur', price: 21000, orig: 23000, discount: '-9%', unit: '250 gram', stock: 35, rating: 4.9, sold: '380+', location: 'Bantul', eta: '35 mnt', desc: 'Cabai merah keriting pedas mantap segar petik pagi.' },
+      { id: 221, name: 'Bawang Putih 250gr', cat: 'Sayur', seller: 'Kios Desa Makmur', price: 20000, orig: 22700, discount: '-12%', unit: '250 gram', stock: 45, rating: 4.7, sold: '290+', location: 'Bantul', eta: '35 mnt', desc: 'Bawang putih kating bersih beraroma harum gurih untuk tumisan.' },
+      { id: 222, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'Kios Desa Makmur', price: 16500, orig: 18000, discount: '-8%', unit: '1 kg', stock: 30, rating: 4.8, sold: '190+', location: 'Bantul', eta: '35 mnt', desc: 'Gula pasir putih manis alami.' },
     ],
   },
   {
@@ -4589,21 +4587,28 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
           </div>
 
-          {/* ── Section Toko Pilihan (Image 2) ── */}
+          {/* ── Section Toko Pilihan (Reference Design) ── */}
           <div className="pt-2 pb-2">
-            <div className="px-3.5 flex items-center justify-between mb-2">
+            <div className="px-3.5 flex items-center justify-between mb-2.5">
               <div>
-                <h3 className="text-[14px] font-extrabold text-gray-900 leading-tight">
+                <h3 className="text-[15px] font-extrabold text-gray-900 leading-tight">
                   Toko Pilihan
                 </h3>
                 <p className="text-[11px] text-gray-500">
                   Kios & Grosir Resmi ESTO terdekat siap antar kilat
                 </p>
               </div>
+              <button
+                onClick={() => setShowAllStores(!showAllStores)}
+                className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-[11.5px] font-bold border border-emerald-200/80 flex items-center gap-1 hover:bg-emerald-100 transition active:scale-95"
+              >
+                <span>{showAllStores ? 'Tutup' : 'Lihat Semua'}</span>
+                <ChevronRight size={13} strokeWidth={2.5} />
+              </button>
             </div>
 
-            <div className="px-3.5 flex flex-col gap-3">
-              {(showAllStores ? ESTO_STORES : ESTO_STORES.slice(0, 2)).map((store) => (
+            <div className="px-3.5 flex flex-col gap-3.5">
+              {(showAllStores ? ESTO_STORES.slice(0, 4) : ESTO_STORES.slice(0, 2)).map((store) => (
                 <StoreCard
                   key={store.id}
                   store={store}
@@ -4615,7 +4620,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               {/* Cek Toko Lainnya Toggle Button */}
               <button
                 onClick={() => setShowAllStores(!showAllStores)}
-                className="w-full py-2.5 rounded-xl bg-white border border-gray-200 text-gray-700 text-[12px] font-extrabold flex items-center justify-center gap-1.5 shadow-2xs hover:bg-gray-50 active:scale-[0.99] transition mt-0.5"
+                className="w-full py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 text-[12px] font-extrabold flex items-center justify-center gap-1.5 shadow-2xs hover:bg-gray-50 active:scale-[0.99] transition mt-0.5"
               >
                 <span>{showAllStores ? 'TAMPILKAN LEBIH SEDIKIT' : 'CEK TOKO LAINNYA'}</span>
                 <ChevronRight

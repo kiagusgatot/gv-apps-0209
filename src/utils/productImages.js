@@ -57,6 +57,20 @@ export const PRODUCT_IMAGE_MAP = {
   'garam beryodium halus 500g': 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?q=80&w=600&auto=format&fit=crop',
   'garam': 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?q=80&w=600&auto=format&fit=crop',
 
+  // Sembako, Sayur & Bumbu Dapur
+  'bawang merah 250gr': 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?q=80&w=600&auto=format&fit=crop',
+  'bawang merah': 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?q=80&w=600&auto=format&fit=crop',
+  'bawang putih 250gr': 'https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?q=80&w=600&auto=format&fit=crop',
+  'bawang putih': 'https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?q=80&w=600&auto=format&fit=crop',
+  'tomat segar 1kg': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=600&auto=format&fit=crop',
+  'tomat': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=600&auto=format&fit=crop',
+  'cabai merah 250gr': 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop',
+  'cabai merah': 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop',
+  'pisang cavendish': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=600&auto=format&fit=crop',
+  'susu kental manis': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=600&auto=format&fit=crop',
+  'mie instan 1 dus': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=600&auto=format&fit=crop',
+  'mie instan': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=600&auto=format&fit=crop',
+
   // Kerajinan & Lainnya
   'batik tulis lokal': 'https://images.unsplash.com/photo-1580661869408-55ab23f2ca6e?q=80&w=600&auto=format&fit=crop',
   'pupuk organik kompos 25kg': 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop',
