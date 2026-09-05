@@ -11,6 +11,7 @@ import StoreCard from '@/components/molecules/StoreCard'
 import WishlistSheet from '@/components/molecules/WishlistSheet'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import { getProductImage, FALLBACK_PRODUCT_IMAGE } from '@/utils/productImages'
+import { STORE_LOGOS } from '@/utils/storeLogos'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
@@ -62,8 +63,10 @@ export const ESTO_STORES = [
     eta: '30 mnt',
     distance: '2.1 km',
     promoText: 'Beli Rp0, diskon Gratis Ongkir s/d Rp15RB',
+    logo: STORE_LOGOS['store-1'],
     logoText: 'EGM',
     logoBg: 'linear-gradient(135deg, #1B5E20, #2E7D32)',
+    cardVariant: 'showcase',
     coverImage: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop',
     desc: 'Pusat grosir sembako resmi ESTO Magelang. Melayani pasokan beras, minyak goreng sawit, gula, dan kebutuhan pangan desa dengan harga grosir langsung petani.',
     products: [
@@ -88,8 +91,10 @@ export const ESTO_STORES = [
     eta: '25 mnt',
     distance: '1.8 km',
     promoText: 'Gratis Ongkir Min. Belanja Rp0',
+    logo: STORE_LOGOS['store-2'],
     logoText: 'GVS',
     logoBg: 'linear-gradient(135deg, #0D47A1, #1976D2)',
+    cardVariant: 'accent',
     coverImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop',
     desc: 'Pusat grosir dan distributor kebutuhan pokok warga di Sleman & Yogyakarta. Produk selalu baru setiap minggu.',
     products: [
@@ -114,8 +119,10 @@ export const ESTO_STORES = [
     eta: '30 mnt',
     distance: '3.2 km',
     promoText: 'Voucher Diskon s/d Rp10RB',
+    logo: STORE_LOGOS['store-3'],
     logoText: 'TGB',
     logoBg: 'linear-gradient(135deg, #E65100, #F57C00)',
+    cardVariant: 'standard',
     coverImage: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=800&auto=format&fit=crop',
     desc: 'Kios sembako andalan warga Bantul. Belanja kebutuhan dapur dan rumah tangga serba lengkap dan cepat antar.',
     products: [
@@ -138,8 +145,10 @@ export const ESTO_STORES = [
     eta: '20 mnt',
     distance: '0.9 km',
     promoText: 'Cashback 10% Semua Produk',
+    logo: STORE_LOGOS['store-4'],
     logoText: 'TJM',
     logoBg: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
+    cardVariant: 'showcase',
     coverImage: 'https://images.unsplash.com/photo-1568644396922-5c3bfae12521?q=80&w=800&auto=format&fit=crop',
     desc: 'Kios resmi ESTO Malioboro menyediakan ragam pangan sehat desa, madu murni, kopi lereng Merapi, dan kerajinan khas lokal.',
     products: [
@@ -3577,7 +3586,6 @@ function StoreDetailScreen({
   totalPrice = 0,
 }) {
   const [activeStoreTab, setActiveStoreTab] = useState('produk') // 'produk' | 'ulasan'
-  const [storeSearch, setStoreSearch] = useState('')
   const [isFollowing, setIsFollowing] = useState(false)
   const [claimedVoucher, setClaimedVoucher] = useState(false)
   const [toastMsg, setToastMsg] = useState(null)
@@ -3587,10 +3595,8 @@ function StoreDetailScreen({
     setTimeout(() => setToastMsg(null), 2500)
   }
 
-  // Filter store products simply by search query without redundant filter chips
-  const displayProducts = (store?.products || []).filter((p) =>
-    !storeSearch || p.name.toLowerCase().includes(storeSearch.toLowerCase())
-  )
+  // Direct store products without search clutter
+  const displayProducts = store?.products || []
 
   const REVIEWS_DUMMY = [
     {
@@ -3697,20 +3703,24 @@ function StoreDetailScreen({
           <div className="bg-white rounded-3xl p-4 shadow-[0_8px_30px_rgba(27,107,58,0.08)] border border-gray-100/90 flex flex-col gap-3.5">
             {/* Top row: Squircle Logo + Store Name + Badges */}
             <div className="flex items-start gap-3.5">
-              {/* Logo Squircle with Depth, Inner Glow & Ambient Shine */}
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-[16px] tracking-wide shadow-md flex-shrink-0 relative overflow-hidden mt-0.5"
-                style={{
-                  background: store?.logoBg || 'linear-gradient(135deg, #1B6B3A 0%, #2E7D32 100%)',
-                  border: '1.5px solid rgba(255, 255, 255, 0.35)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.14), inset 0 1px 2px rgba(255, 255, 255, 0.4)',
-                }}
-              >
-                <div
-                  className="absolute -top-3 -end-3 w-8 h-8 rounded-full pointer-events-none opacity-40"
-                  style={{ background: 'radial-gradient(circle, #ffffff 0%, transparent 70%)' }}
-                />
-                <span className="drop-shadow-xs">{store?.logoText || 'GV'}</span>
+              {/* Square Box Logo Container: 56px x 56px with object-contain */}
+              <div className="w-14 h-14 rounded-xl bg-white border border-gray-200/90 shadow-2xs p-1 flex items-center justify-center flex-shrink-0 relative overflow-hidden mt-0.5">
+                {store?.logo ? (
+                  <img
+                    src={store.logo}
+                    alt={store?.name}
+                    className="w-full h-full object-contain rounded-lg"
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full rounded-lg flex items-center justify-center text-white font-black text-[15px] tracking-wide shadow-xs relative overflow-hidden"
+                    style={{
+                      background: store?.logoBg || 'linear-gradient(135deg, #1B6B3A 0%, #2E7D32 100%)',
+                    }}
+                  >
+                    <span className="drop-shadow-xs">{store?.logoText || 'GV'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Store Title, Type & Rating */}
@@ -3840,47 +3850,23 @@ function StoreDetailScreen({
           </div>
         </div>
 
-        {/* Tab: Produk */}
+        {/* Tab: Produk - Direct Product Grid without empty containers */}
         {activeStoreTab === 'produk' && (
-          <div className="px-4 pt-3">
-            {/* Search inside store */}
-            <div className="mb-3">
-              <SearchBar
-                value={storeSearch}
-                onChange={(e) => setStoreSearch(e.target.value)}
-                onClear={() => setStoreSearch('')}
-                placeholder={`Cari produk di ${store?.name}...`}
-                className="w-full bg-white border border-gray-200/90 shadow-2xs text-[12px]"
-              />
+          <div className="px-4 pt-3 pb-6">
+            <div className="grid grid-cols-2 gap-3">
+              {displayProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  inCartQty={cart[p.id] || 0}
+                  isLiked={liked.has(p.id)}
+                  onToggleLike={onToggleLike}
+                  onOpenDetail={onOpenDetail}
+                  onAddToCart={onAddToCart}
+                  onUpdateQty={onUpdateQty}
+                />
+              ))}
             </div>
-
-            {/* Direct Product Grid without filter clutter */}
-            {displayProducts.length === 0 ? (
-              <div className="py-12 text-center text-gray-400">
-                <p className="text-sm font-semibold">Tidak ada produk ditemukan</p>
-                <button
-                  onClick={() => setStoreSearch('')}
-                  className="mt-2 text-xs text-[#1B6B3A] font-bold"
-                >
-                  Tampilkan Semua Produk
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 pb-6">
-                {displayProducts.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    inCartQty={cart[p.id] || 0}
-                    isLiked={liked.has(p.id)}
-                    onToggleLike={onToggleLike}
-                    onOpenDetail={onOpenDetail}
-                    onAddToCart={onAddToCart}
-                    onUpdateQty={onUpdateQty}
-                  />
-                ))}
-              </div>
-            )}
           </div>
         )}
 
