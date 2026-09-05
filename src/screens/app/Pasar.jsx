@@ -944,7 +944,6 @@ function CheckoutScreen({
       id: 'reguler',
       label: 'GV Man Reguler',
       sub: 'Antar ke rumah · Est. 30-45 mnt',
-      badge: 'Terpopuler',
       Icon: Truck,
       g: ['#1B5E20', '#2E7D32'],
       price: 8000,
@@ -953,7 +952,6 @@ function CheckoutScreen({
       id: 'kilat',
       label: 'GV Man Kilat (Express)',
       sub: 'Prioritas langsung jalan · Est. 15-25 mnt',
-      badge: 'Cepat Tiba',
       Icon: Zap,
       g: ['#E65100', '#F57C00'],
       price: 12000,
@@ -962,7 +960,6 @@ function CheckoutScreen({
       id: 'pickup',
       label: 'Ambil Sendiri di Toko',
       sub: 'Ambil langsung ke lokasi kebun/toko penjual',
-      badge: 'Gratis',
       Icon: Store,
       g: ['#0D47A1', '#1976D2'],
       price: 0,
@@ -1135,7 +1132,7 @@ function CheckoutScreen({
                 <button
                   key={d.id}
                   onClick={() => setDelivery(d.id)}
-                  className={`w-full flex items-start gap-3 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.99] group ${
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.99] group ${
                     isSelected
                       ? 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                       : 'bg-white border-gray-200/80 hover:bg-gray-50'
@@ -1146,45 +1143,35 @@ function CheckoutScreen({
                     icon={d.Icon}
                     gradient={d.g}
                     size="sm"
-                    className="w-10 h-10 rounded-2xl flex-shrink-0 mt-0.5"
+                    className="w-10 h-10 rounded-2xl flex-shrink-0"
                   />
 
-                  {/* Center: Information Area */}
-                  <div className="flex-1 min-w-0 pr-1">
-                    {/* Row 1: Title + Tag */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[13px] font-extrabold text-gray-900 leading-snug">
-                        {d.label}
-                      </span>
-                      {d.badge && (
-                        <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 leading-tight flex-shrink-0">
-                          {d.badge}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Row 2: Description & ETA */}
-                    <p className="text-[11px] text-gray-500 mt-1 leading-normal line-clamp-2">
+                  {/* Middle: Title & Description */}
+                  <div className="flex-1 min-w-0 pr-1.5">
+                    <h4 className="text-[13px] font-extrabold text-gray-900 leading-snug truncate">
+                      {d.label}
+                    </h4>
+                    <p className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-2">
                       {d.sub}
                     </p>
                   </div>
 
-                  {/* Right: Selection & Price Column */}
-                  <div className="flex flex-col items-end justify-between flex-shrink-0 self-stretch min-h-[44px] py-0.5">
+                  {/* Right: Dedicated Price & Radio Indicator */}
+                  <div className="flex items-center gap-2.5 flex-shrink-0">
+                    <span className="text-[12.5px] font-black text-right whitespace-nowrap min-w-[58px]">
+                      {d.price === 0 ? (
+                        <span className="text-emerald-700 font-extrabold">Gratis</span>
+                      ) : (
+                        <span className="text-gray-900">Rp {d.price.toLocaleString('id')}</span>
+                      )}
+                    </span>
                     <div
-                      className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        isSelected ? 'border-emerald-700' : 'border-gray-300'
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isSelected ? 'border-emerald-700 bg-emerald-50/50' : 'border-gray-300 bg-white'
                       }`}
                     >
                       {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-emerald-700" />}
                     </div>
-                    <span className="text-[12.5px] font-black text-gray-900 tracking-tight leading-tight whitespace-nowrap mt-2">
-                      {d.price === 0 ? (
-                        <span className="text-emerald-700 font-extrabold">Gratis</span>
-                      ) : (
-                        `Rp ${d.price.toLocaleString('id')}`
-                      )}
-                    </span>
                   </div>
                 </button>
               )
