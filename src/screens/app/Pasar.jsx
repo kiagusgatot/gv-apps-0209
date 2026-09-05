@@ -1556,16 +1556,32 @@ const DUMMY_BUYER_ORDERS = [
     total: 37000,
     status: 'shipped',
     address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
-    courier: { name: 'Agus Santoso', rating: 4.9, vehicle: 'Honda Beat · B 4521 KDF' },
+    courier: { name: 'Agus Santoso', rating: 4.9, trips: '240+', vehicle: 'Honda Beat · B 4521 KDF', avatar: '👨' },
     items: [
-      { id: 1, name: 'Bayam Organik Segar', qty: 2, price: 8500, Icon: Leaf, g: ['#2E7D32', '#4CAF50'] },
-      { id: 2, name: 'Tempe Mendoan Jumbo', qty: 1, price: 12000, Icon: CircleDot, g: ['#E65100', '#F57C00'] },
+      {
+        id: 2,
+        name: 'Bayam Organik Segar',
+        qty: 2,
+        price: 8500,
+        image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop',
+        Icon: Leaf,
+        g: ['#2E7D32', '#4CAF50'],
+      },
+      {
+        id: 1,
+        name: 'Tempe Mendoan Jumbo',
+        qty: 1,
+        price: 12000,
+        image: 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
+        Icon: CircleDot,
+        g: ['#E65100', '#F57C00'],
+      },
     ],
     timeline: [
-      { s: 'waiting', time: '10:15', label: 'Pesanan dibuat' },
-      { s: 'confirmed', time: '10:18', label: 'Penjual mengkonfirmasi' },
-      { s: 'preparing', time: '10:30', label: 'Pesanan disiapkan & dikemas' },
-      { s: 'shipped', time: '10:45', label: 'GV Man sedang dalam perjalanan' },
+      { s: 'waiting', time: '10:15', label: 'Pesanan Dibuat', sub: 'Menunggu konfirmasi dari penjual' },
+      { s: 'confirmed', time: '10:18', label: 'Penjual Mengonfirmasi', sub: 'Penjual menerima dan memverifikasi pesanan' },
+      { s: 'preparing', time: '10:30', label: 'Pesanan Sedang Disiapkan', sub: 'Penjual menyiapkan paket dan mengemas produk' },
+      { s: 'shipped', time: '10:45', label: 'Dalam Perjalanan ke Lokasimu', sub: 'GV Man sedang mengantar paket ke rumahmu' },
     ],
   },
   {
@@ -1578,10 +1594,18 @@ const DUMMY_BUYER_ORDERS = [
     status: 'waiting',
     address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
     items: [
-      { id: 3, name: 'Beras Pandan Wangi Premium 5kg', qty: 1, price: 65000, Icon: Wheat, g: ['#827717', '#9E9D24'] },
+      {
+        id: 8,
+        name: 'Beras Pandan Wangi Premium 5kg',
+        qty: 1,
+        price: 65000,
+        image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
+        Icon: Wheat,
+        g: ['#827717', '#9E9D24'],
+      },
     ],
     timeline: [
-      { s: 'waiting', time: '08:30', label: 'Menunggu konfirmasi penjual' },
+      { s: 'waiting', time: '08:30', label: 'Menunggu Konfirmasi Penjual', sub: 'Pesanan telah diteruskan ke mitra petani' },
     ],
   },
   {
@@ -1594,15 +1618,31 @@ const DUMMY_BUYER_ORDERS = [
     status: 'done',
     address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
     items: [
-      { id: 8, name: 'Kopi Robusta Segar', qty: 1, price: 35000, Icon: Coffee, g: ['#4E342E', '#6D4C41'] },
-      { id: 9, name: 'Madu Hutan Murni', qty: 1, price: 65000, Icon: Droplet, g: ['#F57F17', '#FFCA28'] },
+      {
+        id: 3,
+        name: 'Kopi Robusta Segar',
+        qty: 1,
+        price: 35000,
+        image: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=600&auto=format&fit=crop',
+        Icon: Coffee,
+        g: ['#4E342E', '#6D4C41'],
+      },
+      {
+        id: 4,
+        name: 'Madu Hutan Murni',
+        qty: 1,
+        price: 65000,
+        image: 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop',
+        Icon: Droplet,
+        g: ['#F57F17', '#FFCA28'],
+      },
     ],
     timeline: [
-      { s: 'waiting', time: '14:20', label: 'Pesanan dibuat' },
-      { s: 'confirmed', time: '14:25', label: 'Penjual mengkonfirmasi' },
-      { s: 'preparing', time: '14:40', label: 'Pesanan disiapkan' },
-      { s: 'shipped', time: '15:05', label: 'Dalam perjalanan' },
-      { s: 'done', time: '15:45', label: 'Pesanan selesai diterima' },
+      { s: 'waiting', time: '14:20', label: 'Pesanan Dibuat', sub: 'Menunggu konfirmasi penjual' },
+      { s: 'confirmed', time: '14:25', label: 'Pesanan Dikonfirmasi', sub: 'Penjual memverifikasi ketersediaan stok' },
+      { s: 'preparing', time: '14:40', label: 'Pesanan Disiapkan', sub: 'Paket dikemas rapi' },
+      { s: 'shipped', time: '15:05', label: 'Dalam Pengiriman', sub: 'GV Man mengantar paket' },
+      { s: 'done', time: '15:45', label: 'Pesanan Selesai Diterima', sub: 'Paket telah diterima di alamat pemesan' },
     ],
   },
   {
@@ -1617,11 +1657,19 @@ const DUMMY_BUYER_ORDERS = [
     refundNotice: 'Dana Rp 40.000 telah dikembalikan 100% ke saldo GV Pay.',
     address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
     items: [
-      { id: 5, name: 'Telur Ayam Kampung (10 butir)', qty: 1, price: 32000, Icon: Egg, g: ['#F57F17', '#FBC02D'] },
+      {
+        id: 9,
+        name: 'Telur Ayam Kampung (10 butir)',
+        qty: 1,
+        price: 32000,
+        image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop',
+        Icon: Egg,
+        g: ['#F57F17', '#FBC02D'],
+      },
     ],
     timeline: [
-      { s: 'waiting', time: '11:10', label: 'Pesanan dibuat' },
-      { s: 'cancelled', time: '11:18', label: 'Pesanan dibatalkan pembeli (Refund Selesai)' },
+      { s: 'waiting', time: '11:10', label: 'Pesanan Dibuat', sub: 'Menunggu konfirmasi penjual' },
+      { s: 'cancelled', time: '11:18', label: 'Pesanan Dibatalkan Pembeli', sub: 'Refund 100% saldo GV Pay berhasil' },
     ],
   },
 ]
@@ -1799,39 +1847,62 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCance
             </div>
           )}
 
-          {/* Items */}
+          {/* Items with Real Product Photos */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 mb-2">Produk yang Dibeli</p>
-            {order.items.map((item,i)=>(
+            <p className="text-[11px] font-bold text-gray-400 mb-2.5 uppercase tracking-wider">Produk yang Dibeli</p>
+            {order.items.map((item, i) => (
               <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-                <div className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden relative"
-                  style={{background:item.image?'transparent':(item.g?`linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`:'#F5F5F5')}}>
-                  {item.image?<img src={item.image} alt="" className="w-full h-full object-cover border border-black/10"/>:(item.Icon?<item.Icon size={22} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>:<Package size={22} className="text-gray-400"/>)}
+                <div
+                  className="w-13 h-13 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden relative border border-gray-100 bg-gray-50"
+                  style={{
+                    background: item.image
+                      ? 'transparent'
+                      : item.g
+                      ? `linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`
+                      : '#F5F5F5',
+                  }}
+                >
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : item.Icon ? (
+                    <item.Icon size={22} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} />
+                  ) : (
+                    <Package size={22} className="text-gray-400" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-gray-900">{item.name}</p>
-                  <p className="text-[11px] text-gray-400">{item.qty} × Rp {item.price.toLocaleString('id')}</p>
+                  <p className="text-[13px] font-bold text-gray-900 leading-snug truncate">{item.name}</p>
+                  <p className="text-[11.5px] text-gray-500 mt-0.5">
+                    {item.qty} × Rp {item.price.toLocaleString('id')}
+                  </p>
                 </div>
-                <p className="text-[13px] font-bold flex-shrink-0" style={{color:PRIMARY}}>
-                  Rp {(item.qty*item.price).toLocaleString('id')}
+                <p className="text-[13px] font-extrabold tabular-nums flex-shrink-0" style={{ color: PRIMARY }}>
+                  Rp {(item.qty * item.price).toLocaleString('id')}
                 </p>
               </div>
             ))}
             <div className="flex justify-between pt-3 border-t border-gray-100">
               <span className="text-[12px] font-bold text-gray-900">Total Pembayaran</span>
-              <span className="text-[14px] font-extrabold" style={{color:PRIMARY}}>Rp {order.total.toLocaleString('id')}</span>
+              <span className="text-[14px] font-extrabold tabular-nums" style={{ color: PRIMARY }}>
+                Rp {order.total.toLocaleString('id')}
+              </span>
             </div>
           </div>
 
           {/* Info */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 mb-2">Info Pengiriman & Pembayaran</p>
+            <p className="text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Info Pengiriman & Pembayaran</p>
             {[
               ['Alamat Pengiriman', order.address || 'Desa Sukamaju'],
               ['Penjual', order.seller],
               ['Pembayaran', order.payment],
               ['Opsi Pengiriman', order.delivery],
-            ].map(([l,v])=>(
+            ].map(([l, v]) => (
               <div key={l} className="flex justify-between py-2 border-b border-gray-50 last:border-0">
                 <span className="text-[12px] text-gray-400">{l}</span>
                 <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{v}</span>
@@ -1839,25 +1910,86 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCance
             ))}
           </div>
 
-          {/* Timeline */}
+          {/* Riwayat Status Stepper (Synchronized with OrderTracking design) */}
           {order.timeline && (
-            <div>
-              <p className="text-[11px] font-bold text-gray-400 mb-3">Riwayat Status</p>
-              {order.timeline.map((t,i)=>(
-                <div key={i} className="flex gap-3 relative">
-                  {i<order.timeline.length-1&&<div className="absolute left-[13px] top-7 w-0.5 h-8" style={{background:`${PRIMARY}30`}}/>}
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10"
-                    style={{background:`${PRIMARY}20`}}>
-                    <Check size={13} style={{color:PRIMARY}}/>
-                  </div>
-                  <div className="flex-1 pb-6">
-                    <div className="flex items-start justify-between">
-                      <p className="text-[13px] font-bold text-gray-900">{t.label}</p>
-                      <p className="text-[12px] text-gray-400 ms-2">{t.time}</p>
+            <div className="pt-2">
+              <p className="text-[11px] font-bold text-gray-400 mb-3 uppercase tracking-wider">
+                Riwayat Status Pesanan
+              </p>
+              <div className="space-y-0">
+                {order.timeline.map((t, i) => {
+                  const isLast = i === order.timeline.length - 1
+                  const isFinished = !isLast || order.status === 'done' || order.status === 'cancelled'
+                  const isActive = isLast && order.status !== 'done' && order.status !== 'cancelled'
+
+                  return (
+                    <div key={i} className="flex gap-3 relative">
+                      {/* Connector Line */}
+                      {!isLast && (
+                        <div
+                          className="absolute left-[13px] top-7 w-0.5"
+                          style={{
+                            height: 40,
+                            background: isFinished ? PRIMARY : '#E5E7EB',
+                            transition: 'background 0.5s ease',
+                          }}
+                        />
+                      )}
+
+                      {/* Step Node */}
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
+                        style={
+                          isFinished
+                            ? { background: PRIMARY }
+                            : isActive
+                            ? { background: '#fff', border: `2px solid ${PRIMARY}` }
+                            : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
+                        }
+                      >
+                        {isFinished ? (
+                          <Check size={14} className="text-white" strokeWidth={3} />
+                        ) : isActive ? (
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        )}
+                      </div>
+
+                      {/* Step Details */}
+                      <div className="flex-1 pb-6">
+                        <div className="flex items-start justify-between gap-2">
+                          <p
+                            className={`text-[13px] font-bold leading-snug ${
+                              isFinished ? 'text-gray-900' : 'text-emerald-800 font-extrabold'
+                            }`}
+                          >
+                            {t.label}
+                          </p>
+                          <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
+                            {t.time}
+                          </span>
+                        </div>
+                        {t.sub && (
+                          <p
+                            className={`text-[11.5px] mt-0.5 leading-relaxed ${
+                              isFinished ? 'text-gray-500' : 'text-emerald-700/90 font-medium'
+                            }`}
+                          >
+                            {t.sub}
+                          </p>
+                        )}
+                        {isActive && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                            <span className="text-[10.5px] font-bold text-emerald-700">Sedang berlangsung</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -2487,6 +2619,7 @@ function OrderTracking({ order, onBack, onDone }) {
   const [showCallModal, setShowCallModal] = useState(false)
   const [showChatModal, setShowChatModal] = useState(false)
   const [showItemsAccordion, setShowItemsAccordion] = useState(false)
+  const [showFullTimeline, setShowFullTimeline] = useState(false) // Dropdown: default only latest status
   const [showReceiptDialog, setShowReceiptDialog] = useState(false)
 
   const courier = order?.courier || DEFAULT_COURIER
@@ -2496,10 +2629,17 @@ function OrderTracking({ order, onBack, onDone }) {
   // Calculate adjusted ETA with weather
   const effectiveEta = isArrived ? 0 : Math.max(2, eta + (weatherDelay ? 10 : 0))
 
-  // Motorcycle x position: 10% to 88% across 6 phases (0 to 5)
+  // Realistic waypoint coordinates on asphalt road curve:
+  const WAYPOINTS = [
+    { x: 10.5, y: 72 }, // Phase 0: Konfirm (at Store Ibu Sari)
+    { x: 26, y: 44 },   // Phase 1: Siap (Packaging)
+    { x: 43, y: 31 },   // Phase 2: Jemput (GV Man to store)
+    { x: 61, y: 35 },   // Phase 3: Ambil (Package picked up)
+    { x: 77, y: 60 },   // Phase 4: Jalan (On the way to home)
+    { x: 90, y: 47 },   // Phase 5: Tiba (Arrived at home)
+  ]
+  const motoPos = WAYPOINTS[phase] || WAYPOINTS[4]
   const progressRatio = phase / 5
-  const motoX = 10 + progressRatio * 78
-  const motoY = 48 - Math.sin(progressRatio * Math.PI) * 24
 
   const phaseTimes = [
     '10:18',
@@ -2509,6 +2649,8 @@ function OrderTracking({ order, onBack, onDone }) {
     '10:52',
     isArrived ? '11:05' : 'Estimasi 11:05',
   ]
+
+  const currentPhaseObj = FULL_TRACK_PHASES[phase] || FULL_TRACK_PHASES[0]
 
   const toggleWeather = () => {
     setWeatherDelay((prev) => !prev)
@@ -2576,9 +2718,9 @@ function OrderTracking({ order, onBack, onDone }) {
         </div>
       </div>
 
-      {/* Scrollable Content */}
+      {/* Scrollable Content (Prioritized Information Hierarchy) */}
       <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3.5 pb-24">
-        {/* Demo Controls Toolbar (Convenient for Review) */}
+        {/* ── 1. Demo Controls Toolbar ── */}
         <div className="p-3 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Simulasi Alur Pengiriman</span>
@@ -2630,7 +2772,7 @@ function OrderTracking({ order, onBack, onDone }) {
           </div>
         )}
 
-        {/* Hero ETA Card */}
+        {/* ── 2. HERO: Realistic Map Illustration & Estimasi Waktu Tiba ── */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -2652,81 +2794,175 @@ function OrderTracking({ order, onBack, onDone }) {
             </span>
           </div>
 
-          {/* Interactive Route SVG Map */}
+          {/* Realistic Cartographic Delivery Map with Terrain, River, Asphalt & Glowing GPS Route */}
           <div
-            className="relative h-32 rounded-2xl overflow-hidden border border-emerald-100/60 shadow-inner"
-            style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%)' }}
+            className="relative h-44 rounded-2xl overflow-hidden border border-emerald-200/70 shadow-inner bg-[#EBF5ED]"
           >
-            <svg viewBox="0 0 320 100" className="absolute inset-0 w-full h-full">
-              {/* Background terrain paths */}
-              <path d="M 0 30 Q 80 15 160 40 T 320 20" fill="none" stroke="#D1FAE5" strokeWidth="12" opacity="0.4" />
-              <path d="M 0 75 Q 120 85 240 65 T 320 80" fill="none" stroke="#D1FAE5" strokeWidth="16" opacity="0.4" />
+            <svg viewBox="0 0 340 160" className="absolute inset-0 w-full h-full select-none" preserveAspectRatio="none">
+              <defs>
+                <pattern id="villageGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#D1E7D5" strokeWidth="0.6" strokeDasharray="2 2" />
+                </pattern>
+                <filter id="pinShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="0" dy="3" stdDeviation="2" floodOpacity="0.25" />
+                </filter>
+              </defs>
 
-              {/* Main Delivery Road */}
+              {/* Base terrain */}
+              <rect width="340" height="160" fill="#E8F4EA" />
+              <rect width="340" height="160" fill="url(#villageGrid)" />
+
+              {/* Natural Agriculture & Plantation Zones */}
+              <path d="M 0,0 L 110,0 C 95,30 115,55 90,75 L 0,80 Z" fill="#DCFCE7" opacity="0.75" />
+              <path d="M 180,0 L 340,0 L 340,65 C 290,50 270,70 230,45 Z" fill="#DCFCE7" opacity="0.6" />
+              <path d="M 160,110 C 200,95 240,120 340,105 L 340,160 L 140,160 Z" fill="#DCFCE7" opacity="0.7" />
+              <path d="M 0,110 L 80,100 C 65,130 90,150 70,160 L 0,160 Z" fill="#DCFCE7" opacity="0.6" />
+
+              {/* Village River / Canal */}
               <path
-                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                d="M 130,0 C 135,45 105,75 145,115 C 160,130 150,150 165,160"
                 fill="none"
-                stroke="#A7F3D0"
+                stroke="#BAE6FD"
+                strokeWidth="7"
+                strokeLinecap="round"
+                opacity="0.75"
+              />
+              <path
+                d="M 130,0 C 135,45 105,75 145,115 C 160,130 150,150 165,160"
+                fill="none"
+                stroke="#7DD3FC"
+                strokeWidth="2"
+                strokeDasharray="4 6"
+                opacity="0.8"
+              />
+
+              {/* Secondary Local Village Streets */}
+              <path d="M 0,40 L 95,40 L 95,110 L 15,110" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+              <path d="M 170,30 L 260,30 L 260,95 L 340,95" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+              <path d="M 115,140 L 240,140 L 240,80" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
+
+              {/* Street Label Watermarks */}
+              <text x="45" y="34" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Gg. Melati</text>
+              <text x="200" y="24" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Jl. Sukamaju Raya</text>
+              <text x="250" y="145" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Kawasan Pertanian</text>
+
+              {/* Main Asphalt Road */}
+              <path
+                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
+                fill="none"
+                stroke="#334155"
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
+                fill="none"
+                stroke="#E2E8F0"
+                strokeWidth="14"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.3"
+              />
+
+              {/* Glowing Emerald GPS Route */}
+              <path
+                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
+                fill="none"
+                stroke="#10B981"
                 strokeWidth="8"
                 strokeLinecap="round"
+                strokeDasharray="360"
+                strokeDashoffset={360 * (1 - progressRatio)}
+                style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                opacity="0.85"
               />
-              {/* Completed Road Line */}
               <path
-                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
                 fill="none"
-                stroke={PRIMARY}
+                stroke="#1B6B3A"
                 strokeWidth="5"
                 strokeLinecap="round"
-                strokeDasharray="320"
-                strokeDashoffset={320 * (1 - progressRatio)}
+                strokeDasharray="360"
+                strokeDashoffset={360 * (1 - progressRatio)}
                 style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
               />
-              {/* Road Dash markings */}
+
+              {/* Road White Center Dashes */}
               <path
-                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
                 fill="none"
-                stroke="white"
+                stroke="#FFFFFF"
                 strokeWidth="1.5"
+                strokeDasharray="4 6"
                 strokeLinecap="round"
-                strokeDasharray="6 8"
-                opacity="0.6"
+                opacity="0.9"
               />
 
-              {/* Origin Store Pin */}
-              <circle cx="25" cy="68" r="14" fill="white" stroke="#10B981" strokeWidth="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" />
-              <text x="25" y="73" fontSize="13" textAnchor="middle">🏪</text>
+              {/* Origin Store Pinpoint */}
+              <g transform="translate(35, 115)" filter="url(#pinShadow)">
+                <circle cx="0" cy="0" r="14" fill="#FFFFFF" stroke="#059669" strokeWidth="2.5" />
+                <text x="0" y="4" fontSize="13" textAnchor="middle">🏪</text>
+              </g>
 
-              {/* Destination Home Pin */}
-              <circle cx="295" cy="50" r="14" fill="white" stroke="#10B981" strokeWidth="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" />
-              <text x="295" y="55" fontSize="13" textAnchor="middle">🏠</text>
+              {/* Destination Home Pinpoint */}
+              <g transform="translate(305, 75)" filter="url(#pinShadow)">
+                <circle cx="0" cy="0" r="14" fill="#FFFFFF" stroke="#DC2626" strokeWidth="2.5" />
+                <text x="0" y="4" fontSize="13" textAnchor="middle">🏠</text>
+              </g>
             </svg>
 
-            {/* Dynamic Motorcycle Pin */}
+            {/* Dynamic Motorcycle Pin along realistic asphalt road */}
             <div
-              className="absolute pointer-events-none transition-all duration-700 ease-out"
+              className="absolute pointer-events-none transition-all duration-700 ease-out z-10"
               style={{
-                left: `${motoX}%`,
-                top: `${motoY}%`,
+                left: `${motoPos.x}%`,
+                top: `${motoPos.y}%`,
                 transform: 'translate(-50%, -50%)',
-                filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.25))',
+                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))',
               }}
             >
               <div className="relative flex items-center justify-center">
-                <span className="absolute -inset-1 rounded-full bg-emerald-400/40 animate-ping" />
-                <div className="w-8 h-8 rounded-full bg-white border border-emerald-600 flex items-center justify-center text-base shadow-sm">
+                <span className="absolute -inset-2.5 rounded-full bg-emerald-500/40 animate-ping" />
+                <span className="absolute -inset-1 rounded-full bg-emerald-400/60" />
+                <div className="w-9 h-9 rounded-full bg-[#1B6B3A] border-2 border-white flex items-center justify-center text-lg shadow-md relative z-10">
                   🏍️
                 </div>
+                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-md whitespace-nowrap shadow-xs">
+                  {courier.name?.split(' ')[0]} · 30 km/j
+                </div>
               </div>
+            </div>
+
+            {/* Top Overlay HUD */}
+            <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none">
+              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200/80 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-extrabold text-emerald-950">GPS AKTIF · RUTE OPTIMAL</span>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/80 flex items-center justify-center shadow-xs text-[11px] font-bold text-gray-700">
+                🧭
+              </div>
+            </div>
+
+            {/* Origin & Destination Floating Tags */}
+            <div className="absolute bottom-2 inset-x-2.5 flex items-center justify-between pointer-events-none">
+              <span className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-gray-200/80 text-[9.5px] font-bold text-gray-700 shadow-2xs">
+                🏪 Toko {order?.seller || 'Ibu Sari'}
+              </span>
+              <span className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-gray-200/80 text-[9.5px] font-bold text-gray-700 shadow-2xs">
+                🏠 Lokasi Tujuan
+              </span>
             </div>
           </div>
 
           <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-50 text-[11px]">
             <div>
-              <p className="text-gray-400">Titik Penjemputan</p>
+              <p className="text-gray-400 font-medium">Titik Penjemputan</p>
               <p className="font-bold text-gray-800">Toko {order?.seller || 'Ibu Sari'}</p>
             </div>
             <div className="text-right">
-              <p className="text-gray-400">Jarak & Rute</p>
+              <p className="text-gray-400 font-medium">Jarak & Rute</p>
               <p className="font-bold text-emerald-800">
                 {isArrived ? 'Sampai di Lokasi' : '1.4 km · ~30 km/jam'}
               </p>
@@ -2734,11 +2970,11 @@ function OrderTracking({ order, onBack, onDone }) {
           </div>
         </div>
 
-        {/* Courier Info Card with Interactive Call & Chat buttons */}
+        {/* ── 3. Driver Pengantar Card (Prioritas Utama Aksi Pengguna: Telepon & Chat) ── */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Driver Pengantar</span>
-            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/50">
               Driver Terpercaya Desa
             </span>
           </div>
@@ -2753,9 +2989,9 @@ function OrderTracking({ order, onBack, onDone }) {
                 <Star size={12} className="fill-amber-400 text-amber-400" />
                 <span className="text-[12px] font-bold text-gray-800">{courier.rating}</span>
                 <span className="text-gray-300">·</span>
-                <span className="text-[11px] text-gray-400">{courier.trips} pengantaran</span>
+                <span className="text-[11px] text-gray-400">{courier.trips || '240+'} pengantaran</span>
               </div>
-              <p className="text-[11px] text-gray-500 mt-0.5">{courier.vehicle}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5 font-medium">{courier.vehicle}</p>
             </div>
           </div>
 
@@ -2777,7 +3013,157 @@ function OrderTracking({ order, onBack, onDone }) {
           </div>
         </div>
 
-        {/* Collapsible Order Summary Accordion */}
+        {/* ── 4. Proses Pengiriman Lengkap (Dropdown: Default Status Terakhir + Expand Riwayat) ── */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
+          <div
+            onClick={() => setShowFullTimeline((prev) => !prev)}
+            className="flex items-center justify-between cursor-pointer select-none"
+          >
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  Proses Pengiriman
+                </span>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                  Tahap {phase + 1} dari 6
+                </span>
+              </div>
+              <p className="text-[13.5px] font-extrabold text-gray-900 mt-1">
+                {currentPhaseObj.label}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200/70 flex items-center justify-center text-gray-600 active:scale-90 transition"
+              aria-label="Toggle Riwayat Pengiriman"
+            >
+              {showFullTimeline ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
+
+          {/* Collapsed State: Ringkasan Status Terakhir yang Sedang Berjalan */}
+          {!showFullTimeline && (
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-lg flex-shrink-0 shadow-2xs">
+                {currentPhaseObj.icon || '📦'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] text-gray-600 leading-snug line-clamp-1 font-medium">
+                  {currentPhaseObj.sub}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] font-mono font-bold text-emerald-800">
+                    {phaseTimes[phase]}
+                  </span>
+                  {!isArrived && (
+                    <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                      Sedang berlangsung
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowFullTimeline(true)}
+                className="text-[11.5px] font-bold text-emerald-800 hover:text-emerald-950 flex-shrink-0 flex items-center gap-0.5 py-1 px-2 rounded-lg bg-emerald-50/70"
+              >
+                <span>Lihat Semua</span>
+                <ChevronDown size={12} />
+              </button>
+            </div>
+          )}
+
+          {/* Expanded State: 6-Phase Live Stepper Timeline */}
+          {showFullTimeline && (
+            <div className="mt-4 pt-4 border-t border-gray-100 animate-in slide-in-from-top-2 duration-150">
+              <div className="space-y-0">
+                {FULL_TRACK_PHASES.map((p, i) => {
+                  const isDone = i < phase
+                  const isCurrent = i === phase
+                  const isUpcoming = i > phase
+                  const isLast = i === FULL_TRACK_PHASES.length - 1
+
+                  return (
+                    <div key={p.id} className="flex gap-3 relative">
+                      {/* Connector Line */}
+                      {!isLast && (
+                        <div
+                          className="absolute left-[13px] top-7 w-0.5"
+                          style={{
+                            height: 38,
+                            background: isDone ? PRIMARY : '#E5E7EB',
+                            transition: 'background 0.5s ease',
+                          }}
+                        />
+                      )}
+
+                      {/* Step Dot */}
+                      <div
+                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
+                        style={
+                          isDone
+                            ? { background: PRIMARY }
+                            : isCurrent
+                            ? { background: '#fff', border: `2px solid ${PRIMARY}` }
+                            : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
+                        }
+                      >
+                        {isDone ? (
+                          <Check size={14} className="text-white" strokeWidth={3} />
+                        ) : isCurrent ? (
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-gray-300" />
+                        )}
+                      </div>
+
+                      {/* Step Details */}
+                      <div className="flex-1 pb-6">
+                        <div className="flex items-start justify-between gap-2">
+                          <p
+                            className={`text-[13px] font-bold leading-snug ${
+                              isDone ? 'text-gray-900' : isCurrent ? 'text-emerald-800 font-extrabold' : 'text-gray-400'
+                            }`}
+                          >
+                            {p.label}
+                          </p>
+                          <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
+                            {phaseTimes[i]}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-[11px] mt-0.5 leading-relaxed ${
+                            isDone ? 'text-gray-500' : isCurrent ? 'text-emerald-700/90 font-medium' : 'text-gray-300'
+                          }`}
+                        >
+                          {p.sub}
+                        </p>
+                        {isCurrent && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                            <span className="text-[11px] font-bold text-emerald-700">Sedang berlangsung</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="pt-2 flex justify-center">
+                <button
+                  onClick={() => setShowFullTimeline(false)}
+                  className="text-[11.5px] font-bold text-gray-500 hover:text-gray-800 flex items-center gap-1 py-1 px-3 rounded-lg bg-gray-100 active:scale-95 transition"
+                >
+                  <span>Ciutkan Riwayat</span>
+                  <ChevronUp size={13} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── 5. Rincian Paket yang Dikirim (Accordion Sekunder) ── */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <button
             onClick={() => setShowItemsAccordion((prev) => !prev)}
@@ -2797,15 +3183,34 @@ function OrderTracking({ order, onBack, onDone }) {
           {showItemsAccordion && (
             <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-in slide-in-from-top-2 duration-150">
               {(order?.items || [
-                { name: 'Bayam Organik Segar', qty: 2, price: 8500 },
-                { name: 'Tempe Mendoan Jumbo', qty: 1, price: 12000 },
+                {
+                  name: 'Bayam Organik Segar',
+                  qty: 2,
+                  price: 8500,
+                  image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop',
+                },
+                {
+                  name: 'Tempe Mendoan Jumbo',
+                  qty: 1,
+                  price: 12000,
+                  image: 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
+                },
               ]).map((it, idx) => (
                 <div key={idx} className="flex items-center justify-between text-[12px]">
-                  <div className="text-gray-700">
-                    <span className="font-semibold">{it.name}</span>
-                    <span className="text-gray-400 ms-1.5">× {it.qty}</span>
+                  <div className="flex items-center gap-2.5 text-gray-700">
+                    <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200/60">
+                      {it.image ? (
+                        <img src={it.image} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Package size={14} className="m-auto text-gray-400" />
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-semibold block">{it.name}</span>
+                      <span className="text-gray-400 text-[11px]">× {it.qty}</span>
+                    </div>
                   </div>
-                  <span className="font-bold text-gray-900">
+                  <span className="font-bold text-gray-900 tabular-nums">
                     Rp {(it.price * it.qty).toLocaleString('id')}
                   </span>
                 </div>
@@ -2819,86 +3224,6 @@ function OrderTracking({ order, onBack, onDone }) {
               </div>
             </div>
           )}
-        </div>
-
-        {/* 6-Phase Live Stepper Timeline */}
-        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
-          <p className="text-[11px] font-bold text-gray-400 mb-4 uppercase tracking-wider">
-            Proses Pengiriman Lengkap
-          </p>
-          <div className="space-y-0">
-            {FULL_TRACK_PHASES.map((p, i) => {
-              const isDone = i < phase
-              const isCurrent = i === phase
-              const isUpcoming = i > phase
-              const isLast = i === FULL_TRACK_PHASES.length - 1
-
-              return (
-                <div key={p.id} className="flex gap-3 relative">
-                  {/* Connector Line */}
-                  {!isLast && (
-                    <div
-                      className="absolute left-[13px] top-7 w-0.5"
-                      style={{
-                        height: 38,
-                        background: isDone ? PRIMARY : '#E5E7EB',
-                        transition: 'background 0.5s ease',
-                      }}
-                    />
-                  )}
-
-                  {/* Step Dot */}
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
-                    style={
-                      isDone
-                        ? { background: PRIMARY }
-                        : isCurrent
-                        ? { background: '#fff', border: `2px solid ${PRIMARY}` }
-                        : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
-                    }
-                  >
-                    {isDone ? (
-                      <Check size={14} className="text-white" strokeWidth={3} />
-                    ) : isCurrent ? (
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                    ) : (
-                      <div className="w-2 h-2 rounded-full bg-gray-300" />
-                    )}
-                  </div>
-
-                  {/* Step Text Details */}
-                  <div className="flex-1 pb-6">
-                    <div className="flex items-start justify-between gap-2">
-                      <p
-                        className={`text-[13px] font-bold leading-snug ${
-                          isDone ? 'text-gray-900' : isCurrent ? 'text-emerald-800' : 'text-gray-400'
-                        }`}
-                      >
-                        {p.label}
-                      </p>
-                      <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
-                        {phaseTimes[i]}
-                      </span>
-                    </div>
-                    <p
-                      className={`text-[11px] mt-0.5 leading-relaxed ${
-                        isDone ? 'text-gray-500' : isCurrent ? 'text-emerald-700/90' : 'text-gray-300'
-                      }`}
-                    >
-                      {p.sub}
-                    </p>
-                    {isCurrent && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                        <span className="text-[11px] font-bold text-emerald-700">Sedang berlangsung</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </div>
       </div>
 

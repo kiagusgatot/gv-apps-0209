@@ -94,7 +94,7 @@ export default function OrderCard({
       {/* ── Product Item Preview ── */}
       <div className="flex items-center gap-3 py-1">
         {/* Thumbnail preview */}
-        <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
+        <div className="relative w-13 h-13 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
           {primaryItem.image ? (
             <img
               src={primaryItem.image}
@@ -103,13 +103,13 @@ export default function OrderCard({
               loading="lazy"
             />
           ) : primaryItem.Icon ? (
-            <primaryItem.Icon size={20} className="text-emerald-700" />
+            <primaryItem.Icon size={22} className="text-emerald-700" />
           ) : (
-            <Package size={20} className="text-gray-400" />
+            <Package size={22} className="text-gray-400" />
           )}
 
           {order.items?.length > 1 && (
-            <div className="absolute inset-x-0 bottom-0 bg-black/60 backdrop-blur-2xs text-[9px] font-bold text-white text-center py-0.2">
+            <div className="absolute inset-x-0 bottom-0 bg-black/65 backdrop-blur-2xs text-[9px] font-extrabold text-white text-center py-0.5">
               +{order.items.length - 1} item
             </div>
           )}
