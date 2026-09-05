@@ -85,15 +85,20 @@ export const FALLBACK_PRODUCT_IMAGE =
  * Always guarantees a realistic, authentic photo and never an illustration.
  */
 export function getProductImage(item) {
+  if (typeof item === 'string' && item.startsWith('http')) {
+    return item
+  }
   if (item?.image && typeof item.image === 'string' && item.image.startsWith('http')) {
     return item.image
   }
-  const rawName = (item?.name || '').toLowerCase().trim()
+  const rawName = (typeof item === 'string' ? item : item?.name || '').toLowerCase().trim()
+  if (!rawName) return FALLBACK_PRODUCT_IMAGE
+
   if (PRODUCT_IMAGE_MAP[rawName]) {
     return PRODUCT_IMAGE_MAP[rawName]
   }
   for (const [k, v] of Object.entries(PRODUCT_IMAGE_MAP)) {
-    if (rawName.includes(k) || k.includes(rawName)) {
+    if (k && (rawName.includes(k) || k.includes(rawName))) {
       return v
     }
   }

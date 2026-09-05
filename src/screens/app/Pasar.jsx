@@ -3988,7 +3988,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   // E-commerce ESTO States
   const [selectedStore, setSelectedStore] = useState(null)
   const [showWishlist, setShowWishlist] = useState(false)
-  const [showAllStores, setShowAllStores] = useState(false)
+  const [showAllStoresSheet, setShowAllStoresSheet] = useState(false)
   const [voucherClaimed, setVoucherClaimed] = useState(false)
 
   // Order routing details
@@ -4385,6 +4385,59 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
       )}
 
+      {/* Bottom Sheet: Semua Toko Pilihan ESTO (via "Lihat Semua") */}
+      {showAllStoresSheet && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-fade-in"
+            onClick={() => setShowAllStoresSheet(false)}
+          />
+          <div
+            className="relative bg-[#FAFBF9] rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl z-10 animate-slide-up"
+            style={{ boxShadow: '0 -8px 32px rgba(0,0,0,0.18)' }}
+          >
+            {/* Grab Handle */}
+            <div className="w-12 h-1.5 rounded-full bg-gray-300 mx-auto mt-3 mb-2" />
+
+            {/* Sheet Header */}
+            <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100 bg-white">
+              <div>
+                <h3 className="text-[16px] font-extrabold text-gray-900 leading-tight">
+                  Semua Toko Pilihan ESTO
+                </h3>
+                <p className="text-[11.5px] text-gray-500">
+                  {ESTO_STORES.length} mitra grosir & kios resmi siap antar kilat
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAllStoresSheet(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition active:scale-95"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Scrollable Store Cards List */}
+            <div className="p-4 overflow-y-auto flex flex-col gap-3.5 no-scrollbar pb-8">
+              {ESTO_STORES.map((store) => (
+                <StoreCard
+                  key={store.id}
+                  store={store}
+                  onSelectStore={(s) => {
+                    setShowAllStoresSheet(false)
+                    setSelectedStore(s)
+                  }}
+                  onSelectProduct={(product) => {
+                    setShowAllStoresSheet(false)
+                    openDetail(product)
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Unified ScreenHeader */}
       {/* ── Dynamic Collapsible ESTO Header ── */}
       <header
@@ -4587,7 +4640,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
           </div>
 
-          {/* ── Section Toko Pilihan (Reference Design) ── */}
+          {/* ── Section Toko Pilihan (Horizontal Peek Carousel) ── */}
           <div className="pt-2 pb-2">
             <div className="px-3.5 flex items-center justify-between mb-2.5">
               <div>
@@ -4599,35 +4652,28 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                 </p>
               </div>
               <button
-                onClick={() => setShowAllStores(!showAllStores)}
+                onClick={() => setShowAllStoresSheet(true)}
                 className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-[11.5px] font-bold border border-emerald-200/80 flex items-center gap-1 hover:bg-emerald-100 transition active:scale-95"
               >
-                <span>{showAllStores ? 'Tutup' : 'Lihat Semua'}</span>
+                <span>Lihat Semua</span>
                 <ChevronRight size={13} strokeWidth={2.5} />
               </button>
             </div>
 
-            <div className="px-3.5 flex flex-col gap-3.5">
-              {(showAllStores ? ESTO_STORES.slice(0, 4) : ESTO_STORES.slice(0, 2)).map((store) => (
-                <StoreCard
+            {/* Horizontal Peek Carousel (Manual swipe/scroll, no auto-slide) */}
+            <div className="flex gap-3.5 overflow-x-auto no-scrollbar snap-x snap-mandatory px-3.5 pb-2 pt-0.5">
+              {ESTO_STORES.map((store) => (
+                <div
                   key={store.id}
-                  store={store}
-                  onSelectStore={(s) => setSelectedStore(s)}
-                  onSelectProduct={(product) => openDetail(product)}
-                />
+                  className="w-[86%] sm:w-[340px] flex-shrink-0 snap-start"
+                >
+                  <StoreCard
+                    store={store}
+                    onSelectStore={(s) => setSelectedStore(s)}
+                    onSelectProduct={(product) => openDetail(product)}
+                  />
+                </div>
               ))}
-
-              {/* Cek Toko Lainnya Toggle Button */}
-              <button
-                onClick={() => setShowAllStores(!showAllStores)}
-                className="w-full py-2.5 rounded-2xl bg-white border border-gray-200 text-gray-700 text-[12px] font-extrabold flex items-center justify-center gap-1.5 shadow-2xs hover:bg-gray-50 active:scale-[0.99] transition mt-0.5"
-              >
-                <span>{showAllStores ? 'TAMPILKAN LEBIH SEDIKIT' : 'CEK TOKO LAINNYA'}</span>
-                <ChevronRight
-                  size={14}
-                  className={`transition-transform duration-200 ${showAllStores ? '-rotate-90' : 'rotate-90'}`}
-                />
-              </button>
             </div>
           </div>
 
