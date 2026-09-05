@@ -14,9 +14,9 @@ export const PRODUCT_IMAGE_MAP = {
   'tempe': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
 
   // Beras & Pangan
-  'beras pandan wangi premium 5kg': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
-  'beras pandan wangi': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
-  'beras': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
+  'beras pandan wangi premium 5kg': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?q=80&w=600&auto=format&fit=crop',
+  'beras pandan wangi': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?q=80&w=600&auto=format&fit=crop',
+  'beras': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?q=80&w=600&auto=format&fit=crop',
 
   // Kopi
   'kopi robusta segar': 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=600&auto=format&fit=crop',
@@ -40,8 +40,8 @@ export const PRODUCT_IMAGE_MAP = {
   // Sembako & Kebutuhan Pokok Toko
   'minyak goreng sawit 2l': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=600&auto=format&fit=crop',
   'minyak goreng': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=600&auto=format&fit=crop',
-  'gula pasir kristal 1kg': 'https://images.unsplash.com/photo-1587334274328-64186a80aeee?q=80&w=600&auto=format&fit=crop',
-  'gula pasir': 'https://images.unsplash.com/photo-1587334274328-64186a80aeee?q=80&w=600&auto=format&fit=crop',
+  'gula pasir kristal 1kg': 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?q=80&w=600&auto=format&fit=crop',
+  'gula pasir': 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?q=80&w=600&auto=format&fit=crop',
   'tepung terigu serbaguna 1kg': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=600&auto=format&fit=crop',
   'tepung terigu': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=600&auto=format&fit=crop',
   'mie instan kuah & goreng (isi 5)': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=600&auto=format&fit=crop',

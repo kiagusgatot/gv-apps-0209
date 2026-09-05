@@ -65,25 +65,27 @@ export default function StoreCard({
 
         {/* Store Information */}
         <div className="flex-1 min-w-0">
-          {/* Row 1: Store Name & Official Shield Badge */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-[15px] font-extrabold text-gray-900 group-hover:text-[#1B6B3A] transition leading-snug">
-              {store.name}
-            </h4>
-            {store.type && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 text-[10.5px] font-bold border border-emerald-200/80 flex-shrink-0">
+          {/* Row 1: Store Name */}
+          <h4 className="text-[15.5px] font-extrabold text-gray-900 group-hover:text-[#1B6B3A] transition leading-snug truncate">
+            {store.name}
+          </h4>
+
+          {/* Row 2: Official Badge on its own line */}
+          {store.type && (
+            <div className="mt-1">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 text-[10.5px] font-bold border border-emerald-200/80">
                 <ShieldCheck size={11.5} className="text-emerald-700" />
                 <span>{store.type}</span>
               </span>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Row 2: Store Category / Specialization */}
-          <p className="text-[12px] text-gray-500 font-medium mt-0.5 truncate leading-normal">
+          {/* Row 3: Store Category / Specialization */}
+          <p className="text-[12px] text-gray-500 font-medium mt-1 truncate leading-normal">
             {store.category || 'Grosir Sembako & Bahan Pokok'}
           </p>
 
-          {/* Row 3: Rating, Sales & Location Distance */}
+          {/* Row 4: Rating, Sales & Location Distance */}
           <div className="flex items-center gap-2 mt-1 text-[11.5px] text-gray-500 flex-wrap">
             <span className="inline-flex items-center gap-0.5 font-extrabold text-gray-800 flex-shrink-0">
               <Star size={12} className="fill-amber-400 text-amber-400" />
@@ -114,8 +116,8 @@ export default function StoreCard({
               }}
               className="flex flex-col gap-1 cursor-pointer group/item"
             >
-              {/* Product Photo Box with Discount Badge */}
-              <div className="aspect-square w-full rounded-2xl overflow-hidden bg-gray-100 relative border border-gray-100/90 shadow-2xs group-hover/item:border-emerald-300 transition-all">
+              {/* Product Photo Box with Discount Badge (4:3 aspect ratio matching reference) */}
+              <div className="aspect-[4/3] w-full rounded-2xl overflow-hidden bg-gray-100 relative border border-gray-100/90 shadow-2xs group-hover/item:border-emerald-300 transition-all">
                 <img
                   src={getProductImage(prod.name)}
                   alt={prod.name}
@@ -130,12 +132,12 @@ export default function StoreCard({
               </div>
 
               {/* Product Name */}
-              <p className="text-[11px] font-bold text-gray-800 truncate leading-tight mt-0.5 group-hover/item:text-[#1B6B3A] transition">
+              <p className="text-[11px] font-bold text-gray-800 truncate leading-tight mt-1 group-hover/item:text-[#1B6B3A] transition">
                 {prod.name}
               </p>
 
               {/* Product Price */}
-              <p className="text-[12px] font-extrabold text-[#1B6B3A] leading-tight">
+              <p className="text-[12px] font-extrabold text-[#1B6B3A] leading-tight mt-0.5">
                 Rp {prod.price.toLocaleString('id-ID')}
               </p>
             </div>
@@ -145,7 +147,7 @@ export default function StoreCard({
 
       {/* ── 3. Bottom Section: Delivery Perk & Visit Button ── */}
       <div className="flex items-center justify-between gap-2 pt-0.5">
-        <div className="flex items-center gap-1.5 text-[11.5px] font-bold text-emerald-900 bg-emerald-50/90 px-3 py-1.5 rounded-xl border border-emerald-200/70">
+        <div className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-emerald-900 bg-emerald-50/90 px-3 py-1.5 rounded-xl border border-emerald-200/70 whitespace-nowrap flex-shrink-0">
           <Zap size={12} className="text-amber-500 fill-amber-400 flex-shrink-0" />
           <span>Siap antar kilat {store.eta || '30 mnt'}</span>
         </div>
@@ -156,7 +158,7 @@ export default function StoreCard({
             e.stopPropagation()
             handleOpenStore?.(store)
           }}
-          className="px-4 py-2 rounded-xl bg-[#1B6B3A] hover:bg-[#155d31] text-white text-[12px] font-extrabold flex items-center gap-1.5 shadow-xs transition-all duration-150 active:scale-95 flex-shrink-0"
+          className="px-4 py-2 rounded-xl bg-[#1B6B3A] hover:bg-[#145A2C] text-white text-[12px] font-extrabold flex items-center gap-1.5 shadow-xs transition-all duration-150 active:scale-95 flex-shrink-0 whitespace-nowrap"
           style={{
             boxShadow: '0 2px 6px rgba(27, 107, 58, 0.24)',
           }}

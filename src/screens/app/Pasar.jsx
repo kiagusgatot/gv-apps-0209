@@ -169,6 +169,7 @@ export const ESTO_STORES = [
     eta: '35 mnt',
     distance: '4.5 km',
     promoText: 'Diskon Sembako Mingguan',
+    logo: STORE_LOGOS['store-5'],
     logoText: 'TGM',
     logoBg: 'linear-gradient(135deg, #C2185B, #E91E63)',
     coverImage: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop',
@@ -193,6 +194,7 @@ export const ESTO_STORES = [
     eta: '25 mnt',
     distance: '2.8 km',
     promoText: 'Beli 2 Lebih Hemat',
+    logo: STORE_LOGOS['store-6'],
     logoText: 'ETD',
     logoBg: 'linear-gradient(135deg, #00796B, #009688)',
     coverImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop',
@@ -4402,15 +4404,10 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
 
             {/* Sheet Header */}
-            <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100 bg-white flex-shrink-0">
-              <div className="min-w-0 pr-2">
-                <h3 className="text-[15.5px] font-extrabold text-gray-900 leading-tight truncate">
-                  Semua Toko Pilihan ESTO
-                </h3>
-                <p className="text-[11px] text-gray-500 truncate">
-                  {ESTO_STORES.length} mitra grosir & kios resmi siap antar kilat
-                </p>
-              </div>
+            <div className="px-4 py-3 flex items-center justify-between border-b border-gray-100 bg-white flex-shrink-0">
+              <h3 className="text-[16px] font-extrabold text-gray-900 leading-tight">
+                Semua Toko Pilihan ESTO
+              </h3>
               <button
                 onClick={() => setShowAllStoresSheet(false)}
                 className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition active:scale-95 flex-shrink-0"

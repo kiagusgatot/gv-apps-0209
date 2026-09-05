@@ -81,4 +81,34 @@ export const STORE_LOGOS = {
       <text x="60" y="90" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="15" fill="#144D24" text-anchor="middle">Makmur</text>
     </svg>
   `),
+
+  // 5. Toko GV Malang Klojen (TGM - Berry Red/Magenta)
+  'store-5': svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+      <defs>
+        <linearGradient id="tgmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#9C174D"/>
+          <stop offset="100%" stop-color="#C2185B"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="26" fill="url(#tgmGrad)"/>
+      <rect x="2" y="2" width="116" height="116" rx="24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.15"/>
+      <text x="60" y="74" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">TGM</text>
+    </svg>
+  `),
+
+  // 6. ESTO Tumata Drink (ETD - Deep Teal & Cyan)
+  'store-6': svgToDataUri(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+      <defs>
+        <linearGradient id="etdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00695C"/>
+          <stop offset="100%" stop-color="#00897B"/>
+        </linearGradient>
+      </defs>
+      <rect width="120" height="120" rx="26" fill="url(#etdGrad)"/>
+      <rect x="2" y="2" width="116" height="116" rx="24" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.15"/>
+      <text x="60" y="74" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">ETD</text>
+    </svg>
+  `),
 }
