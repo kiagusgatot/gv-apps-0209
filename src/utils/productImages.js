@@ -10,8 +10,8 @@ export const PRODUCT_IMAGE_MAP = {
   'bayam': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop',
 
   // Tempe & Olahan Kedelai
-  'tempe mendoan jumbo': 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
-  'tempe': 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
+  'tempe mendoan jumbo': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
+  'tempe': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
 
   // Beras & Pangan
   'beras pandan wangi premium 5kg': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop',
@@ -23,8 +23,8 @@ export const PRODUCT_IMAGE_MAP = {
   'kopi': 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=600&auto=format&fit=crop',
 
   // Madu
-  'madu hutan murni': 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop',
-  'madu': 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop',
+  'madu hutan murni': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=600&auto=format&fit=crop',
+  'madu': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=600&auto=format&fit=crop',
 
   // Telur
   'telur ayam kampung (10 butir)': 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop',
@@ -35,7 +35,7 @@ export const PRODUCT_IMAGE_MAP = {
   // Buah & Camilan
   'pisang kepok matang': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=600&auto=format&fit=crop',
   'keripik singkong pedas': 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?q=80&w=600&auto=format&fit=crop',
-  'jeruk siam manis': 'https://images.unsplash.com/photo-1550258859-d088c27e49c1?q=80&w=600&auto=format&fit=crop',
+  'jeruk siam manis': 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=600&auto=format&fit=crop',
 
   // Sembako & Kebutuhan Pokok Toko
   'minyak goreng sawit 2l': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=600&auto=format&fit=crop',
@@ -59,8 +59,8 @@ export const PRODUCT_IMAGE_MAP = {
 
   // Kerajinan & Lainnya
   'batik tulis lokal': 'https://images.unsplash.com/photo-1580661869408-55ab23f2ca6e?q=80&w=600&auto=format&fit=crop',
-  'pupuk organik kompos 25kg': 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop',
-  'bibit cabai rawit lokal': 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop',
+  'pupuk organik kompos 25kg': 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop',
+  'bibit cabai rawit lokal': 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop',
 }
 
 export const FALLBACK_PRODUCT_IMAGE =

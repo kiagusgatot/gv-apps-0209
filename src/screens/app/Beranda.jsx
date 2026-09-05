@@ -295,9 +295,9 @@ const SEARCHABLE_PRODUCTS = [
   { id: 'p2', name: 'Bayam Organik Segar 250g', price: 8500, seller: 'Ibu Sari', cat: 'Sayuran', img: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=300&auto=format&fit=crop' },
   { id: 'p3', name: 'Telur Ayam Kampung 10 btr', price: 32000, seller: 'Pak Rohmat', cat: 'Pangan', img: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=300&auto=format&fit=crop' },
   { id: 'p4', name: 'Kopi Robusta Segar 100g', price: 35000, seller: 'Pak Asep', cat: 'Minuman', img: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=300&auto=format&fit=crop' },
-  { id: 'p5', name: 'Madu Hutan Murni 250ml', price: 65000, seller: 'Bu Dewi', cat: 'Kesehatan', img: 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=300&auto=format&fit=crop' },
-  { id: 'p6', name: 'Pupuk Kompos Organik 25kg', price: 45000, seller: 'UD Agro Desa', cat: 'Pertanian', img: 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=300&auto=format&fit=crop' },
-  { id: 'p7', name: 'Bibit Cabai Rawit Lokal', price: 15000, seller: 'Nursery GV', cat: 'Bibit', img: 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=300&auto=format&fit=crop' },
+  { id: 'p5', name: 'Madu Hutan Murni 250ml', price: 65000, seller: 'Bu Dewi', cat: 'Kesehatan', img: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=300&auto=format&fit=crop' },
+  { id: 'p6', name: 'Pupuk Kompos Organik 25kg', price: 45000, seller: 'UD Agro Desa', cat: 'Pertanian', img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=300&auto=format&fit=crop' },
+  { id: 'p7', name: 'Bibit Cabai Rawit Lokal', price: 15000, seller: 'Nursery GV', cat: 'Bibit', img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=300&auto=format&fit=crop' },
 ]
 
 const SEARCHABLE_MEDIA = [
@@ -1118,11 +1118,11 @@ const ESTO_PRODUCTS = {
     { id: 'e1', name: 'Bayam Organik Segar 250g', price: 8500, Icon: Leaf, seller: 'Ibu Sari', cat: 'Sayur', g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop' },
     { id: 'e2', name: 'Telur Ayam Kampung 10 btr', price: 32000, Icon: Egg, seller: 'Pak Rohmat', cat: 'Pangan', g: ['#F57F17', '#FBC02D'], image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop' },
     { id: 'e3', name: 'Kopi Robusta Segar 100g', price: 35000, Icon: Coffee, seller: 'Pak Asep', cat: 'Minuman', g: ['#4E342E', '#6D4C41'], image: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=600&auto=format&fit=crop' },
-    { id: 'e4', name: 'Madu Hutan Murni 250ml', price: 65000, Icon: Droplet, seller: 'Bu Dewi', cat: 'Kesehatan', g: ['#F57F17', '#FFCA28'], image: 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop' },
+    { id: 'e4', name: 'Madu Hutan Murni 250ml', price: 65000, Icon: Droplet, seller: 'Bu Dewi', cat: 'Kesehatan', g: ['#F57F17', '#FFCA28'], image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=600&auto=format&fit=crop' },
   ],
   penjual: [
-    { id: 'p1', name: 'Pupuk Organik Kompos 25kg', price: 45000, Icon: Leaf, seller: 'UD Agro', cat: 'Pertanian', g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop' },
-    { id: 'p2', name: 'Bibit Cabai Rawit Lokal', price: 15000, Icon: Leaf, seller: 'Nursery GV', cat: 'Bibit', g: ['#C62828', '#EF5350'], image: 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop' },
+    { id: 'p1', name: 'Pupuk Organik Kompos 25kg', price: 45000, Icon: Leaf, seller: 'UD Agro', cat: 'Pertanian', g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop' },
+    { id: 'p2', name: 'Bibit Cabai Rawit Lokal', price: 15000, Icon: Leaf, seller: 'Nursery GV', cat: 'Bibit', g: ['#C62828', '#EF5350'], image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop' },
     { id: 'p3', name: 'Kantong Kemasan Food Grade', price: 25000, Icon: Box, seller: 'Toko Pak RT', cat: 'Kemasan', g: ['#0277BD', '#29B6F6'], image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=600&auto=format&fit=crop' },
     { id: 'p4', name: 'Timbangan Digital 5kg', price: 185000, Icon: Scale, seller: 'Elektronik', cat: 'Alat', g: ['#4A148C', '#AB47BC'], image: 'https://images.unsplash.com/photo-1584442628467-336e4db67f70?q=80&w=600&auto=format&fit=crop' },
   ],

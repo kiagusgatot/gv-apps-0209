@@ -10,7 +10,7 @@ import CategoryPills from '@/components/molecules/CategoryPills'
 import StoreCard from '@/components/molecules/StoreCard'
 import WishlistSheet from '@/components/molecules/WishlistSheet'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
-import { getProductImage } from '@/utils/productImages'
+import { getProductImage, FALLBACK_PRODUCT_IMAGE } from '@/utils/productImages'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
@@ -27,24 +27,24 @@ const PRIMARY = '#1B6B3A'
 const CATS = ['Semua','Sayur','Buah','Pangan','Camilan','Minuman','Kerajinan','Lainnya']
 
 const PRODUCTS = [
-  { id:1,  name:'Tempe Mendoan Jumbo',   cat:'Pangan',    seller:'Pak Budi',    price:12000, orig:null,   unit:'5 pcs',    stock:24, rating:4.9, sold:'120+', Icon: CircleDot, g: ['#E65100', '#F57C00'], image: 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop', desc:'Tempe mendoan ukuran jumbo, dibuat segar setiap hari dari kedelai lokal pilihan. Cocok untuk lauk atau camilan.' },
+  { id:1,  name:'Tempe Mendoan Jumbo',   cat:'Pangan',    seller:'Pak Budi',    price:12000, orig:null,   unit:'5 pcs',    stock:24, rating:4.9, sold:'120+', Icon: CircleDot, g: ['#E65100', '#F57C00'], image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop', desc:'Tempe mendoan ukuran jumbo, dibuat segar setiap hari dari kedelai lokal pilihan. Cocok untuk lauk atau camilan.' },
   { id:2,  name:'Bayam Organik Segar',   cat:'Sayur',     seller:'Ibu Sari',    price:8500,  orig:null,   unit:'250 gr',   stock:40, rating:4.8, sold:'200+', Icon: Leaf, g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop', desc:'Bayam organik ditanam tanpa pestisida. Dipanen pagi hari, sampai ke tangan kamu masih segar.' },
   { id:3,  name:'Kopi Robusta Segar',    cat:'Minuman',   seller:'Pak Asep',    price:35000, orig:42000,  unit:'250 gr',   stock:15, rating:4.7, sold:'85+',  Icon: Coffee, g: ['#4E342E', '#6D4C41'], image: 'https://images.unsplash.com/photo-1559525839-b184a4d698c7?q=80&w=600&auto=format&fit=crop', desc:'Kopi robusta dari perkebunan gunung Bogor, disangrai manual. Aroma kuat dengan rasa pahit yang seimbang.' },
-  { id:4,  name:'Madu Hutan Murni',      cat:'Lainnya',   seller:'Pak Joko',    price:65000, orig:null,   unit:'250 ml',   stock:8,  rating:4.9, sold:'50+',  Icon: Droplet, g: ['#F57F17', '#FFCA28'], image: 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop', desc:'Madu hutan asli dari lebah liar Kalimantan. Tanpa campuran, sudah diuji di laboratorium pertanian.' },
+  { id:4,  name:'Madu Hutan Murni',      cat:'Lainnya',   seller:'Pak Joko',    price:65000, orig:null,   unit:'250 ml',   stock:8,  rating:4.9, sold:'50+',  Icon: Droplet, g: ['#F57F17', '#FFCA28'], image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=600&auto=format&fit=crop', desc:'Madu hutan asli dari lebah liar Kalimantan. Tanpa campuran, sudah diuji di laboratorium pertanian.' },
   { id:5,  name:'Batik Tulis Lokal',     cat:'Kerajinan', seller:'Bu Erna',     price:85000, orig:null,   unit:'1 lembar', stock:6,  rating:4.6, sold:'30+',  Icon: Palette, g: ['#4A148C', '#AB47BC'], image: 'https://images.unsplash.com/photo-1580661869408-55ab23f2ca6e?q=80&w=600&auto=format&fit=crop', desc:'Batik tulis tangan motif parang khas Jawa Barat. Dikerjakan oleh pengrajin lokal berpengalaman 20 tahun.' },
   { id:6,  name:'Pisang Kepok Matang',   cat:'Buah',      seller:'Pak Anto',    price:18000, orig:null,   unit:'1 sisir',  stock:20, rating:4.5, sold:'160+', Icon: Leaf, g: ['#F57F17', '#FBC02D'], image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?q=80&w=600&auto=format&fit=crop', desc:'Pisang kepok matang pohon dari kebun sendiri. Manis dan cocok untuk digoreng atau dikonsumsi langsung.' },
   { id:7,  name:'Keripik Singkong Pedas',cat:'Camilan',   seller:'Bu Dewi',     price:15000, orig:18000,  unit:'200 gr',   stock:30, rating:4.7, sold:'140+', Icon: CircleDot, g: ['#E65100', '#F57C00'], image: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?q=80&w=600&auto=format&fit=crop', desc:'Keripik singkong renyah dengan bumbu pedas level 3. Produksi UMKM desa, tanpa pengawet.' },
   { id:8,  name:'Beras Pandan Wangi',    cat:'Pangan',    seller:'Ibu Sari',    price:65000, orig:null,   unit:'5 kg',     stock:12, rating:4.9, sold:'75+',  Icon: Wheat, g: ['#827717', '#9E9D24'], image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop', desc:'Beras pandan wangi premium dari sawah organik desa Sukamakmur. Aroma harum dan pulen saat dimasak.' },
   { id:9,  name:'Telur Ayam Kampung',    cat:'Pangan',    seller:'Pak Rohmat',  price:32000, orig:null,   unit:'12 butir', stock:35, rating:4.8, sold:'220+', Icon: Egg, g: ['#F57F17', '#FBC02D'], image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop', desc:'Telur ayam kampung asli, ayam dibesarkan bebas di halaman. Kuning telur lebih kuning dan bergizi tinggi.' },
-  { id:10, name:'Jeruk Siam Manis',      cat:'Buah',      seller:'Pak Anto',    price:22000, orig:null,   unit:'1 kg',     stock:0,  rating:4.6, sold:'90+',  Icon: CircleDot, g: ['#EF6C00', '#FF9800'], image: 'https://images.unsplash.com/photo-1550258859-d088c27e49c1?q=80&w=600&auto=format&fit=crop', desc:'Jeruk siam manis dari kebun sendiri di Bogor. Segar, tanpa pestisida, langsung dari pohon.' },
+  { id:10, name:'Jeruk Siam Manis',      cat:'Buah',      seller:'Pak Anto',    price:22000, orig:null,   unit:'1 kg',     stock:0,  rating:4.6, sold:'90+',  Icon: CircleDot, g: ['#EF6C00', '#FF9800'], image: 'https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=600&auto=format&fit=crop', desc:'Jeruk siam manis dari kebun sendiri di Bogor. Segar, tanpa pestisida, langsung dari pohon.' },
 ]
 
 const SELLER_PRODUCTS_INIT = [
   { id:101, name:'Beras Pandan Wangi Premium 5kg', price:65000, unit:'5 kg',    stock:48, active:true,  Icon: Wheat, g: ['#827717', '#9E9D24'], image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop', cat:'Pangan',   desc:'Beras pandan wangi premium organik' },
   { id:102, name:'Sayur Bayam Organik Segar 250g', price:5000,  unit:'250 gr',  stock:120,active:true,  Icon: Leaf, g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop', cat:'Sayur',    desc:'Bayam organik segar tanpa pestisida' },
   { id:103, name:'Telur Ayam Kampung (12 butir)',  price:32000, unit:'12 butir',stock:30, active:true,  Icon: Egg, g: ['#F57F17', '#FBC02D'], image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop', cat:'Pangan',   desc:'Telur ayam kampung asli dari peternakan' },
-  { id:104, name:'Pupuk Organik Kompos 25kg',      price:45000, unit:'25 kg',   stock:2,  active:true,  Icon: Leaf, g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop', cat:'Lainnya',  desc:'Pupuk organik kompos untuk pertanian' },
-  { id:105, name:'Bibit Cabai Rawit Lokal',        price:15000, unit:'50 biji', stock:0,  active:false, Icon: Leaf, g: ['#C62828', '#EF5350'], image: 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop', cat:'Lainnya',  desc:'Bibit cabai rawit lokal unggul tahan hama' },
+  { id:104, name:'Pupuk Organik Kompos 25kg',      price:45000, unit:'25 kg',   stock:2,  active:true,  Icon: Leaf, g: ['#2E7D32', '#4CAF50'], image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop', cat:'Lainnya',  desc:'Pupuk organik kompos untuk pertanian' },
+  { id:105, name:'Bibit Cabai Rawit Lokal',        price:15000, unit:'50 biji', stock:0,  active:false, Icon: Leaf, g: ['#C62828', '#EF5350'], image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop', cat:'Lainnya',  desc:'Bibit cabai rawit lokal unggul tahan hama' },
 ]
 
 // ── Data Toko Pilihan Resmi ESTO (Sumber: https://globalvillage.id/lokasi) ──
@@ -1744,7 +1744,7 @@ const DUMMY_BUYER_ORDERS = [
         name: 'Tempe Mendoan Jumbo',
         qty: 1,
         price: 12000,
-        image: 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
         Icon: CircleDot,
         g: ['#E65100', '#F57C00'],
       },
@@ -1804,7 +1804,7 @@ const DUMMY_BUYER_ORDERS = [
         name: 'Madu Hutan Murni',
         qty: 1,
         price: 65000,
-        image: 'https://images.unsplash.com/photo-1587049352847-4d4b124054da?q=80&w=600&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?q=80&w=600&auto=format&fit=crop',
         Icon: Droplet,
         g: ['#F57F17', '#FFCA28'],
       },
@@ -3296,7 +3296,7 @@ export function OrderTracking({ order, onBack, onDone }) {
                   name: 'Tempe Mendoan Jumbo',
                   qty: 1,
                   price: 12000,
-                  image: 'https://images.unsplash.com/photo-1626082895617-2c6fd34adcfb?q=80&w=600&auto=format&fit=crop',
+                  image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
                 },
               ]).map((it, idx) => (
                 <div key={idx} className="flex items-center justify-between text-[12px]">
@@ -4337,6 +4337,10 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                     src={getProductImage(detail)}
                     alt={detail.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null
+                      e.currentTarget.src = FALLBACK_PRODUCT_IMAGE
+                    }}
                   />
                   <button
                     onClick={() => toggleLike(detail.id)}
@@ -4505,7 +4509,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           }}
         />
 
-        <div className={`relative px-3.5 z-10 transition-all duration-300 ease-out ${isScrolled ? 'pt-2.5 pb-2.5' : 'pt-3.5 pb-3'}`}>
+        <div className={`relative px-4 z-10 transition-all duration-300 ease-out ${isScrolled ? 'pt-2.5 pb-2.5' : 'pt-3.5 pb-3'}`}>
           {/* Top Title & Actions Bar: Smoothly collapses on scroll */}
           <div
             className={`flex items-center justify-between transition-all duration-300 ease-out overflow-hidden ${
@@ -4514,17 +4518,14 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                 : 'max-h-14 opacity-100 translate-y-0 mb-2.5'
             }`}
           >
-            <div>
-              <h1 className="text-[20px] font-extrabold text-white tracking-tight leading-none drop-shadow-sm">
+            <div className="min-w-0">
+              <h1 className="text-[20px] font-extrabold text-white tracking-tight leading-tight drop-shadow-sm">
                 ESTO
               </h1>
-              <p className="text-[11px] font-semibold text-emerald-200/80 mt-1 leading-none">
-                Pasar & Produk Desa Digital
-              </p>
             </div>
 
             {/* Action Buttons: Wishlist & Cart */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
@@ -4629,34 +4630,21 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
-            {/* Banner Promotional Content */}
-            <div className="absolute inset-0 flex flex-col justify-between p-4 z-10">
-              {/* Top Tag */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white tracking-wider border border-white/20 shadow-xs uppercase">
-                  {BANNERS_ESTO[bannerIdx].tag}
-                </span>
-              </div>
-
-              {/* Middle Headline & Subtitle */}
-              <div className="pr-4 max-w-[270px]">
-                <h3 className="text-white font-black text-[16.5px] sm:text-[18px] leading-tight tracking-tight drop-shadow-md">
+            {/* Banner Promotional Content (Clean Visual Poster Format) */}
+            <div className="absolute inset-0 flex flex-col justify-between p-4.5 sm:p-5 z-10">
+              {/* Content Headline & Subtitle with Enhanced Readability */}
+              <div className="flex-1 flex flex-col justify-center max-w-[280px] sm:max-w-[320px]">
+                <h3 className="text-white font-black text-[17px] sm:text-[19px] leading-tight tracking-tight drop-shadow-md">
                   {BANNERS_ESTO[bannerIdx].title}
                 </h3>
-                <p className="text-white/90 text-[11px] sm:text-[11.5px] mt-1 line-clamp-2 leading-relaxed font-medium drop-shadow-sm">
+                <p className="text-white/90 text-[11.5px] sm:text-[12px] mt-1.5 line-clamp-2 leading-relaxed font-medium drop-shadow-sm">
                   {BANNERS_ESTO[bannerIdx].sub}
                 </p>
               </div>
 
-              {/* Bottom Row: CTA Button & Pagination Dots */}
-              <div className="flex items-center justify-between pt-1">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-gray-900 text-[11px] font-extrabold shadow-sm active:scale-95 transition hover:bg-gray-100">
-                  <span>{BANNERS_ESTO[bannerIdx].cta || 'Lihat Promo'}</span>
-                  <ChevronRight size={13} strokeWidth={2.5} />
-                </span>
-
-                {/* Integrated Pagination Dots */}
-                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+              {/* Bottom Row: Minimalist Floating Pagination Dots */}
+              <div className="flex items-center justify-end pt-1">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 shadow-xs">
                   {BANNERS_ESTO.map((_, i) => (
                     <button
                       key={i}

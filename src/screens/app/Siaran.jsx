@@ -67,7 +67,7 @@ const UNTUK_KAMU = {
     { id:'uk9',  title:'Kampung Sukasari si Loba Kahayang',  ep:'Drama Sunda · Eps. 1', dur:'24:00', g:['#880E4F','#C2185B'], isGVPlus:false, image:'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?q=80&w=600&auto=format&fit=crop' },
     { id:'uk10', title:'GV Update',                          ep:'Update Platform',      dur:'8:00',  g:['#1B6B3A','#2E7D32'], isGVPlus:false, image:'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop' },
     { id:'uk11', title:'Talk Spot — Bincang Hangat',         ep:'Talk Spot · Eps. 3',   dur:'22:00', g:['#0D47A1','#1565C0'], isGVPlus:false, image:'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=600&auto=format&fit=crop' },
-    { id:'uk12', title:'Masterclass Pertanian Organik',      ep:'Masterclass GV+',      dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop' },
+    { id:'uk12', title:'Masterclass Pertanian Organik',      ep:'Masterclass GV+',      dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop' },
   ],
 }
 const TRENDING = [
@@ -141,7 +141,7 @@ const ALL_ROWS = [
 ]
 const GVPLUS_ROWS = [
   { title:'Eksklusif GV+', items:[
-    { id:'p1', title:'Masterclass Pertanian Organik',      ep:'Masterclass',          dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop' },
+    { id:'p1', title:'Masterclass Pertanian Organik',      ep:'Masterclass',          dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop' },
     { id:'p2', title:'Teknik Irigasi Hemat Air',           ep:'Edukasi Premium',      dur:'22:15', g:['#00695C','#00897B'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?q=80&w=600&auto=format&fit=crop' },
     { id:'p3', title:'Bisnis UMKM dari Nol',               ep:'Masterclass',          dur:'38:00', g:['#E65100','#F4511E'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&auto=format&fit=crop' },
   ]},
@@ -267,7 +267,7 @@ const KREATOR = [
     contents:[
       { id:'kc1', title:'Panen Perdana Padi Organik',        ep:'Eps. 1', dur:'12:34', views:'4.2rb', g:['#1B5E20','#2E7D32'], isExclusive:false, image:'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop' },
       { id:'kc2', title:'Cara Olah Tanah Bebas Kimia',       ep:'Eps. 2', dur:'18:20', views:'3.1rb', g:['#2E7D32','#388E3C'], isExclusive:false, image:'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=600&auto=format&fit=crop' },
-      { id:'kc3', title:'Pemilihan Bibit Unggul Lokal',      ep:'Eps. 3', dur:'15:40', views:'2.8rb', g:['#1B5E20','#2E7D32'], isExclusive:false, image:'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop' },
+      { id:'kc3', title:'Pemilihan Bibit Unggul Lokal',      ep:'Eps. 3', dur:'15:40', views:'2.8rb', g:['#1B5E20','#2E7D32'], isExclusive:false, image:'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop' },
       { id:'kc4', title:'Teknik Penyiraman Efisien [Member]',ep:'Eks. 1', dur:'22:10', views:'—',     g:['#0D47A1','#1565C0'], isExclusive:true,  image:'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?q=80&w=600&auto=format&fit=crop' },
       { id:'kc5', title:'Menghitung Keuntungan Panen [Member]',ep:'Eks. 2',dur:'19:30',views:'—',     g:['#4A148C','#7B1FA2'], isExclusive:true,  image:'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=600&auto=format&fit=crop' },
     ]},
@@ -1855,7 +1855,7 @@ const ALL_FREE_VIDEOS = [
   { id:'v12', title:'Tanda Anak Kekurangan Gizi',        ep:'Kreator · Edukasi',       dur:'7:45',  g:['#C62828','#E53935'], isGVPlus:false, image:'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?q=80&w=600&auto=format&fit=crop' }
 ]
 const ALL_GVP_VIDEOS = [
-  { id:'p1', title:'Masterclass Pertanian Organik',      ep:'Masterclass GV+',         dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop' },
+  { id:'p1', title:'Masterclass Pertanian Organik',      ep:'Masterclass GV+',         dur:'45:00', g:['#0D47A1','#1565C0'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop' },
   { id:'p2', title:'Teknik Irigasi Hemat Air',           ep:'Edukasi Premium',         dur:'22:15', g:['#00695C','#00897B'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0?q=80&w=600&auto=format&fit=crop' },
   { id:'p3', title:'Bisnis UMKM dari Nol',               ep:'Masterclass GV+',         dur:'38:00', g:['#E65100','#F4511E'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=600&auto=format&fit=crop' },
   { id:'p4', title:'Desa Digital: Kisah Sukamaju',       ep:'Dokumenter GV+',          dur:'52:00', g:['#1B5E20','#2E7D32'], isGVPlus:true,  image:'https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=600&auto=format&fit=crop' },

@@ -49,8 +49,8 @@ const ESTO_PRODUCTS = {
     { id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan',     stock:48, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=600&auto=format&fit=crop' },
     { id:'ep2', name:'Sayur Bayam Organik Segar 250g', price:5000,  Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Sayuran',    stock:120,toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop' },
     { id:'ep3', name:'Telur Ayam Kampung (12 butir)',  price:32000, Icon:Egg, g:['#F57F17','#FBC02D'], category:'Pangan',     stock:30, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?q=80&w=600&auto=format&fit=crop' },
-    { id:'ep4', name:'Pupuk Organik Kompos 25kg',      price:45000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Pertanian',  stock:20, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop' },
-    { id:'ep5', name:'Bibit Cabai Rawit Lokal (50 biji)',price:15000,Icon:Leaf, g:['#C62828','#EF5350'],category:'Pertanian',  stock:60, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop' },
+    { id:'ep4', name:'Pupuk Organik Kompos 25kg',      price:45000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Pertanian',  stock:20, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?q=80&w=600&auto=format&fit=crop' },
+    { id:'ep5', name:'Bibit Cabai Rawit Lokal (50 biji)',price:15000,Icon:Leaf, g:['#C62828','#EF5350'],category:'Pertanian',  stock:60, toko:'Toko Bu Sari', image: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?q=80&w=600&auto=format&fit=crop' },
   ],
   warga_aktif: [
     { id:'ep6', name:'Keripik Singkong Pedas 200g',    price:15000, Icon:Package, g:['#E65100','#F57C00'], category:'Camilan',    stock:80, toko:'Warung Pak Hendra', image: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?q=80&w=600&auto=format&fit=crop' },

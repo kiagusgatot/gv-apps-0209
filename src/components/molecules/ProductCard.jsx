@@ -1,6 +1,6 @@
 import React from 'react'
 import { Heart, Star, Plus, Minus, Package, Zap } from 'lucide-react'
-import { getProductImage } from '@/utils/productImages'
+import { getProductImage, FALLBACK_PRODUCT_IMAGE } from '@/utils/productImages'
 
 const PRIMARY = '#1B6B3A'
 
@@ -47,6 +47,10 @@ export default function ProductCard({
                 alt={product.name}
                 className="w-full h-full object-cover border border-black/10"
                 loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.onerror = null
+                  e.currentTarget.src = FALLBACK_PRODUCT_IMAGE
+                }}
               />
             ) : product.Icon ? (
               <product.Icon
