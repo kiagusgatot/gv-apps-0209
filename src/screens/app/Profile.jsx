@@ -5,7 +5,7 @@ import { ChevronRight, Award, HelpCircle, LogOut, Shield, Bell,
   ChevronUp, Globe, Trash2, Camera, Star, Gift, Zap, Package,
   ToggleLeft, ToggleRight, ArrowLeft, Check, Plus, Edit3,
   Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone,
-  Sparkles, Clapperboard } from 'lucide-react'
+  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2 } from 'lucide-react'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import NavTabs from '@/components/molecules/NavTabs'
@@ -13,6 +13,9 @@ import BottomNav from '../../components/BottomNav'
 import TanyaGV from '../../components/TanyaGV'
 import AdsSubmissionForm from '../../components/ads/AdsSubmissionForm'
 import UserAdsDashboard from '../../components/ads/UserAdsDashboard'
+import OrderCard from '@/components/molecules/OrderCard'
+import { useBuyerOrders } from '@/utils/orderStore'
+import { OrderDetailSheet, CancelOrderModal, RatingSheet, OrderTracking } from './Pasar'
 
 const PRIMARY = '#1B6B3A'
 const S = { card: '0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)' }
@@ -1045,11 +1048,211 @@ function IklanBarisScreen({ onBack, navigate }) {
   );
 }
 
+// ── Pesanan Saya Sub-Screen ────────────────────────────────
+function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
+  const { orders, cancelOrder, rateOrder, updateOrder } = useBuyerOrders()
+  const [activeTab, setActiveTab] = useState(initialTab)
+  const [orderDetailSheet, setOrderDetail] = useState(null)
+  const [orderToCancel, setOrderToCancel] = useState(null)
+  const [orderToRate, setOrderToRate] = useState(null)
+  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
+
+  // Quick tab counts
+  const countActive = orders.filter((o) => !['done', 'cancelled'].includes(o.status)).length
+  const countDone = orders.filter((o) => o.status === 'done').length
+  const countCancelled = orders.filter((o) => o.status === 'cancelled').length
+
+  // Filter calculation
+  const filteredList = (() => {
+    if (activeTab === 'all') return orders
+    if (activeTab === 'active') return orders.filter((o) => !['done', 'cancelled'].includes(o.status))
+    if (activeTab === 'waiting') return orders.filter((o) => o.status === 'waiting')
+    if (activeTab === 'preparing') return orders.filter((o) => ['confirmed', 'preparing'].includes(o.status))
+    if (activeTab === 'shipped') return orders.filter((o) => o.status === 'shipped')
+    if (activeTab === 'done') return orders.filter((o) => o.status === 'done')
+    if (activeTab === 'review') return orders.filter((o) => o.status === 'done' && !o.rating)
+    if (activeTab === 'cancelled') return orders.filter((o) => o.status === 'cancelled')
+    return orders
+  })()
+
+  // If tracking subscreen is open
+  if (activeTrackingOrder) {
+    return (
+      <OrderTracking
+        order={activeTrackingOrder}
+        onBack={() => setActiveTrackingOrder(null)}
+        onDone={() => {
+          updateOrder(activeTrackingOrder.id, { status: 'done' })
+          setActiveTrackingOrder(null)
+        }}
+      />
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full bg-[#FAFBF9] relative">
+      {/* Modals & Sheets */}
+      {orderDetailSheet && (
+        <OrderDetailSheet
+          order={orderDetailSheet}
+          onClose={() => setOrderDetail(null)}
+          onRate={(o) => {
+            setOrderToRate(o)
+            setOrderDetail(null)
+          }}
+          onBuyAgain={() => {
+            setOrderDetail(null)
+            navigate?.('pasar')
+          }}
+          onTrack={(o) => {
+            setActiveTrackingOrder(o)
+            setOrderDetail(null)
+          }}
+          onCancelPrompt={(o) => {
+            setOrderDetail(null)
+            setOrderToCancel(o)
+          }}
+        />
+      )}
+
+      {orderToCancel && (
+        <CancelOrderModal
+          order={orderToCancel}
+          onClose={() => setOrderToCancel(null)}
+          onConfirm={(orderId, reason) => {
+            cancelOrder(orderId, reason)
+            setOrderToCancel(null)
+            if (orderDetailSheet && orderDetailSheet.id === orderId) {
+              setOrderDetail(null)
+            }
+          }}
+        />
+      )}
+
+      {orderToRate && (
+        <RatingSheet
+          order={orderToRate}
+          onClose={() => setOrderToRate(null)}
+          onSubmit={(orderId, rating, comment) => {
+            rateOrder(orderId, rating, comment)
+            setOrderToRate(null)
+          }}
+        />
+      )}
+
+      {/* Screen Header */}
+      <ScreenHeader
+        title="Pesanan Saya"
+        onBack={onBack}
+        actions={
+          <button
+            type="button"
+            onClick={() => navigate?.('pasar')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 text-white/90 hover:text-white"
+            style={{
+              background: 'rgba(255, 255, 255, 0.14)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <ShoppingBag size={14} />
+            <span className="text-[11.5px] font-bold">Belanja</span>
+          </button>
+        }
+      />
+
+      {/* Filter tabs using NavTabs */}
+      <div className="bg-white border-b border-gray-100 flex-shrink-0 px-2 shadow-2xs">
+        <NavTabs
+          variant="underline-light"
+          tabs={[
+            { id: 'all', label: 'Semua' },
+            { id: 'active', label: 'Berlangsung', count: countActive },
+            { id: 'done', label: 'Selesai', count: countDone },
+            { id: 'cancelled', label: 'Dibatalkan', count: countCancelled },
+          ]}
+          activeTab={['waiting', 'preparing', 'shipped'].includes(activeTab) ? 'active' : activeTab === 'review' ? 'done' : activeTab}
+          onChange={setActiveTab}
+        />
+      </div>
+
+      {/* Specific filter pill status banner if filtered via quick status buttons */}
+      {['waiting', 'preparing', 'shipped', 'review'].includes(activeTab) && (
+        <div className="px-4 pt-2.5 pb-1 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1.5">
+            Filter status:
+            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10.5px]">
+              {activeTab === 'waiting' && 'Menunggu Konfirmasi'}
+              {activeTab === 'preparing' && 'Sedang Dikemas'}
+              {activeTab === 'shipped' && 'Dalam Pengiriman'}
+              {activeTab === 'review' && 'Belum Diulas'}
+            </span>
+          </span>
+          <button
+            onClick={() => setActiveTab('all')}
+            className="text-[11px] font-bold text-emerald-700 hover:underline"
+          >
+            Tampilkan Semua
+          </button>
+        </div>
+      )}
+
+      {/* Orders List */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-3.5 py-3 flex flex-col gap-3">
+        {filteredList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center text-2xl mb-3 shadow-xs">
+              🛍️
+            </div>
+            <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
+              {activeTab === 'cancelled'
+                ? 'Tidak ada pesanan dibatalkan'
+                : activeTab === 'review'
+                ? 'Semua pesanan selesai telah diulas'
+                : 'Belum ada pesanan'}
+            </p>
+            <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-5">
+              {activeTab === 'cancelled'
+                ? 'Semua transaksi belanja desa Anda berjalan dengan lancar.'
+                : activeTab === 'review'
+                ? 'Terima kasih telah memberikan ulasan berharga bagi para penjual UMKM desa!'
+                : 'Yuk mulai belanja aneka produk segar desa berkualitas langsung dari petaninya!'}
+            </p>
+            <button
+              onClick={() => navigate?.('pasar')}
+              className="px-5 py-2.5 rounded-xl bg-[#1B6B3A] text-white text-[12px] font-bold shadow-sm active:scale-95 transition flex items-center gap-2"
+            >
+              <ShoppingBag size={14} />
+              <span>Mulai Belanja di ESTO</span>
+            </button>
+          </div>
+        ) : (
+          filteredList.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              onClick={(o) => setOrderDetail(o)}
+              onTrack={(o) => setActiveTrackingOrder(o)}
+              onRate={(o) => setOrderToRate(o)}
+              onCancelPrompt={(o) => setOrderToCancel(o)}
+              onBuyAgain={() => navigate?.('pasar')}
+            />
+          ))
+        )}
+      </div>
+
+      <BottomNav active="profile" navigate={navigate} />
+    </div>
+  )
+}
+
 // ── Main Profile ─────────────────────────────────────────────
 export default function Profile({ navigate, userData, updateUser, userProfile, showPoin: initShowPoin, initialScreen }) {
   const [screen, setScreen] = useState(initialScreen || (initShowPoin ? 'poin' : 'main'))
+  const [pesananTab, setPesananTab] = useState('all')
   const [tanyaOpen, setTanyaOpen] = useState(false)
   const [localPhoto, setLocalPhoto] = useState(null)
+  const { orders: buyerOrders } = useBuyerOrders()
 
   const name      = userData?.name   || 'Pengguna'
   const desa      = userData?.desa   || 'Desa tidak dipilih'
@@ -1057,9 +1260,15 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   const isCreator = userProfile?.capabilities?.includes('Kreator')
   const points    = userProfile?.points || 1240
 
+  const countWaiting = buyerOrders.filter((o) => o.status === 'waiting').length
+  const countPreparing = buyerOrders.filter((o) => ['confirmed', 'preparing'].includes(o.status)).length
+  const countShipped = buyerOrders.filter((o) => o.status === 'shipped').length
+  const countReview = buyerOrders.filter((o) => o.status === 'done' && !o.rating).length
+
   const goBack = () => setScreen('main')
 
   // Sub-screens
+  if (screen==='pesanan')         return <PesananSayaScreen onBack={goBack} navigate={navigate} initialTab={pesananTab} />
   if (screen==='edit-profil')     return <EditProfilScreen userData={{...userData,photo:localPhoto}} onBack={goBack} onSave={d=>{updateUser?.(d);setLocalPhoto(d.photo)}} navigate={navigate}/>
   if (screen==='notifikasi')      return <NotifikasiScreen onBack={goBack} navigate={navigate}/>
   if (screen==='pengaturan')      return <PengaturanScreen onBack={goBack} onLogout={()=>navigate('welcome')} navigate={navigate}/>
@@ -1320,6 +1529,157 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
             >
               Tukar Poin
             </button>
+          </div>
+        </div>
+
+        {/* ── Pesanan Saya Section Card (E-Commerce Style) ── */}
+        <div className="px-4 mb-3.5">
+          <div
+            className="rounded-2xl p-4 bg-white border border-surface-200/80 transition-shadow hover:shadow-brand-sm"
+            style={{
+              boxShadow: '0 2px 10px rgba(27, 107, 58, 0.05)',
+            }}
+          >
+            {/* Header: Pesanan Saya + Riwayat Pesanan > */}
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div className="flex items-center gap-2.5">
+                <SkeuoIcon icon={Package} gradient={['#1B6B3A', '#2E7D32']} size="sm" />
+                <span className="text-[13.5px] font-extrabold text-surface-900 tracking-tight">
+                  Pesanan Saya
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setPesananTab('all')
+                  setScreen('pesanan')
+                }}
+                className="flex items-center gap-1 text-[11.5px] font-bold text-[#1B6B3A] hover:text-emerald-800 transition active:scale-95"
+              >
+                <span>Riwayat Pesanan</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
+
+            {/* 4 Quick Status Filter Buttons */}
+            <div className="grid grid-cols-4 gap-1.5 pt-3">
+              {/* 1. Menunggu */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPesananTab('waiting')
+                  setScreen('pesanan')
+                }}
+                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-surface-50 transition active:scale-95 relative group"
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100/80 transition-transform group-hover:scale-105 shadow-2xs">
+                    <Clock size={19} strokeWidth={2.2} />
+                  </div>
+                  {countWaiting > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-amber-600 text-white text-[9.5px] font-black flex items-center justify-center shadow-xs border border-white">
+                      {countWaiting}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-semibold text-surface-700 text-center leading-tight">
+                  Menunggu
+                </span>
+              </button>
+
+              {/* 2. Dikemas */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPesananTab('preparing')
+                  setScreen('pesanan')
+                }}
+                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-surface-50 transition active:scale-95 relative group"
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100/80 transition-transform group-hover:scale-105 shadow-2xs">
+                    <Package size={19} strokeWidth={2.2} />
+                  </div>
+                  {countPreparing > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-blue-600 text-white text-[9.5px] font-black flex items-center justify-center shadow-xs border border-white">
+                      {countPreparing}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-semibold text-surface-700 text-center leading-tight">
+                  Dikemas
+                </span>
+              </button>
+
+              {/* 3. Dikirim */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPesananTab('shipped')
+                  setScreen('pesanan')
+                }}
+                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-surface-50 transition active:scale-95 relative group"
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-100/80 transition-transform group-hover:scale-105 shadow-2xs">
+                    <Truck size={19} strokeWidth={2.2} />
+                  </div>
+                  {countShipped > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-emerald-600 text-white text-[9.5px] font-black flex items-center justify-center shadow-xs border border-white animate-pulse">
+                      {countShipped}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-semibold text-surface-700 text-center leading-tight">
+                  Dikirim
+                </span>
+              </button>
+
+              {/* 4. Beri Ulasan */}
+              <button
+                type="button"
+                onClick={() => {
+                  setPesananTab('review')
+                  setScreen('pesanan')
+                }}
+                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-surface-50 transition active:scale-95 relative group"
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100/80 transition-transform group-hover:scale-105 shadow-2xs">
+                    <Star size={19} strokeWidth={2.2} />
+                  </div>
+                  {countReview > 0 && (
+                    <span className="absolute -top-1 -right-1.5 min-w-[17px] h-[17px] px-1 rounded-full bg-amber-500 text-white text-[9.5px] font-black flex items-center justify-center shadow-xs border border-white">
+                      {countReview}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] font-semibold text-surface-700 text-center leading-tight">
+                  Beri Ulasan
+                </span>
+              </button>
+            </div>
+
+            {/* Active shipping pulse strip if any order is currently shipped */}
+            {countShipped > 0 && (
+              <div
+                onClick={() => {
+                  setPesananTab('shipped')
+                  setScreen('pesanan')
+                }}
+                className="mt-3 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between cursor-pointer hover:bg-emerald-100/60 transition"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[11px] font-bold text-emerald-900">
+                    {countShipped} paket sedang diantar ke rumahmu
+                  </span>
+                </div>
+                <span className="text-[11px] font-extrabold text-[#1B6B3A] flex items-center gap-0.5">
+                  Lacak <ChevronRight size={13} />
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

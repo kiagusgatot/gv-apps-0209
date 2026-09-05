@@ -19,6 +19,7 @@ import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap, Ticket, Share2
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
+import { addBuyerOrder, updateBuyerOrder, cancelBuyerOrder, rateBuyerOrder, useBuyerOrders } from '@/utils/orderStore'
 
 const PRIMARY = '#1B6B3A'
 
@@ -1855,7 +1856,7 @@ const DUMMY_SELLER_ORDERS = [
 ]
 
 // ── Cancel Order Modal (with instant refund explanation) ───
-function CancelOrderModal({ order, onClose, onConfirm }) {
+export function CancelOrderModal({ order, onClose, onConfirm }) {
   const [selectedReason, setSelectedReason] = useState('Ingin mengubah pesanan atau varian')
   const [customReason, setCustomReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -1949,7 +1950,7 @@ function CancelOrderModal({ order, onClose, onConfirm }) {
 }
 
 // ── Order Detail Sheet (Buyer - bottom sheet) ──────────────
-function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCancelPrompt }) {
+export function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCancelPrompt }) {
   const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.waiting
   const isActive = ['confirmed', 'preparing', 'shipped'].includes(order.status)
   const canCancel = ['waiting', 'confirmed'].includes(order.status)
@@ -2209,7 +2210,7 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCance
 }
 
 // ── Rating Sheet ───────────────────────────────────────────
-function RatingSheet({ order, onClose, onSubmit }) {
+export function RatingSheet({ order, onClose, onSubmit }) {
   const [stars,   setStars]   = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
@@ -2769,7 +2770,7 @@ const FULL_TRACK_PHASES = [
   { id: 'arrived',   label: 'Pesanan Tiba di Lokasi!',   sub: 'Paket telah sampai di depan rumah',           icon: '📍' },
 ]
 
-function OrderTracking({ order, onBack, onDone }) {
+export function OrderTracking({ order, onBack, onDone }) {
   const [phase, setPhase] = useState(4) // default to 'Dalam Perjalanan' for rich live impression
   const [eta, setEta] = useState(18)
   const [weatherDelay, setWeatherDelay] = useState(false)
@@ -4058,7 +4059,7 @@ function StoreDetailScreen({
 export default function Pasar({ navigate, userProfile, initialTab }) {
   const [showEmptyCart, setEmptyCart] = useState(false)
   const [paymentMethod, setPayMethod] = useState('gvpay')
-  const [buyerOrders, setBuyerOrders] = useState(DUMMY_BUYER_ORDERS)
+  const { orders: buyerOrders, cancelOrder, updateOrder } = useBuyerOrders()
   const [orderDetailSheet, setOrderDetail] = useState(null)
   const [orderToCancel, setOrderToCancel] = useState(null)
   const [orderToRate, setOrderToRate] = useState(null)
@@ -4159,25 +4160,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
   // Handle Order Cancellation with instant refund
   const handleConfirmCancelOrder = (orderId, reason) => {
-    setBuyerOrders((prev) =>
-      prev.map((o) => {
-        if (o.id !== orderId) return o
-        return {
-          ...o,
-          status: 'cancelled',
-          cancelReason: reason,
-          refundNotice: `Dana Rp ${o.total.toLocaleString('id')} telah dikembalikan 100% ke saldo GV Pay.`,
-          timeline: [
-            ...(o.timeline || []),
-            {
-              s: 'cancelled',
-              time: new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }),
-              label: `Pesanan dibatalkan (${reason}) · Refund Selesai`,
-            },
-          ],
-        }
-      })
-    )
+    cancelOrder(orderId, reason)
     setOrderToCancel(null)
     if (orderDetailSheet && orderDetailSheet.id === orderId) {
       setOrderDetail(null)
@@ -4254,7 +4237,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               { s: 'confirmed', time: nowStr, label: 'Pembayaran sukses, penjual mengonfirmasi' },
             ],
           }
-          setBuyerOrders((prev) => [createdOrder, ...prev])
+          addBuyerOrder(createdOrder)
           setLastCreatedOrder(createdOrder)
           setCart({})
           setScreen('success')
@@ -4272,8 +4255,11 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           setScreen('tracking')
         }}
         onHistory={() => {
-          setScreen('list')
-          setActiveTab('pesanan')
+          if (navigate) {
+            navigate('profile-pesanan')
+          } else {
+            setScreen('list')
+          }
         }}
       />
     )
@@ -4286,18 +4272,16 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         order={orderToTrack}
         onBack={() => {
           setScreen('list')
-          setActiveTab('pesanan')
         }}
         onDone={() => {
           if (orderToTrack) {
-            setBuyerOrders((prev) =>
-              prev.map((o) =>
-                o.id === orderToTrack.id ? { ...o, status: 'done' } : o
-              )
-            )
+            updateOrder(orderToTrack.id, { status: 'done' })
           }
-          setScreen('list')
-          setActiveTab('pesanan')
+          if (navigate) {
+            navigate('profile-pesanan')
+          } else {
+            setScreen('list')
+          }
         }}
       />
     )
@@ -4546,137 +4530,13 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </button>
           </div>
         }
-      >
-        <NavTabs
-          variant="segmented"
-          tabs={[
-            { id: 'belanja', label: 'Belanja' },
-            { id: 'pesanan', label: 'Pesanan' },
-          ]}
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
-      </ScreenHeader>
+      />
 
-      {/* ── PESANAN TAB (inline, complete order lifecycle) ── */}
-      {activeTab === 'pesanan' && (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Order detail sheet */}
-          {orderDetailSheet && (
-            <OrderDetailSheet
-              order={orderDetailSheet}
-              onClose={() => setOrderDetail(null)}
-              onRate={(order) => { setOrderToRate(order); setOrderDetail(null) }}
-              onBuyAgain={(order) => {
-                order.items.forEach(item => { if (item.id) addToCart(item.id, item.qty || 1) })
-                setOrderDetail(null)
-                setScreen('cart')
-              }}
-              onTrack={(order) => {
-                setActiveTrackingOrder(order)
-                setOrderDetail(null)
-                setScreen('tracking')
-              }}
-              onCancelPrompt={(order) => {
-                setOrderDetail(null)
-                setOrderToCancel(order)
-              }}
-            />
-          )}
-
-          {/* Rating sheet */}
-          {orderToRate && (
-            <RatingSheet
-              order={orderToRate}
-              onClose={() => setOrderToRate(null)}
-              onSubmit={(orderId, rating, comment) => {
-                setBuyerOrders(p => p.map(o => o.id === orderId ? { ...o, rating, ratingComment: comment } : o))
-                setOrderToRate(null)
-              }}
-            />
-          )}
-
-          {/* Filter tabs using unified NavTabs Molecule */}
-          <div className="bg-white border-b border-gray-100 flex-shrink-0 px-2">
-            <NavTabs
-              variant="underline-light"
-              tabs={[
-                { id: 'all', label: 'Semua' },
-                {
-                  id: 'active',
-                  label: 'Berlangsung',
-                  count: buyerOrders.filter((o) => !['done', 'cancelled'].includes(o.status)).length,
-                },
-                { id: 'done', label: 'Selesai' },
-                { id: 'cancelled', label: 'Dibatalkan' },
-              ]}
-              activeTab={orderFilter}
-              onChange={setOrderFilter}
-            />
-          </div>
-
-          {/* Order list using unified OrderCard Molecule */}
-          <div className="flex-1 overflow-y-auto no-scrollbar px-3.5 py-3 flex flex-col gap-3">
-            {(() => {
-              const filteredList = orderFilter === 'all' ? buyerOrders
-                : orderFilter === 'active' ? buyerOrders.filter(o => !['done', 'cancelled'].includes(o.status))
-                : orderFilter === 'done' ? buyerOrders.filter(o => o.status === 'done')
-                : buyerOrders.filter(o => o.status === 'cancelled')
-
-              if (filteredList.length === 0) {
-                return (
-                  <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-                    <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center text-2xl mb-3 shadow-xs">
-                      🛍️
-                    </div>
-                    <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
-                      {orderFilter === 'cancelled' ? 'Tidak ada pesanan dibatalkan' : 'Belum ada pesanan'}
-                    </p>
-                    <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-5">
-                      {orderFilter === 'cancelled' ? 'Semua pesananmu berjalan dengan lancar.' : 'Yuk mulai belanja aneka produk segar desa berkualitas langsung dari petaninya!'}
-                    </p>
-                    <button
-                      onClick={() => setActiveTab('belanja')}
-                      className="px-5 py-2.5 rounded-xl bg-[#1B6B3A] text-white text-[12px] font-bold shadow-sm active:scale-95 transition"
-                    >
-                      Mulai Belanja Sekarang
-                    </button>
-                  </div>
-                )
-              }
-
-              return filteredList.map(order => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onClick={(o) => setOrderDetail(o)}
-                  onTrack={(o) => {
-                    setActiveTrackingOrder(o)
-                    setScreen('tracking')
-                  }}
-                  onRate={(o) => {
-                    setOrderToRate(o)
-                  }}
-                  onCancelPrompt={(o) => {
-                    setOrderToCancel(o)
-                  }}
-                  onBuyAgain={(o) => {
-                    o.items.forEach(item => { if (item.id) addToCart(item.id, item.qty || 1) })
-                    setScreen('cart')
-                  }}
-                />
-              ))
-            })()}
-          </div>
-        </div>
-      )}
-
-      {/* ── BELANJA TAB (Product catalog & promotions) ── */}
-      {activeTab === 'belanja' && (
-        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
-          {/* Search Bar (Opsi 1: Clean Full-Width, No Duplicated Filter Button) */}
-          <div className="px-3.5 pt-3 pb-1">
-            <SearchBar
+      {/* Main E-Commerce Catalog & Promotions */}
+      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
+        {/* Search Bar (Opsi 1: Clean Full-Width, No Duplicated Filter Button) */}
+        <div className="px-3.5 pt-3 pb-1">
+          <SearchBar
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
               onClear={() => setSearchQ('')}
@@ -4847,10 +4707,9 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
           </div>
         </div>
-      )}
 
       {/* Sticky Cart Summary Bar */}
-      {totalCart > 0 && activeTab === 'belanja' && (
+      {totalCart > 0 && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white">
           <button
             onClick={() => setScreen('cart')}

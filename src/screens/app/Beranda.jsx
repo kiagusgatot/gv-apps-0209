@@ -44,7 +44,7 @@ const SC_WARGA_BARU = [
 const SC_WARGA_AKTIF = [
   { label: 'Bayar', Icon: CreditCard, to: 'bayar', g: ['#1B5E20', '#2E7D32'] },
   { label: 'Transfer', Icon: ArrowRightLeft, to: 'bayar', g: ['#0D47A1', '#1976D2'] },
-  { label: 'Pesanan', Icon: Package, to: 'pasar-pesanan', g: ['#E65100', '#F57C00'] },
+  { label: 'Pesanan', Icon: Package, to: 'profile-pesanan', g: ['#E65100', '#F57C00'] },
   { label: 'Layanan', Icon: Grid3x3, to: 'more', g: ['#37474F', '#546E7A'] },
 ]
 const SC_PENJUAL = [
@@ -62,7 +62,7 @@ const SC_KREATOR = [
 const SC_ADMIN = [
   { label: 'Komunitas', Icon: MessageCircle, to: 'komunitas', g: ['#0D47A1', '#1976D2'] },
   { label: 'GV Pay', Icon: CreditCard, to: 'bayar', g: ['#1B5E20', '#2E7D32'] },
-  { label: 'Pesanan', Icon: Package, to: 'pasar-pesanan', g: ['#E65100', '#F57C00'] },
+  { label: 'Pesanan', Icon: Package, to: 'profile-pesanan', g: ['#E65100', '#F57C00'] },
   { label: 'Layanan', Icon: Grid3x3, to: 'more', g: ['#37474F', '#546E7A'] },
 ]
 
@@ -1032,9 +1032,9 @@ function MoreModal({ onClose, navigate, userProfile }) {
     {
       label: 'ESTO & Belanja', show: true, items: [
         { Icon: ShoppingCart, label: 'Belanja', to: 'pasar', show: true, g: ['#E65100', '#F57C00'] },
-        { Icon: Package, label: 'Pesanan', to: 'pasar-pesanan', show: isActive, g: ['#0D47A1', '#1976D2'] },
+        { Icon: Package, label: 'Pesanan', to: 'profile-pesanan', show: isActive, g: ['#0D47A1', '#1976D2'] },
         { Icon: Store, label: 'Toko Saya', to: 'pasar-toko', show: isSeller, g: ['#1B5E20', '#2E7D32'] },
-        { Icon: Star, label: 'Beri Rating', to: 'pasar-pesanan', show: isActive, g: ['#F57F17', '#FBC02D'] },
+        { Icon: Star, label: 'Beri Rating', to: 'profile-pesanan', show: isActive, g: ['#F57F17', '#FBC02D'] },
       ]
     },
     {
