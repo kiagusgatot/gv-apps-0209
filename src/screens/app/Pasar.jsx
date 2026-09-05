@@ -1124,8 +1124,8 @@ function CheckoutScreen({
         </div>
 
         {/* Delivery Options */}
-        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
-          <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider mb-3">
+        <div className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-xs">
+          <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider mb-2.5">
             Pilihan Metode Pengiriman
           </p>
           <div className="flex flex-col gap-2">
@@ -1135,35 +1135,48 @@ function CheckoutScreen({
                 <button
                   key={d.id}
                   onClick={() => setDelivery(d.id)}
-                  className={`flex items-center gap-3.5 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] group ${
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-left border transition-all active:scale-[0.98] group ${
                     isSelected
                       ? 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                       : 'bg-white border-gray-200/80 hover:bg-gray-50'
                   }`}
                 >
-                  <SkeuoIcon icon={d.Icon} gradient={d.g} size="sm" />
+                  <SkeuoIcon
+                    icon={d.Icon}
+                    gradient={d.g}
+                    size="sm"
+                    className="w-9 h-9 rounded-xl flex-shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[12.5px] font-extrabold text-gray-900">{d.label}</p>
+                    <div className="flex items-center gap-1.5 min-w-0 flex-nowrap">
+                      <p className="text-[12px] font-extrabold text-gray-900 leading-tight whitespace-nowrap">
+                        {d.label}
+                      </p>
                       {d.badge && (
-                        <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 whitespace-nowrap flex-shrink-0 leading-tight">
                           {d.badge}
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-gray-500 mt-0.5">{d.sub}</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-[12.5px] font-black text-gray-900">
-                      {d.price === 0 ? <span className="text-emerald-700">Gratis</span> : `Rp ${d.price.toLocaleString('id')}`}
+                    <p className="text-[10.5px] text-gray-500 mt-0.5 truncate leading-normal">
+                      {d.sub}
                     </p>
                   </div>
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ms-1 ${
-                      isSelected ? 'border-emerald-700' : 'border-gray-300'
-                    }`}
-                  >
-                    {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-700" />}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-[12px] font-black text-gray-900 whitespace-nowrap text-right">
+                      {d.price === 0 ? (
+                        <span className="text-emerald-700 font-extrabold">Gratis</span>
+                      ) : (
+                        `Rp ${d.price.toLocaleString('id')}`
+                      )}
+                    </span>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isSelected ? 'border-emerald-700' : 'border-gray-300'
+                      }`}
+                    >
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-700" />}
+                    </div>
                   </div>
                 </button>
               )
