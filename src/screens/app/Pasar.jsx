@@ -205,27 +205,33 @@ export const ALL_PRODUCTS = [...PRODUCTS, ...ALL_STORE_PRODUCTS]
 const BANNERS_ESTO = [
   {
     id: 1,
-    title: 'BELANJA INSTANT · 1 JAM TIBA',
-    sub: 'Gratis ongkir kalau telat! Kebutuhan pokok sampai depan pintu',
-    tag: 'DISKON 50% HARI INI',
-    g: ['#DC2626', '#991B1B'],
-    Icon: Zap,
+    title: 'PANEN SEGAR LANGSUNG PETANI',
+    sub: 'Sayur, beras, dan telur organik dipanen pagi ini langsung dari sawah desa',
+    tag: '🌾 100% ASLI DESA',
+    cta: 'Belanja Panen Segar',
+    image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop',
+    g: ['#0C3E1E', '#1B6B3A'],
+    Icon: Leaf,
   },
   {
     id: 2,
     title: 'BELANJA MINGGUAN DISKON 50%',
-    sub: 'Stok sembako & bumbu dapur serba hemat dari Kios Resmi ESTO',
-    tag: 'PROMO XTRA',
-    g: ['#EA580C', '#C2410C'],
+    sub: 'Stok sembako, beras & minyak goreng hemat dari Kios Resmi ESTO',
+    tag: '⚡ PROMO XTRA HEMAT',
+    cta: 'Klaim Diskon 50%',
+    image: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=1200&auto=format&fit=crop',
+    g: ['#C2410C', '#EA580C'],
     Icon: Sparkles,
   },
   {
     id: 3,
-    title: 'PANEN SEGAR LANGSUNG PETANI',
-    sub: 'Sayur, beras, dan telur ayam kampung organik tanpa perantara',
-    tag: '100% ASLI DESA',
-    g: ['#15803D', '#166534'],
-    Icon: Leaf,
+    title: 'BELANJA INSTANT · 1 JAM TIBA',
+    sub: 'Kebutuhan pokok diantar kilat oleh GV Man Express langsung ke rumahmu',
+    tag: '🚀 KILAT 1 JAM TIBA',
+    cta: 'Pesan Kilat Sekarang',
+    image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=1200&auto=format&fit=crop',
+    g: ['#991B1B', '#DC2626'],
+    Icon: Zap,
   },
 ]
 
@@ -4073,8 +4079,16 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [detail, setDetail] = useState(null)
   const [detailQty, setDQty] = useState(1)
   const [screen, setScreen] = useState('list') // 'list' | 'cart' | 'checkout' | 'payment' | 'success' | 'tracking'
-  const [activeTab, setActiveTab] = useState(initialTab || 'belanja')
   const [bannerIdx, setBannerIdx] = useState(0)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  // Auto-advance promo banners every 4.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBannerIdx((prev) => (prev + 1) % BANNERS_ESTO.length)
+    }, 4500)
+    return () => clearInterval(timer)
+  }, [])
 
   // E-commerce ESTO States
   const [selectedStore, setSelectedStore] = useState(null)
@@ -4473,127 +4487,196 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       )}
 
       {/* Unified ScreenHeader */}
-      <ScreenHeader
-        title="ESTO"
-        actions={
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
-              style={{
-                background: 'rgba(255, 255, 255, 0.14)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-              onClick={() => setShowWishlist(true)}
-              aria-label="Wishlist Produk Favorit"
-            >
-              <Heart
-                size={16}
-                className={liked.size > 0 ? 'text-red-400 fill-red-400' : 'text-white/80'}
-              />
-              {liked.size > 0 && (
-                <span
-                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums bg-red-500"
-                  style={{
-                    boxShadow: '0 0 0 2px #0C3E1E',
-                  }}
-                >
-                  {liked.size}
-                </span>
-              )}
-            </button>
+      {/* ── Dynamic Collapsible ESTO Header ── */}
+      <header
+        className="flex-shrink-0 relative select-none z-30 transition-all duration-300 ease-out shadow-md"
+        style={{
+          background: 'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)',
+          boxShadow: isScrolled
+            ? '0 4px 20px rgba(12, 62, 30, 0.35)'
+            : '0 2px 12px rgba(12, 62, 30, 0.2)',
+        }}
+      >
+        {/* Ambient glow */}
+        <div
+          className="absolute -top-10 -end-10 w-40 h-40 rounded-full pointer-events-none opacity-25"
+          style={{
+            background: 'radial-gradient(circle, #4ade80 0%, transparent 70%)',
+          }}
+        />
 
-            <button
-              type="button"
-              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
-              style={{
-                background: 'rgba(255, 255, 255, 0.14)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-              onClick={() => setScreen('cart')}
-              aria-label="Keranjang Belanja"
-            >
-              <ShoppingCart size={16} className="text-white/80" />
-              {totalCart > 0 && (
-                <span
-                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums"
-                  style={{
-                    background: '#EF4444',
-                    boxShadow: '0 0 0 2px #0C3E1E',
-                  }}
-                >
-                  {totalCart}
-                </span>
-              )}
-            </button>
+        <div className={`relative px-3.5 z-10 transition-all duration-300 ease-out ${isScrolled ? 'pt-2.5 pb-2.5' : 'pt-3.5 pb-3'}`}>
+          {/* Top Title & Actions Bar: Smoothly collapses on scroll */}
+          <div
+            className={`flex items-center justify-between transition-all duration-300 ease-out overflow-hidden ${
+              isScrolled
+                ? 'max-h-0 opacity-0 -translate-y-3 mb-0 pointer-events-none'
+                : 'max-h-14 opacity-100 translate-y-0 mb-2.5'
+            }`}
+          >
+            <div>
+              <h1 className="text-[20px] font-extrabold text-white tracking-tight leading-none drop-shadow-sm">
+                ESTO
+              </h1>
+              <p className="text-[11px] font-semibold text-emerald-200/80 mt-1 leading-none">
+                Pasar & Produk Desa Digital
+              </p>
+            </div>
+
+            {/* Action Buttons: Wishlist & Cart */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.14)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+                onClick={() => setShowWishlist(true)}
+                aria-label="Wishlist Produk Favorit"
+              >
+                <Heart
+                  size={16}
+                  className={liked.size > 0 ? 'text-red-400 fill-red-400' : 'text-white/80'}
+                />
+                {liked.size > 0 && (
+                  <span
+                    className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums bg-red-500"
+                    style={{ boxShadow: '0 0 0 2px #0C3E1E' }}
+                  >
+                    {liked.size}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.14)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+                onClick={() => setScreen('cart')}
+                aria-label="Keranjang Belanja"
+              >
+                <ShoppingCart size={16} className="text-white/80" />
+                {totalCart > 0 && (
+                  <span
+                    className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums"
+                    style={{
+                      background: '#EF4444',
+                      boxShadow: '0 0 0 2px #0C3E1E',
+                    }}
+                  >
+                    {totalCart}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
-        }
-      />
 
-      {/* Main E-Commerce Catalog & Promotions */}
-      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
-        {/* Search Bar (Opsi 1: Clean Full-Width, No Duplicated Filter Button) */}
-        <div className="px-3.5 pt-3 pb-1">
-          <SearchBar
+          {/* Sticky Search Bar Row: ALWAYS visible! */}
+          <div className="w-full">
+            <SearchBar
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
               onClear={() => setSearchQ('')}
               variant="surface"
               placeholder="Cari produk desa di ESTO..."
-              className="w-full bg-white border border-gray-200/90 shadow-2xs"
+              className="w-full bg-white border border-gray-200/90 shadow-2xs rounded-2xl"
             />
           </div>
+        </div>
+      </header>
 
-          {/* Promo banners with integrated pagination */}
-          <div className="px-3.5 pt-1.5 pb-1.5">
+      {/* Main E-Commerce Catalog & Promotions */}
+      <div
+        onScroll={(e) => {
+          const scrolled = e.currentTarget.scrollTop > 35
+          if (scrolled !== isScrolled) {
+            setIsScrolled(scrolled)
+          }
+        }}
+        className="flex-1 overflow-y-auto no-scrollbar"
+        style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}
+      >
+        {/* Promo banners with high-impact image display & integrated pagination */}
+        <div className="px-3.5 pt-2.5 pb-1.5">
+          <div
+            className="rounded-3xl overflow-hidden h-44 sm:h-48 relative cursor-pointer shadow-md active:scale-[0.99] transition-all duration-300 group"
+            style={{
+              background: `linear-gradient(135deg, ${BANNERS_ESTO[bannerIdx].g[0]}, ${BANNERS_ESTO[bannerIdx].g[1]})`,
+            }}
+          >
+            {/* Background Promotional Image with Zoom Effect */}
+            {BANNERS_ESTO[bannerIdx].image && (
+              <img
+                src={BANNERS_ESTO[bannerIdx].image}
+                alt={BANNERS_ESTO[bannerIdx].title}
+                key={BANNERS_ESTO[bannerIdx].id}
+                className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-500 transform group-hover:scale-105 transition-transform duration-700"
+              />
+            )}
+
+            {/* Gradient Overlays for High Legibility */}
             <div
-              className="rounded-2xl overflow-hidden h-26 relative cursor-pointer shadow-xs active:scale-[0.99] transition-transform"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                background: `linear-gradient(135deg, ${BANNERS_ESTO[bannerIdx].g[0]}, ${BANNERS_ESTO[bannerIdx].g[1]})`,
+                background: `linear-gradient(90deg, ${BANNERS_ESTO[bannerIdx].g[0]}F2 0%, ${BANNERS_ESTO[bannerIdx].g[1]}B3 55%, rgba(0,0,0,0.2) 100%)`,
               }}
-            >
-              <div className="absolute inset-0 flex items-center px-4 gap-3">
-                <div className="flex-shrink-0 relative z-10 w-11 h-11 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center">
-                  {React.createElement(BANNERS_ESTO[bannerIdx].Icon, {
-                    size: 24,
-                    className: 'text-white drop-shadow-md',
-                    strokeWidth: 1.8,
-                  })}
-                </div>
-                <div className="flex-1 min-w-0 pr-8">
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-white/20 text-white tracking-wide">
-                    {BANNERS_ESTO[bannerIdx].tag}
-                  </span>
-                  <p className="text-white font-extrabold text-[13.5px] leading-snug mt-1 truncate">
-                    {BANNERS_ESTO[bannerIdx].title}
-                  </p>
-                  <p className="text-white/80 text-[11px] mt-0.5 truncate">
-                    {BANNERS_ESTO[bannerIdx].sub}
-                  </p>
-                </div>
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+            {/* Banner Promotional Content */}
+            <div className="absolute inset-0 flex flex-col justify-between p-4 z-10">
+              {/* Top Tag */}
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-white/20 backdrop-blur-md text-white tracking-wider border border-white/20 shadow-xs uppercase">
+                  {BANNERS_ESTO[bannerIdx].tag}
+                </span>
               </div>
 
-              {/* Integrated pagination dots */}
-              <div className="absolute bottom-2 end-3 flex items-center gap-1.5 z-10">
-                {BANNERS_ESTO.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setBannerIdx(i)
-                    }}
-                    className="h-1.5 rounded-full transition-all duration-200"
-                    style={{
-                      width: i === bannerIdx ? 16 : 5,
-                      background: i === bannerIdx ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
-                    }}
-                  />
-                ))}
+              {/* Middle Headline & Subtitle */}
+              <div className="pr-4 max-w-[270px]">
+                <h3 className="text-white font-black text-[16.5px] sm:text-[18px] leading-tight tracking-tight drop-shadow-md">
+                  {BANNERS_ESTO[bannerIdx].title}
+                </h3>
+                <p className="text-white/90 text-[11px] sm:text-[11.5px] mt-1 line-clamp-2 leading-relaxed font-medium drop-shadow-sm">
+                  {BANNERS_ESTO[bannerIdx].sub}
+                </p>
+              </div>
+
+              {/* Bottom Row: CTA Button & Pagination Dots */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-gray-900 text-[11px] font-extrabold shadow-sm active:scale-95 transition hover:bg-gray-100">
+                  <span>{BANNERS_ESTO[bannerIdx].cta || 'Lihat Promo'}</span>
+                  <ChevronRight size={13} strokeWidth={2.5} />
+                </span>
+
+                {/* Integrated Pagination Dots */}
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10">
+                  {BANNERS_ESTO.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setBannerIdx(i)
+                      }}
+                      className="h-1.5 rounded-full transition-all duration-300"
+                      style={{
+                        width: i === bannerIdx ? 18 : 5,
+                        background: i === bannerIdx ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
+                      }}
+                      aria-label={`Banner slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
           {/* Quick Voucher Strip (Image 5) */}
           <div className="px-3.5 pt-1 pb-2">
