@@ -8,7 +8,7 @@ import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
   CircleDot, Leaf, Coffee, Droplet, Palette, Wheat, Egg, Landmark, Wallet, Box, Scale, ScanLine,
   AlertTriangle, Trash2, Copy, CheckCircle2, Info, ShieldCheck, CloudRain, RotateCcw,
-  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp
+  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
