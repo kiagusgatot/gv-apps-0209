@@ -3079,62 +3079,55 @@ function ProductFormSheet({ initial, onClose, onSave }) {
   )
 }
 
-// ── Filter Sheet ─────────────────────────────────────────────
-function FilterSheet({ currentSort, onSort, currentCats, onCats, onClose }) {
-  const toggleCat = (c) => {
-    if (c === 'Semua') {
-      onCats([])
-      return
-    }
-    const newCats = currentCats.includes(c) ? currentCats.filter(x=>x!==c) : [...currentCats, c]
-    onCats(newCats)
-  }
-
+// ── Sort Sheet (Opsi 1: Focused Sort Only, Zero Category Duplication) ───
+function SortSheet({ currentSort, onSort, onClose }) {
   return (
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose}/>
-      <div className="relative bg-white rounded-t-3xl px-5 pt-4 pb-10 flex flex-col"
-        style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.15)', maxHeight:'85%'}}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity" onClick={onClose} />
+      <div
+        className="relative bg-white rounded-t-3xl px-5 pt-4 pb-8 flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-200"
+        style={{ maxHeight: '75%' }}
+      >
         <div className="flex-shrink-0">
-          <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4"/>
-          <p className="text-[16px] font-extrabold text-gray-900 mb-1">Filter & Urutkan</p>
-        </div>
-        <div className="flex-1 overflow-y-auto no-scrollbar py-2">
-          {/* Urutkan */}
-          <div className="mb-6 mt-3">
-            <p className="text-[13px] font-bold text-gray-900 mb-2">Urutkan</p>
-            <div className="flex flex-col gap-1">
-              {SORT_OPTIONS.map(s=>(
-                <label key={s.id} className="flex items-center justify-between py-2.5 cursor-pointer">
-                  <span className="text-[13px] text-gray-700">{s.label}</span>
-                  <input type="radio" name="sort" checked={currentSort===s.id} onChange={()=>onSort(s.id)}
-                    className="w-4 h-4 accent-[#1B6B3A]"/>
-                </label>
-              ))}
+          <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-3.5" />
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div>
+              <p className="text-[15px] font-extrabold text-gray-900">Urutkan Produk</p>
+              <p className="text-[11.5px] text-gray-400">Pilih susunan katalog yang paling sesuai</p>
             </div>
-          </div>
-          {/* Kategori */}
-          <div>
-            <p className="text-[13px] font-bold text-gray-900 mb-2">Kategori</p>
-            <div className="flex flex-col gap-1">
-              {CATS.map(c=>(
-                <label key={c} className="flex items-center gap-3 py-2.5 cursor-pointer">
-                  <input type="checkbox"
-                    checked={c==='Semua' ? currentCats.length===0 : currentCats.includes(c)}
-                    onChange={()=>toggleCat(c)}
-                    className="w-4 h-4 accent-[#1B6B3A] rounded-sm"/>
-                  <span className="text-[13px] text-gray-700">{c}</span>
-                </label>
-              ))}
-            </div>
+            <button
+              onClick={onClose}
+              className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 active:scale-95 transition"
+            >
+              <X size={14} />
+            </button>
           </div>
         </div>
-        <div className="flex-shrink-0 pt-4 border-t border-gray-100 mt-2">
-          <button onClick={onClose}
-            className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white transition"
-            style={{background: '#1B6B3A'}}>
-            Terapkan Filter
-          </button>
+        <div className="py-2 flex flex-col divide-y divide-gray-50">
+          {SORT_OPTIONS.map((s) => {
+            const isSelected = currentSort === s.id
+            return (
+              <button
+                key={s.id}
+                onClick={() => {
+                  onSort(s.id)
+                  onClose()
+                }}
+                className={`flex items-center justify-between py-3 px-2 rounded-xl text-left transition ${
+                  isSelected ? 'bg-emerald-50/70 font-extrabold text-emerald-950' : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="text-[13px]">{s.label}</span>
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                    isSelected ? 'border-[#1B6B3A] bg-[#1B6B3A]' : 'border-gray-300'
+                  }`}
+                >
+                  {isSelected && <Check size={10} className="text-white" strokeWidth={3} />}
+                </div>
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>
@@ -3383,13 +3376,11 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   return (
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
 
-      {/* Sort sheet */}
+      {/* Sort sheet (Opsi 1: Dedicated sort sheet) */}
       {showSort && (
-        <FilterSheet
+        <SortSheet
           currentSort={sortBy}
           onSort={setSortBy}
-          currentCats={selectedCats}
-          onCats={setSelectedCats}
           onClose={() => setShowSort(false)}
         />
       )}
@@ -3585,34 +3576,16 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       {/* ── BELANJA TAB (Product catalog & promotions) ── */}
       {activeTab === 'belanja' && (
         <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}>
-          {/* Search Bar & Filter Row (Moved from header into Belanja area) */}
-          <div className="px-3.5 pt-3 pb-1 flex gap-2 items-center">
-            <div className="flex-1">
-              <SearchBar
-                value={searchQ}
-                onChange={(e) => setSearchQ(e.target.value)}
-                onClear={() => setSearchQ('')}
-                variant="surface"
-                placeholder="Cari produk desa di ESTO..."
-                className="bg-white border border-gray-200/90 shadow-2xs"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowSort(true)}
-              aria-label="Filter Kategori"
-              className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 transition active:scale-95 relative bg-white border border-gray-200/90 shadow-2xs hover:bg-gray-50 text-gray-700"
-            >
-              <SlidersHorizontal size={17} className="text-gray-700" />
-              {selectedCats.length > 0 && (
-                <span
-                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center"
-                  style={{ background: '#1B6B3A', boxShadow: '0 0 0 2px #fff' }}
-                >
-                  {selectedCats.length}
-                </span>
-              )}
-            </button>
+          {/* Search Bar (Opsi 1: Clean Full-Width, No Duplicated Filter Button) */}
+          <div className="px-3.5 pt-3 pb-1">
+            <SearchBar
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              onClear={() => setSearchQ('')}
+              variant="surface"
+              placeholder="Cari produk desa di ESTO..."
+              className="w-full bg-white border border-gray-200/90 shadow-2xs"
+            />
           </div>
 
           {/* Promo banners with integrated pagination */}
@@ -3679,7 +3652,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             />
           </div>
 
-          {/* Section Header with result count & single down arrow */}
+          {/* Section Header with result count & single down arrow sort button chip */}
           <div className="px-3.5 pt-1.5 pb-2">
             <SectionHeader
               title={
@@ -3692,6 +3665,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               subtitle={`${filtered.length} produk segar & alami`}
               actionLabel={SORT_OPTIONS.find((s) => s.id === sortBy)?.label || 'Terlaris'}
               actionIcon={ChevronDown}
+              actionVariant="chip"
               onAction={() => setShowSort(true)}
               className="mb-0"
             />
