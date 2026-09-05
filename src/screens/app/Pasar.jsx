@@ -7,6 +7,7 @@ import SectionHeader from '@/components/molecules/SectionHeader'
 import ProductCard from '@/components/molecules/ProductCard'
 import OrderCard from '@/components/molecules/OrderCard'
 import CategoryPills from '@/components/molecules/CategoryPills'
+import { getProductImage } from '@/utils/productImages'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
@@ -1813,19 +1814,21 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCance
           {/* Active status banner if shipped */}
           {order.status === 'shipped' && (
             <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm">
-                  🏍️
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-[#1B6B3A] text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Truck size={18} strokeWidth={2.2} />
                 </div>
                 <div>
-                  <p className="text-[12px] font-extrabold text-emerald-950">Pesanan Sedang Diantar</p>
-                  <p className="text-[11px] text-emerald-700">GV Man sedang menuju ke lokasimu</p>
+                  <p className="text-[12.5px] font-extrabold text-emerald-950 leading-tight">Pesanan Sedang Diantar</p>
+                  <p className="text-[11px] text-emerald-700 font-medium mt-0.5">GV Man sedang menuju ke lokasimu</p>
                 </div>
               </div>
               <button
                 onClick={() => { onClose(); onTrack(order) }}
-                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-[11px] font-bold active:scale-95 transition shadow-sm">
-                Lacak
+                className="px-3.5 py-1.5 rounded-xl bg-[#1B6B3A] text-white text-[11.5px] font-bold active:scale-95 transition shadow-xs flex items-center gap-1.5"
+              >
+                <Navigation size={12} />
+                <span>Lacak</span>
               </button>
             </div>
           )}
@@ -1850,42 +1853,30 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCance
           {/* Items with Real Product Photos */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 mb-2.5 uppercase tracking-wider">Produk yang Dibeli</p>
-            {order.items.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-                <div
-                  className="w-13 h-13 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden relative border border-gray-100 bg-gray-50"
-                  style={{
-                    background: item.image
-                      ? 'transparent'
-                      : item.g
-                      ? `linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`
-                      : '#F5F5F5',
-                  }}
-                >
-                  {item.image ? (
+            {order.items.map((item, i) => {
+              const itemImg = getProductImage(item)
+              return (
+                <div key={i} className="flex items-center gap-3.5 py-3 border-b border-gray-100/80 last:border-0">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden relative border border-gray-200/70 bg-gray-50 flex-shrink-0 shadow-2xs">
                     <img
-                      src={item.image}
+                      src={itemImg}
                       alt={item.name}
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
-                  ) : item.Icon ? (
-                    <item.Icon size={22} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} />
-                  ) : (
-                    <Package size={22} className="text-gray-400" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-gray-900 leading-snug truncate">{item.name}</p>
-                  <p className="text-[11.5px] text-gray-500 mt-0.5">
-                    {item.qty} × Rp {item.price.toLocaleString('id')}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-extrabold text-gray-900 leading-snug line-clamp-1">{item.name}</p>
+                    <p className="text-[11.5px] text-gray-500 mt-0.5">
+                      {item.qty} × Rp {item.price.toLocaleString('id')}
+                    </p>
+                  </div>
+                  <p className="text-[13.5px] font-black tabular-nums flex-shrink-0" style={{ color: PRIMARY }}>
+                    Rp {(item.qty * item.price).toLocaleString('id')}
                   </p>
                 </div>
-                <p className="text-[13px] font-extrabold tabular-nums flex-shrink-0" style={{ color: PRIMARY }}>
-                  Rp {(item.qty * item.price).toLocaleString('id')}
-                </p>
-              </div>
-            ))}
+              )
+            })}
             <div className="flex justify-between pt-3 border-t border-gray-100">
               <span className="text-[12px] font-bold text-gray-900">Total Pembayaran</span>
               <span className="text-[14px] font-extrabold tabular-nums" style={{ color: PRIMARY }}>
@@ -2328,11 +2319,12 @@ function SellerOrderSheet({ order, onClose, onUpdateStatus }) {
           {/* Items */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 mb-2">Produk Dipesan</p>
-            {order.items.map((item,i)=>(
+            {order.items.map((item,i)=>{
+              const itemImg = getProductImage(item)
+              return (
               <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
-                <div className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-inner relative overflow-hidden"
-                  style={{background:item.g?`linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`:'#F5F5F5'}}>
-                  {item.Icon?<item.Icon size={22} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>:<Package size={22} className="text-gray-400"/>}
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-2xs relative overflow-hidden border border-gray-100 bg-gray-50">
+                  <img src={itemImg} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="flex-1">
                   <p className="text-[13px] font-semibold text-gray-900">{item.name}</p>
@@ -2341,8 +2333,9 @@ function SellerOrderSheet({ order, onClose, onUpdateStatus }) {
                 <p className="text-[13px] font-bold flex-shrink-0" style={{color:PRIMARY}}>
                   Rp {(item.qty*item.price).toLocaleString('id')}
                 </p>
-              </div>
-            ))}
+                </div>
+              )
+            })}
           </div>
           {/* Info */}
           {[['Total',`Rp ${order.total.toLocaleString('id')}`],['Pembayaran',order.payment],['Pengiriman',order.delivery]].map(([l,v])=>(
@@ -2619,7 +2612,6 @@ function OrderTracking({ order, onBack, onDone }) {
   const [showCallModal, setShowCallModal] = useState(false)
   const [showChatModal, setShowChatModal] = useState(false)
   const [showItemsAccordion, setShowItemsAccordion] = useState(false)
-  const [showFullTimeline, setShowFullTimeline] = useState(false) // Dropdown: default only latest status
   const [showReceiptDialog, setShowReceiptDialog] = useState(false)
 
   const courier = order?.courier || DEFAULT_COURIER
@@ -3013,154 +3005,48 @@ function OrderTracking({ order, onBack, onDone }) {
           </div>
         </div>
 
-        {/* ── 4. Proses Pengiriman Lengkap (Dropdown: Default Status Terakhir + Expand Riwayat) ── */}
+        {/* ── 4. Card Proses Pengiriman (Menampilkan Status Terakhir / Berlangsung Secara Langsung) ── */}
         <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
-          <div
-            onClick={() => setShowFullTimeline((prev) => !prev)}
-            className="flex items-center justify-between cursor-pointer select-none"
-          >
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                  Proses Pengiriman
-                </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                  Tahap {phase + 1} dari 6
-                </span>
-              </div>
-              <p className="text-[13.5px] font-extrabold text-gray-900 mt-1">
-                {currentPhaseObj.label}
-              </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                Proses Pengiriman
+              </span>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
+                Tahap {phase + 1} dari {FULL_TRACK_PHASES.length}
+              </span>
             </div>
-            <button
-              type="button"
-              className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200/70 flex items-center justify-center text-gray-600 active:scale-90 transition"
-              aria-label="Toggle Riwayat Pengiriman"
-            >
-              {showFullTimeline ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
+            <p className="text-[14px] font-extrabold text-gray-900 mt-1">
+              {currentPhaseObj.label}
+            </p>
           </div>
 
-          {/* Collapsed State: Ringkasan Status Terakhir yang Sedang Berjalan */}
-          {!showFullTimeline && (
-            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-lg flex-shrink-0 shadow-2xs">
-                {currentPhaseObj.icon || '📦'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] text-gray-600 leading-snug line-clamp-1 font-medium">
-                  {currentPhaseObj.sub}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[11px] font-mono font-bold text-emerald-800">
-                    {phaseTimes[phase]}
+          <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-xl flex-shrink-0 shadow-2xs">
+              {currentPhaseObj.icon || '📦'}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] text-gray-600 leading-snug font-medium">
+                {currentPhaseObj.sub}
+              </p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-[11px] font-mono font-bold text-emerald-800">
+                  {phaseTimes[phase]}
+                </span>
+                {!isArrived ? (
+                  <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                    Sedang berlangsung
                   </span>
-                  {!isArrived && (
-                    <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                      Sedang berlangsung
-                    </span>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={() => setShowFullTimeline(true)}
-                className="text-[11.5px] font-bold text-emerald-800 hover:text-emerald-950 flex-shrink-0 flex items-center gap-0.5 py-1 px-2 rounded-lg bg-emerald-50/70"
-              >
-                <span>Lihat Semua</span>
-                <ChevronDown size={12} />
-              </button>
-            </div>
-          )}
-
-          {/* Expanded State: 6-Phase Live Stepper Timeline */}
-          {showFullTimeline && (
-            <div className="mt-4 pt-4 border-t border-gray-100 animate-in slide-in-from-top-2 duration-150">
-              <div className="space-y-0">
-                {FULL_TRACK_PHASES.map((p, i) => {
-                  const isDone = i < phase
-                  const isCurrent = i === phase
-                  const isUpcoming = i > phase
-                  const isLast = i === FULL_TRACK_PHASES.length - 1
-
-                  return (
-                    <div key={p.id} className="flex gap-3 relative">
-                      {/* Connector Line */}
-                      {!isLast && (
-                        <div
-                          className="absolute left-[13px] top-7 w-0.5"
-                          style={{
-                            height: 38,
-                            background: isDone ? PRIMARY : '#E5E7EB',
-                            transition: 'background 0.5s ease',
-                          }}
-                        />
-                      )}
-
-                      {/* Step Dot */}
-                      <div
-                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
-                        style={
-                          isDone
-                            ? { background: PRIMARY }
-                            : isCurrent
-                            ? { background: '#fff', border: `2px solid ${PRIMARY}` }
-                            : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
-                        }
-                      >
-                        {isDone ? (
-                          <Check size={14} className="text-white" strokeWidth={3} />
-                        ) : isCurrent ? (
-                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                        ) : (
-                          <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        )}
-                      </div>
-
-                      {/* Step Details */}
-                      <div className="flex-1 pb-6">
-                        <div className="flex items-start justify-between gap-2">
-                          <p
-                            className={`text-[13px] font-bold leading-snug ${
-                              isDone ? 'text-gray-900' : isCurrent ? 'text-emerald-800 font-extrabold' : 'text-gray-400'
-                            }`}
-                          >
-                            {p.label}
-                          </p>
-                          <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
-                            {phaseTimes[i]}
-                          </span>
-                        </div>
-                        <p
-                          className={`text-[11px] mt-0.5 leading-relaxed ${
-                            isDone ? 'text-gray-500' : isCurrent ? 'text-emerald-700/90 font-medium' : 'text-gray-300'
-                          }`}
-                        >
-                          {p.sub}
-                        </p>
-                        {isCurrent && (
-                          <div className="flex items-center gap-1.5 mt-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                            <span className="text-[11px] font-bold text-emerald-700">Sedang berlangsung</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="pt-2 flex justify-center">
-                <button
-                  onClick={() => setShowFullTimeline(false)}
-                  className="text-[11.5px] font-bold text-gray-500 hover:text-gray-800 flex items-center gap-1 py-1 px-3 rounded-lg bg-gray-100 active:scale-95 transition"
-                >
-                  <span>Ciutkan Riwayat</span>
-                  <ChevronUp size={13} />
-                </button>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
+                    <Check size={11} strokeWidth={3} />
+                    Selesai
+                  </span>
+                )}
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* ── 5. Rincian Paket yang Dikirim (Accordion Sekunder) ── */}

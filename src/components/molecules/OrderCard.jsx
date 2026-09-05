@@ -1,5 +1,6 @@
 import React from 'react'
 import { Navigation, Star, Package, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { getProductImage } from '@/utils/productImages'
 
 const STATUS_MAP = {
   waiting: {
@@ -61,6 +62,7 @@ export default function OrderCard({
   const isCancellable = ['waiting', 'confirmed'].includes(order.status)
   const primaryItem = order.items?.[0] || { name: 'Produk Desa', qty: 1, price: order.total }
   const totalItemCount = order.items?.reduce((sum, it) => sum + (it.qty || 1), 0) || 1
+  const productImage = getProductImage(primaryItem)
 
   return (
     <div
@@ -92,37 +94,38 @@ export default function OrderCard({
       </div>
 
       {/* ── Product Item Preview ── */}
-      <div className="flex items-center gap-3 py-1">
-        {/* Thumbnail preview */}
-        <div className="relative w-13 h-13 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0 shadow-2xs">
-          {primaryItem.image ? (
-            <img
-              src={primaryItem.image}
-              alt={primaryItem.name}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          ) : primaryItem.Icon ? (
-            <primaryItem.Icon size={22} className="text-emerald-700" />
-          ) : (
-            <Package size={22} className="text-gray-400" />
-          )}
+      <div className="flex items-center gap-3.5 py-1">
+        {/* Enlarged Thumbnail preview (64x64px, distinct, recognizable real photo) */}
+        <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200/80 flex-shrink-0 shadow-xs">
+          <img
+            src={productImage}
+            alt={primaryItem.name}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
 
           {order.items?.length > 1 && (
-            <div className="absolute inset-x-0 bottom-0 bg-black/65 backdrop-blur-2xs text-[9px] font-extrabold text-white text-center py-0.5">
-              +{order.items.length - 1} item
+            <div className="absolute bottom-1 right-1 bg-black/75 backdrop-blur-xs text-[9.5px] font-black text-white px-1.5 py-0.5 rounded-md shadow-xs border border-white/20">
+              +{order.items.length - 1}
             </div>
           )}
         </div>
 
         {/* Product Details */}
         <div className="flex-1 min-w-0">
-          <h4 className="text-[13px] font-extrabold text-gray-900 leading-snug line-clamp-1">
+          <h4 className="text-[13.5px] font-extrabold text-gray-900 leading-snug line-clamp-1">
             {primaryItem.name}
           </h4>
-          <p className="text-[11px] text-gray-500 mt-0.5 truncate">
-            {primaryItem.qty} × Rp {primaryItem.price?.toLocaleString('id')} · Penjual:{' '}
-            <span className="font-semibold text-emerald-800">{order.seller}</span>
+          <p className="text-[11.5px] text-gray-600 mt-1 truncate font-medium">
+            {primaryItem.qty} × Rp {primaryItem.price?.toLocaleString('id')}
+            {order.items?.length > 1 && (
+              <span className="text-emerald-700 font-bold ms-1">
+                (+{order.items.length - 1} item lainnya)
+              </span>
+            )}
+          </p>
+          <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+            Penjual: <span className="font-semibold text-emerald-800">{order.seller}</span>
           </p>
         </div>
       </div>
