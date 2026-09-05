@@ -579,7 +579,11 @@ function CartScreen({
           <button
             onClick={() => {
               if (window.confirm('Kosongkan semua barang dari keranjang belanja?')) {
-                setCart({})
+                if (typeof setCart === 'function') {
+                  setCart({})
+                } else if (typeof onRemoveItem === 'function') {
+                  cartList.forEach(i => onRemoveItem(i.id))
+                }
                 setSelectedItems(new Set())
               }
             }}
@@ -694,27 +698,41 @@ function CartScreen({
                           </div>
 
                           {/* Item Image / Icon */}
-                          <div
-                            className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
-                            style={{
-                              background: item.image
-                                ? 'transparent'
-                                : `linear-gradient(135deg, ${item.g?.[0] || '#2E7D32'} 0%, ${item.g?.[1] || '#4CAF50'} 100%)`,
-                            }}
-                          >
-                            {item.image ? (
-                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <item.Icon size={24} className="text-white drop-shadow-xs relative z-10" />
-                            )}
-                            {isOutOfStock && (
-                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                <span className="text-[9px] font-black text-white bg-red-600 px-1 py-0.5 rounded">
-                                  HABIS
-                                </span>
+                          {(() => {
+                            const imgSrc = item.image || getProductImage(item.name) || getProductImage(item.id)
+                            const ItemIcon = item.Icon || Package
+                            return (
+                              <div
+                                className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
+                                style={{
+                                  background: imgSrc
+                                    ? 'transparent'
+                                    : `linear-gradient(135deg, ${item.g?.[0] || '#2E7D32'} 0%, ${item.g?.[1] || '#4CAF50'} 100%)`,
+                                }}
+                              >
+                                {imgSrc ? (
+                                  <img
+                                    src={imgSrc}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.onerror = null
+                                      e.currentTarget.src = FALLBACK_PRODUCT_IMAGE
+                                    }}
+                                  />
+                                ) : (
+                                  <ItemIcon size={24} className="text-white drop-shadow-xs relative z-10" />
+                                )}
+                                {isOutOfStock && (
+                                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <span className="text-[9px] font-black text-white bg-red-600 px-1 py-0.5 rounded">
+                                      HABIS
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            )
+                          })()}
 
                           {/* Item Details */}
                           <div className="flex-1 min-w-0">
@@ -4091,6 +4109,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
     return (
       <CartScreen
         cart={cart}
+        setCart={setCart}
         onUpdateQty={updateCartQty}
         onRemoveItem={removeCartItem}
         onCheckout={() => setScreen('checkout')}
