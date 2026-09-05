@@ -4385,40 +4385,43 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
       )}
 
-      {/* Bottom Sheet: Semua Toko Pilihan ESTO (via "Lihat Semua") */}
+      {/* Bottom Sheet: Semua Toko Pilihan ESTO (via "Cek Toko Lainnya") */}
       {showAllStoresSheet && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="absolute inset-0 z-50 flex flex-col justify-end overflow-hidden animate-fade-in">
           <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={() => setShowAllStoresSheet(false)}
           />
           <div
-            className="relative bg-[#FAFBF9] rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl z-10 animate-slide-up"
+            className="relative bg-[#FAFBF9] rounded-t-3xl max-h-[88%] w-full max-w-[430px] mx-auto flex flex-col shadow-2xl z-10 animate-slide-up overflow-hidden"
             style={{ boxShadow: '0 -8px 32px rgba(0,0,0,0.18)' }}
           >
             {/* Grab Handle */}
-            <div className="w-12 h-1.5 rounded-full bg-gray-300 mx-auto mt-3 mb-2" />
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1.5 rounded-full bg-gray-300" />
+            </div>
 
             {/* Sheet Header */}
-            <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100 bg-white">
-              <div>
-                <h3 className="text-[16px] font-extrabold text-gray-900 leading-tight">
+            <div className="px-4 py-2.5 flex items-center justify-between border-b border-gray-100 bg-white flex-shrink-0">
+              <div className="min-w-0 pr-2">
+                <h3 className="text-[15.5px] font-extrabold text-gray-900 leading-tight truncate">
                   Semua Toko Pilihan ESTO
                 </h3>
-                <p className="text-[11.5px] text-gray-500">
+                <p className="text-[11px] text-gray-500 truncate">
                   {ESTO_STORES.length} mitra grosir & kios resmi siap antar kilat
                 </p>
               </div>
               <button
                 onClick={() => setShowAllStoresSheet(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition active:scale-95"
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition active:scale-95 flex-shrink-0"
+                aria-label="Tutup"
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             </div>
 
             {/* Scrollable Store Cards List */}
-            <div className="p-4 overflow-y-auto flex flex-col gap-3.5 no-scrollbar pb-8">
+            <div className="flex-1 p-3.5 overflow-y-auto flex flex-col gap-3.5 no-scrollbar pb-8">
               {ESTO_STORES.map((store) => (
                 <StoreCard
                   key={store.id}
@@ -4640,40 +4643,37 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
           </div>
 
-          {/* ── Section Toko Pilihan (Horizontal Peek Carousel) ── */}
+          {/* ── Section Toko Pilihan (Standard Vertical Stack) ── */}
           <div className="pt-2 pb-2">
-            <div className="px-3.5 flex items-center justify-between mb-2.5">
-              <div>
-                <h3 className="text-[15px] font-extrabold text-gray-900 leading-tight">
-                  Toko Pilihan
-                </h3>
-                <p className="text-[11px] text-gray-500">
-                  Kios & Grosir Resmi ESTO terdekat siap antar kilat
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAllStoresSheet(true)}
-                className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 text-[11.5px] font-bold border border-emerald-200/80 flex items-center gap-1 hover:bg-emerald-100 transition active:scale-95"
-              >
-                <span>Lihat Semua</span>
-                <ChevronRight size={13} strokeWidth={2.5} />
-              </button>
+            <div className="px-3.5 mb-2.5">
+              <h3 className="text-[15px] font-extrabold text-gray-900 leading-tight">
+                Toko Pilihan
+              </h3>
+              <p className="text-[11px] text-gray-500">
+                Kios & Grosir Resmi ESTO terdekat siap antar kilat
+              </p>
             </div>
 
-            {/* Horizontal Peek Carousel (Manual swipe/scroll, no auto-slide) */}
-            <div className="flex gap-3.5 overflow-x-auto no-scrollbar snap-x snap-mandatory px-3.5 pb-2 pt-0.5">
-              {ESTO_STORES.map((store) => (
-                <div
+            {/* Standard Vertical Store Cards Stack */}
+            <div className="px-3.5 flex flex-col gap-3.5">
+              {ESTO_STORES.slice(0, 2).map((store) => (
+                <StoreCard
                   key={store.id}
-                  className="w-[86%] sm:w-[340px] flex-shrink-0 snap-start"
-                >
-                  <StoreCard
-                    store={store}
-                    onSelectStore={(s) => setSelectedStore(s)}
-                    onSelectProduct={(product) => openDetail(product)}
-                  />
-                </div>
+                  store={store}
+                  onSelectStore={(s) => setSelectedStore(s)}
+                  onSelectProduct={(product) => openDetail(product)}
+                />
               ))}
+
+              {/* Single CTA: Cek Toko Lainnya */}
+              <button
+                onClick={() => setShowAllStoresSheet(true)}
+                className="w-full py-3 rounded-2xl bg-white border border-gray-200/90 text-gray-800 text-[12px] font-extrabold flex items-center justify-center gap-2 shadow-2xs hover:bg-emerald-50/50 hover:border-emerald-300/80 active:scale-[0.99] transition mt-0.5 group"
+              >
+                <Store size={15} className="text-emerald-700 group-hover:scale-110 transition-transform" />
+                <span>CEK TOKO LAINNYA</span>
+                <ChevronRight size={14} className="text-gray-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 transition-all" />
+              </button>
             </div>
           </div>
 

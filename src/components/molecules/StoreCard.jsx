@@ -25,7 +25,7 @@ export default function StoreCard({
   return (
     <div
       onClick={() => handleOpenStore?.(store)}
-      className="relative bg-white rounded-3xl p-4 border border-gray-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_26px_-4px_rgba(27,107,58,0.12)] hover:border-emerald-300/80 active:scale-[0.995] transition-all duration-200 cursor-pointer group select-none flex flex-col gap-3.5"
+      className="w-full relative bg-white rounded-3xl p-4 border border-gray-200/80 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_26px_-4px_rgba(27,107,58,0.12)] hover:border-emerald-300/80 active:scale-[0.995] transition-all duration-200 cursor-pointer group select-none flex flex-col gap-3.5"
     >
       {/* ── 1. Top Section: Store Identity & Metadata ── */}
       <div className="flex items-start gap-3.5">
