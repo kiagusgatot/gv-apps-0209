@@ -696,17 +696,25 @@ function CartScreen({
 
 // ── Checkout Screen (Pengiriman & Rincian Transparan) ───────
 function CheckoutScreen({
-  items,
+  items = [],
   sellerNotes = {},
   userProfile,
   onBack,
   onConfirm,
-  addresses,
-  setAddresses,
-  selectedAddressId,
-  setSelectedAddressId,
+  addresses: propAddresses,
+  setAddresses: propSetAddresses,
+  selectedAddressId: propSelectedAddressId,
+  setSelectedAddressId: propSetSelectedAddressId,
   hasVoucher = true,
 }) {
+  const [internalAddresses, setInternalAddresses] = useState(INITIAL_ADDRESSES)
+  const [internalSelectedAddressId, setInternalSelectedAddressId] = useState(INITIAL_ADDRESSES[0]?.id || 1)
+
+  const addresses = (propAddresses && propAddresses.length > 0) ? propAddresses : internalAddresses
+  const setAddresses = propSetAddresses || setInternalAddresses
+  const selectedAddressId = propSelectedAddressId !== undefined ? propSelectedAddressId : internalSelectedAddressId
+  const setSelectedAddressId = propSetSelectedAddressId || setInternalSelectedAddressId
+
   const [delivery, setDelivery] = useState('reguler') // reguler, kilat, pickup
   const [payment, setPayment] = useState('gvpay') // gvpay, qris, transfer, cod
 
@@ -716,7 +724,14 @@ function CheckoutScreen({
 
   const userBalance = userProfile?.balance ?? 125000
 
-  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
+  const displayItems = (items && items.length > 0)
+    ? items
+    : [
+        { ...PRODUCTS[0], qty: 2 },
+        { ...PRODUCTS[1], qty: 1 },
+      ]
+
+  const subtotal = displayItems.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0)
   const ongkir = delivery === 'kilat' ? 12000 : delivery === 'reguler' ? 8000 : 0
   const biayaLayanan = 1000
   const diskonVoucher = hasVoucher && ongkir > 0 ? 5000 : 0
@@ -785,7 +800,10 @@ function CheckoutScreen({
     },
   ]
 
-  const activeAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0]
+  const activeAddress =
+    (Array.isArray(addresses) && addresses.find(a => a && a.id === selectedAddressId)) ||
+    (Array.isArray(addresses) && addresses[0]) ||
+    INITIAL_ADDRESSES[0]
 
   return (
     <div className="flex flex-col h-full relative" style={{ background: '#FAFBF9' }}>
@@ -866,14 +884,14 @@ function CheckoutScreen({
         <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider">
-              Produk yang Dipesan ({items.length})
+              Produk yang Dipesan ({displayItems.length})
             </p>
             <button onClick={onBack} className="text-[11px] font-bold text-emerald-700">
               Edit Keranjang
             </button>
           </div>
           <div className="flex flex-col gap-2.5">
-            {items.map((item, idx) => (
+            {displayItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-3 pb-2.5 border-b border-gray-50 last:border-0 last:pb-0">
                 <div
                   className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
@@ -1082,7 +1100,7 @@ function CheckoutScreen({
               return
             }
             onConfirm(payment, {
-              items,
+              items: displayItems,
               delivery,
               payment,
               subtotal,
@@ -3144,6 +3162,8 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [lastCreatedOrder, setLastCreatedOrder] = useState(null)
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
   const [checkoutData, setCheckoutData] = useState(null)
+  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES)
+  const [selectedAddressId, setSelectedAddressId] = useState(INITIAL_ADDRESSES[0]?.id || 1)
 
   const isSeller = userProfile?.capabilities?.includes('Penjual')
 
@@ -3257,10 +3277,14 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       <CheckoutScreen
         items={checkoutItems}
         userProfile={userProfile}
+        addresses={addresses}
+        setAddresses={setAddresses}
+        selectedAddressId={selectedAddressId}
+        setSelectedAddressId={setSelectedAddressId}
         onBack={() => setScreen('cart')}
-        onConfirm={(method, address, note, subtotal, deliveryFee, discount, total) => {
+        onConfirm={(method, payload) => {
           setPayMethod(method)
-          setCheckoutData({ method, address, note, subtotal, deliveryFee, discount, total })
+          setCheckoutData(typeof payload === 'object' && payload !== null ? payload : { method, total: payload })
           setScreen('payment')
         }}
       />
@@ -3279,14 +3303,18 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           const createdOrder = {
             id: `GV-${Date.now().toString().slice(-8)}`,
             date: `Hari ini, ${nowStr}`,
-            seller: checkoutItems[0]?.seller || 'Penjual Pasar ESTO',
+            seller: checkoutData?.items?.[0]?.seller || checkoutItems[0]?.seller || 'Penjual Pasar ESTO',
             payment: { gvpay: 'GV Pay', qris: 'QRIS', transfer: 'Transfer Bank', cod: 'Bayar di Tempat' }[paymentMethod] || 'GV Pay',
-            delivery: checkoutData?.address?.label ? `Pengiriman (${checkoutData?.address?.label})` : 'Pengiriman Kilat Desa',
-            address: checkoutData?.address?.address || 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+            delivery: checkoutData?.delivery === 'pickup' ? 'Ambil Sendiri di Toko' : checkoutData?.delivery === 'kilat' ? 'Pengiriman Kilat Desa (GV Man Express)' : 'Pengiriman Reguler Desa (GV Man)',
+            address: checkoutData?.address || 'Jl. Melati No. 14, RT 02 / RW 04, Desa Sukamaju',
+            recipientName: checkoutData?.recipientName || userProfile?.name || 'Warga GV',
+            recipientPhone: checkoutData?.recipientPhone || '0812-3456-7890',
             note: checkoutData?.note || '',
             total: totalAmount,
             status: 'confirmed',
-            items: checkoutItems.length > 0 ? checkoutItems : [{ name: 'Bayam Organik Segar', qty: 2, price: 8500 }],
+            items: (checkoutData?.items && checkoutData.items.length > 0)
+              ? checkoutData.items
+              : (checkoutItems.length > 0 ? checkoutItems : [{ name: 'Bayam Organik Segar', qty: 2, price: 8500 }]),
             courier: {
               name: 'Agus Santoso',
               rating: 4.9,
