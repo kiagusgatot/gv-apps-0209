@@ -37,6 +37,26 @@ export const PRODUCT_IMAGE_MAP = {
   'keripik singkong pedas': 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?q=80&w=600&auto=format&fit=crop',
   'jeruk siam manis': 'https://images.unsplash.com/photo-1550258859-d088c27e49c1?q=80&w=600&auto=format&fit=crop',
 
+  // Sembako & Kebutuhan Pokok Toko
+  'minyak goreng sawit 2l': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=600&auto=format&fit=crop',
+  'minyak goreng': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?q=80&w=600&auto=format&fit=crop',
+  'gula pasir kristal 1kg': 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?q=80&w=600&auto=format&fit=crop',
+  'gula pasir': 'https://images.unsplash.com/photo-1581441363689-1f3c3c414635?q=80&w=600&auto=format&fit=crop',
+  'tepung terigu serbaguna 1kg': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=600&auto=format&fit=crop',
+  'tepung terigu': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=600&auto=format&fit=crop',
+  'mie instan kuah & goreng (isi 5)': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=600&auto=format&fit=crop',
+  'mie instan': 'https://images.unsplash.com/photo-1612927601601-6638404737ce?q=80&w=600&auto=format&fit=crop',
+  'susu uht full cream 1l': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=600&auto=format&fit=crop',
+  'susu uht': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?q=80&w=600&auto=format&fit=crop',
+  'sabun cuci piring jeruk nipis': 'https://images.unsplash.com/photo-1585751119414-ef2636f8aede?q=80&w=600&auto=format&fit=crop',
+  'sabun cuci piring': 'https://images.unsplash.com/photo-1585751119414-ef2636f8aede?q=80&w=600&auto=format&fit=crop',
+  'deterjen bubuk konsentrat 800g': 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?q=80&w=600&auto=format&fit=crop',
+  'deterjen': 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?q=80&w=600&auto=format&fit=crop',
+  'teh celup melati kotak (25 bag)': 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=600&auto=format&fit=crop',
+  'teh celup': 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=600&auto=format&fit=crop',
+  'garam beryodium halus 500g': 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?q=80&w=600&auto=format&fit=crop',
+  'garam': 'https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?q=80&w=600&auto=format&fit=crop',
+
   // Kerajinan & Lainnya
   'batik tulis lokal': 'https://images.unsplash.com/photo-1580661869408-55ab23f2ca6e?q=80&w=600&auto=format&fit=crop',
   'pupuk organik kompos 25kg': 'https://images.unsplash.com/photo-1627341398565-d0c75cc9e5f5?q=80&w=600&auto=format&fit=crop',

@@ -7,6 +7,8 @@ import SectionHeader from '@/components/molecules/SectionHeader'
 import ProductCard from '@/components/molecules/ProductCard'
 import OrderCard from '@/components/molecules/OrderCard'
 import CategoryPills from '@/components/molecules/CategoryPills'
+import StoreCard from '@/components/molecules/StoreCard'
+import WishlistSheet from '@/components/molecules/WishlistSheet'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import { getProductImage } from '@/utils/productImages'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
@@ -14,7 +16,7 @@ import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
   CircleDot, Leaf, Coffee, Droplet, Palette, Wheat, Egg, Landmark, Wallet, Box, Scale, ScanLine,
   AlertTriangle, Trash2, Copy, CheckCircle2, Info, ShieldCheck, CloudRain, RotateCcw,
-  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap
+  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap, Ticket, Share2
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
@@ -44,10 +46,186 @@ const SELLER_PRODUCTS_INIT = [
   { id:105, name:'Bibit Cabai Rawit Lokal',        price:15000, unit:'50 biji', stock:0,  active:false, Icon: Leaf, g: ['#C62828', '#EF5350'], image: 'https://images.unsplash.com/photo-1588147602377-5b6515a452db?q=80&w=600&auto=format&fit=crop', cat:'Lainnya',  desc:'Bibit cabai rawit lokal unggul tahan hama' },
 ]
 
+// ── Data Toko Pilihan Resmi ESTO (Sumber: https://globalvillage.id/lokasi) ──
+export const ESTO_STORES = [
+  {
+    id: 'store-1',
+    name: 'ESTO Graha Mandala',
+    type: 'Grosir Resmi',
+    category: 'Grosir Sembako & Bahan Pokok',
+    address: 'Kawasan Graha Mandala, Magelang',
+    region: 'Jawa Tengah',
+    rating: 4.9,
+    soldCount: '1.2rb+ terjual',
+    followers: 142,
+    eta: '30 mnt',
+    distance: '2.1 km',
+    promoText: 'Beli Rp0, diskon Gratis Ongkir s/d Rp15RB',
+    logoText: 'EGM',
+    logoBg: 'linear-gradient(135deg, #1B5E20, #2E7D32)',
+    coverImage: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop',
+    desc: 'Pusat grosir sembako resmi ESTO Magelang. Melayani pasokan beras, minyak goreng sawit, gula, dan kebutuhan pangan desa dengan harga grosir langsung petani.',
+    products: [
+      { id: 201, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 32000, orig: 36000, discount: '-11%', unit: '2 Liter', stock: 50, rating: 4.9, sold: '420+', location: 'Magelang', eta: '30 mnt', desc: 'Minyak goreng kelapa sawit higienis bermutu tinggi untuk memasak sehari-hari.' },
+      { id: 202, name: 'Beras Pandan Wangi Premium 5kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 65000, orig: 72000, discount: '-10%', unit: '5 kg', stock: 35, rating: 4.9, sold: '680+', location: 'Magelang', eta: '30 mnt', desc: 'Beras pandan wangi pulen, bersih, dan harum dari sawah pilihan mitra binaan.' },
+      { id: 203, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 16500, orig: 18000, discount: '-8%', unit: '1 kg', stock: 60, rating: 4.8, sold: '310+', location: 'Magelang', eta: '30 mnt', desc: 'Gula pasir kristal putih murni manis alami untuk sajian minuman dan kue keluarga.' },
+      { id: 204, name: 'Tepung Terigu Serbaguna 1kg', cat: 'Sembako', seller: 'ESTO Graha Mandala', price: 12000, orig: 13500, discount: '-11%', unit: '1 kg', stock: 40, rating: 4.8, sold: '240+', location: 'Magelang', eta: '30 mnt', desc: 'Tepung terigu serbaguna protein sedang untuk aneka olahan kue dan gorengan.' },
+      { id: 205, name: 'Mie Instan Kuah & Goreng (isi 5)', cat: 'Pangan', seller: 'ESTO Graha Mandala', price: 14500, orig: 16000, discount: '-9%', unit: '5 bungkus', stock: 80, rating: 4.9, sold: '520+', location: 'Magelang', eta: '30 mnt', desc: 'Paket 5 bungkus mie instan rasa favorit keluarga desa, praktis dan lezat.' },
+      { id: 206, name: 'Telur Ayam Kampung (12 butir)', cat: 'Pangan', seller: 'ESTO Graha Mandala', price: 32000, orig: null, unit: '12 butir', stock: 25, rating: 4.9, sold: '190+', location: 'Magelang', eta: '30 mnt', desc: 'Telur ayam kampung segar organik dengan kuning telur pekat penuh nutrisi.' },
+    ],
+  },
+  {
+    id: 'store-2',
+    name: 'Grosir GV Sleman',
+    type: 'Grosir Resmi',
+    category: 'Grosir Bahan Pokok Desa',
+    address: 'Sleman, D.I. Yogyakarta',
+    region: 'D.I. Yogyakarta',
+    rating: 4.8,
+    soldCount: '950+ terjual',
+    followers: 98,
+    eta: '25 mnt',
+    distance: '1.8 km',
+    promoText: 'Gratis Ongkir Min. Belanja Rp0',
+    logoText: 'GVS',
+    logoBg: 'linear-gradient(135deg, #0D47A1, #1976D2)',
+    coverImage: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=800&auto=format&fit=crop',
+    desc: 'Pusat grosir dan distributor kebutuhan pokok warga di Sleman & Yogyakarta. Produk selalu baru setiap minggu.',
+    products: [
+      { id: 207, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 31500, orig: 35000, discount: '-10%', unit: '2 Liter', stock: 45, rating: 4.8, sold: '380+', location: 'Sleman', eta: '25 mnt', desc: 'Minyak goreng sawit jernih tidak mudah hitam untuk memasak.' },
+      { id: 208, name: 'Susu UHT Full Cream 1L', cat: 'Minuman', seller: 'Grosir GV Sleman', price: 19500, orig: 22000, discount: '-11%', unit: '1 Liter', stock: 30, rating: 4.9, sold: '290+', location: 'Sleman', eta: '25 mnt', desc: 'Susu sapi segar full cream berkualitas tinggi kalsium untuk keluarga.' },
+      { id: 209, name: 'Deterjen Bubuk Konsentrat 800g', cat: 'Kebutuhan Rumah', seller: 'Grosir GV Sleman', price: 18000, orig: 20000, discount: '-10%', unit: '800 gram', stock: 35, rating: 4.8, sold: '210+', location: 'Sleman', eta: '25 mnt', desc: 'Deterjen konsentrat ampuh membersihkan noda membandel dan harum tahan lama.' },
+      { id: 210, name: 'Sabun Cuci Piring Jeruk Nipis', cat: 'Kebutuhan Rumah', seller: 'Grosir GV Sleman', price: 10500, orig: null, unit: '750 ml', stock: 40, rating: 4.7, sold: '340+', location: 'Sleman', eta: '25 mnt', desc: 'Cairan pencuci piring ekstrak jeruk nipis wangi segar kesat seketika.' },
+      { id: 211, name: 'Garam Beryodium Halus 500g', cat: 'Sembako', seller: 'Grosir GV Sleman', price: 4500, orig: null, unit: '500 gram', stock: 70, rating: 4.9, sold: '460+', location: 'Sleman', eta: '25 mnt', desc: 'Garam dapur beryodium bersih halus untuk penambah cita rasa masakan.' },
+      { id: 212, name: 'Teh Celup Melati Kotak (25 bag)', cat: 'Minuman', seller: 'Grosir GV Sleman', price: 7500, orig: null, unit: '25 kantong', stock: 55, rating: 4.8, sold: '180+', location: 'Sleman', eta: '25 mnt', desc: 'Teh wangi melati khas Jawa dengan aroma sedap menenangkan.' },
+    ],
+  },
+  {
+    id: 'store-3',
+    name: 'Toko GV Bantul',
+    type: 'Kios Resmi',
+    category: 'Kios Sembako & Kelontong Warga',
+    address: 'Bantul, D.I. Yogyakarta',
+    region: 'D.I. Yogyakarta',
+    rating: 4.8,
+    soldCount: '680+ terjual',
+    followers: 76,
+    eta: '30 mnt',
+    distance: '3.2 km',
+    promoText: 'Voucher Diskon s/d Rp10RB',
+    logoText: 'TGB',
+    logoBg: 'linear-gradient(135deg, #E65100, #F57C00)',
+    coverImage: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?q=80&w=800&auto=format&fit=crop',
+    desc: 'Kios sembako andalan warga Bantul. Belanja kebutuhan dapur dan rumah tangga serba lengkap dan cepat antar.',
+    products: [
+      { id: 213, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'Toko GV Bantul', price: 16000, orig: 17500, discount: '-9%', unit: '1 kg', stock: 40, rating: 4.8, sold: '270+', location: 'Bantul', eta: '30 mnt', desc: 'Gula pasir kristal putih bersih dan higienis.' },
+      { id: 214, name: 'Telur Ayam Kampung (12 butir)', cat: 'Pangan', seller: 'Toko GV Bantul', price: 31000, orig: 33000, discount: '-6%', unit: '12 butir', stock: 20, rating: 4.9, sold: '180+', location: 'Bantul', eta: '30 mnt', desc: 'Telur ayam kampung segar dari peternak lokal Bantul.' },
+      { id: 215, name: 'Kopi Robusta Segar', cat: 'Minuman', seller: 'Toko GV Bantul', price: 34000, orig: null, unit: '250 gr', stock: 15, rating: 4.8, sold: '95+', location: 'Bantul', eta: '30 mnt', desc: 'Bubuk kopi robusta sangrai alami rasa mantap.' },
+      { id: 216, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Toko GV Bantul', price: 32500, orig: 35000, discount: '-7%', unit: '2 Liter', stock: 25, rating: 4.8, sold: '150+', location: 'Bantul', eta: '30 mnt', desc: 'Minyak goreng kemasan bantal isi 2 liter.' },
+    ],
+  },
+  {
+    id: 'store-4',
+    name: 'Toko GV Jogja Malioboro',
+    type: 'Kios Resmi',
+    category: 'Toko Pangan & Oleh-Oleh Desa',
+    address: 'Malioboro, Yogyakarta',
+    region: 'D.I. Yogyakarta',
+    rating: 4.9,
+    soldCount: '2.4rb+ terjual',
+    followers: 310,
+    eta: '20 mnt',
+    distance: '0.9 km',
+    promoText: 'Cashback 10% Semua Produk',
+    logoText: 'TJM',
+    logoBg: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
+    coverImage: 'https://images.unsplash.com/photo-1568644396922-5c3bfae12521?q=80&w=800&auto=format&fit=crop',
+    desc: 'Kios resmi ESTO Malioboro menyediakan ragam pangan sehat desa, madu murni, kopi lereng Merapi, dan kerajinan khas lokal.',
+    products: [
+      { id: 217, name: 'Madu Hutan Murni', cat: 'Lainnya', seller: 'Toko GV Jogja Malioboro', price: 65000, orig: 75000, discount: '-13%', unit: '250 ml', stock: 18, rating: 4.9, sold: '210+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Madu hutan alam murni tanpa pemanis buatan.' },
+      { id: 218, name: 'Keripik Singkong Pedas', cat: 'Camilan', seller: 'Toko GV Jogja Malioboro', price: 15000, orig: null, unit: '200 gr', stock: 35, rating: 4.8, sold: '430+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Keripik renyah rasa pedas gurih khas desa.' },
+      { id: 219, name: 'Batik Tulis Lokal', cat: 'Kerajinan', seller: 'Toko GV Jogja Malioboro', price: 85000, orig: 95000, discount: '-11%', unit: '1 lembar', stock: 8, rating: 4.9, sold: '60+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Kain batik tulis karya pembatik senior binaan Global Village.' },
+      { id: 220, name: 'Kopi Robusta Segar', cat: 'Minuman', seller: 'Toko GV Jogja Malioboro', price: 35000, orig: null, unit: '250 gr', stock: 22, rating: 4.8, sold: '180+', location: 'Yogyakarta', eta: '20 mnt', desc: 'Kopi robusta harum segar dipetik merah.' },
+    ],
+  },
+  {
+    id: 'store-5',
+    name: 'Toko GV Malang Klojen',
+    type: 'Kios Resmi',
+    category: 'Toko Kebutuhan Harian & Rumah Tangga',
+    address: 'Klojen, Malang',
+    region: 'Jawa Timur',
+    rating: 4.7,
+    soldCount: '530+ terjual',
+    followers: 54,
+    eta: '35 mnt',
+    distance: '4.5 km',
+    promoText: 'Diskon Sembako Mingguan',
+    logoText: 'TGM',
+    logoBg: 'linear-gradient(135deg, #C2185B, #E91E63)',
+    coverImage: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop',
+    desc: 'Kios layanan resmi ESTO di Malang Raya. Memenuhi sembako, sabun mandi, kebutuhan dapur, dan sayur segar.',
+    products: [
+      { id: 221, name: 'Minyak Goreng Sawit 2L', cat: 'Sembako', seller: 'Toko GV Malang Klojen', price: 33000, orig: 36000, discount: '-8%', unit: '2 Liter', stock: 30, rating: 4.7, sold: '190+', location: 'Malang', eta: '35 mnt', desc: 'Minyak goreng sawit kemasan praktis 2L.' },
+      { id: 222, name: 'Tepung Terigu Serbaguna 1kg', cat: 'Sembako', seller: 'Toko GV Malang Klojen', price: 12500, orig: null, unit: '1 kg', stock: 25, rating: 4.8, sold: '110+', location: 'Malang', eta: '35 mnt', desc: 'Tepung serbaguna untuk kebutuhan gorengan.' },
+      { id: 223, name: 'Deterjen Bubuk Konsentrat 800g', cat: 'Kebutuhan Rumah', seller: 'Toko GV Malang Klojen', price: 18500, orig: 21000, discount: '-12%', unit: '800 gram', stock: 20, rating: 4.8, sold: '95+', location: 'Malang', eta: '35 mnt', desc: 'Deterjen bersih dan wangi lembut di tangan.' },
+      { id: 224, name: 'Gula Pasir Kristal 1kg', cat: 'Sembako', seller: 'Toko GV Malang Klojen', price: 16500, orig: null, unit: '1 kg', stock: 35, rating: 4.7, sold: '140+', location: 'Malang', eta: '35 mnt', desc: 'Gula pasir kristal murni kemasan 1 kg.' },
+    ],
+  },
+  {
+    id: 'store-6',
+    name: 'ESTO Tumata Drink',
+    type: 'Kios Resmi',
+    category: 'Minuman & Kebutuhan Segar',
+    address: 'Banjarnegara',
+    region: 'Jawa Tengah',
+    rating: 4.8,
+    soldCount: '420+ terjual',
+    followers: 48,
+    eta: '25 mnt',
+    distance: '2.8 km',
+    promoText: 'Beli 2 Lebih Hemat',
+    logoText: 'ETD',
+    logoBg: 'linear-gradient(135deg, #00796B, #009688)',
+    coverImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=800&auto=format&fit=crop',
+    desc: 'Kios minuman dan kesegaran alami desa Banjarnegara. Menyediakan susu segar, aneka teh herbal, kopi, madu, dan buah segar.',
+    products: [
+      { id: 225, name: 'Susu UHT Full Cream 1L', cat: 'Minuman', seller: 'ESTO Tumata Drink', price: 19000, orig: 21000, discount: '-10%', unit: '1 Liter', stock: 25, rating: 4.9, sold: '150+', location: 'Banjarnegara', eta: '25 mnt', desc: 'Susu UHT berkualitas lezat dan bergizi.' },
+      { id: 226, name: 'Teh Celup Melati Kotak (25 bag)', cat: 'Minuman', seller: 'ESTO Tumata Drink', price: 7000, orig: null, unit: '25 kantong', stock: 30, rating: 4.8, sold: '120+', location: 'Banjarnegara', eta: '25 mnt', desc: 'Teh melati sedap wangi alami.' },
+      { id: 227, name: 'Jeruk Siam Manis', cat: 'Buah', seller: 'ESTO Tumata Drink', price: 22000, orig: null, unit: '1 kg', stock: 20, rating: 4.7, sold: '90+', location: 'Banjarnegara', eta: '25 mnt', desc: 'Jeruk siam segar dipanen langsung dari kebun.' },
+      { id: 228, name: 'Madu Hutan Murni', cat: 'Lainnya', seller: 'ESTO Tumata Drink', price: 62000, orig: 70000, discount: '-11%', unit: '250 ml', stock: 15, rating: 4.9, sold: '80+', location: 'Banjarnegara', eta: '25 mnt', desc: 'Madu alam hutan murni kaya khasiat.' },
+    ],
+  },
+]
+
+export const ALL_STORE_PRODUCTS = ESTO_STORES.flatMap(s => s.products || [])
+export const ALL_PRODUCTS = [...PRODUCTS, ...ALL_STORE_PRODUCTS]
+
 const BANNERS_ESTO = [
-  { id:1, title:'Gratis ongkir via GV Man',    sub:'Minimum pembelian Rp 50.000',  tag:'Promo', g:['#0C3E1E','#2E7D32'], Icon: Truck },
-  { id:2, title:'Cashback 10% produk organik', sub:'Berlaku s/d 31 Agustus 2026',  tag:'Promo', g:['#BF360C','#E53935'], Icon: Leaf },
-  { id:3, title:'Produk baru minggu ini',       sub:'Kerajinan & kuliner lokal baru',tag:'Baru',  g:['#0D47A1','#1976D2'], Icon: Sparkles },
+  {
+    id: 1,
+    title: 'BELANJA INSTANT · 1 JAM TIBA',
+    sub: 'Gratis ongkir kalau telat! Kebutuhan pokok sampai depan pintu',
+    tag: 'DISKON 50% HARI INI',
+    g: ['#DC2626', '#991B1B'],
+    Icon: Zap,
+  },
+  {
+    id: 2,
+    title: 'BELANJA MINGGUAN DISKON 50%',
+    sub: 'Stok sembako & bumbu dapur serba hemat dari Kios Resmi ESTO',
+    tag: 'PROMO XTRA',
+    g: ['#EA580C', '#C2410C'],
+    Icon: Sparkles,
+  },
+  {
+    id: 3,
+    title: 'PANEN SEGAR LANGSUNG PETANI',
+    sub: 'Sayur, beras, dan telur ayam kampung organik tanpa perantara',
+    tag: '100% ASLI DESA',
+    g: ['#15803D', '#166534'],
+    Icon: Leaf,
+  },
 ]
 
 const SORT_OPTIONS = [
@@ -3377,6 +3555,505 @@ function SortSheet({ currentSort, onSort, onClose }) {
   )
 }
 
+// ── Detail Toko Resmi ESTO (Shopee/Tokopedia Style) ────────────────────────
+function StoreDetailScreen({
+  store,
+  onBack,
+  cart,
+  onAddToCart,
+  onUpdateQty,
+  liked,
+  onToggleLike,
+  onOpenDetail,
+  onOpenCart,
+  totalCart = 0,
+  totalPrice = 0,
+}) {
+  const [activeStoreTab, setActiveStoreTab] = useState('toko') // 'toko' | 'produk' | 'kategori' | 'ulasan'
+  const [storeSort, setStoreSort] = useState('populer') // 'populer' | 'terbaru' | 'terlaris' | 'harga_asc' | 'harga_desc'
+  const [storeSearch, setStoreSearch] = useState('')
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [claimedVoucher, setClaimedVoucher] = useState(false)
+  const [toastMsg, setToastMsg] = useState(null)
+  const [selectedCatFilter, setSelectedCatFilter] = useState('Semua')
+
+  const showToast = (msg) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(null), 2500)
+  }
+
+  // Filter store products
+  let displayProducts = (store?.products || []).filter((p) => {
+    const matchesSearch = !storeSearch || p.name.toLowerCase().includes(storeSearch.toLowerCase())
+    const matchesCat = selectedCatFilter === 'Semua' || p.cat === selectedCatFilter
+    return matchesSearch && matchesCat
+  })
+
+  if (storeSort === 'harga_asc') {
+    displayProducts.sort((a, b) => a.price - b.price)
+  } else if (storeSort === 'harga_desc') {
+    displayProducts.sort((a, b) => b.price - a.price)
+  } else if (storeSort === 'terlaris') {
+    displayProducts.sort((a, b) => parseInt(b.sold) - parseInt(a.sold))
+  } else if (storeSort === 'terbaru') {
+    displayProducts = [...displayProducts].reverse()
+  }
+
+  const storeCategories = ['Semua', ...new Set((store?.products || []).map((p) => p.cat))]
+
+  const REVIEWS_DUMMY = [
+    {
+      id: 1,
+      name: 'Rian Hidayat',
+      rating: 5,
+      date: 'Kemarin',
+      comment: 'Barang asli dan tersegel rapi. Pengiriman kilat cuma 25 menit sampai ke rumah. Beras pulen wangi sekali!',
+      product: 'Beras Pandan Wangi Premium 5kg',
+    },
+    {
+      id: 2,
+      name: 'Siti Aminah',
+      rating: 5,
+      date: '3 hari lalu',
+      comment: 'Minyak goreng sawit jernih, gula pasir kristal bersih. Harga grosir lebih murah dibanding warung biasa.',
+      product: 'Minyak Goreng Sawit 2L',
+    },
+    {
+      id: 3,
+      name: 'Bambang Sudibyo',
+      rating: 5,
+      date: '1 minggu lalu',
+      comment: 'Pelayanan cepat dan kurir desa ramah. Sangat memudahkan kebutuhan belanja sembako keluarga.',
+      product: 'Telur Ayam Kampung (12 butir)',
+    },
+  ]
+
+  return (
+    <div className="h-full flex flex-col bg-[#FAFBF9] relative overflow-hidden">
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-gray-900/90 text-white text-xs font-semibold rounded-full shadow-lg backdrop-blur-md animate-fade-in flex items-center gap-2 pointer-events-none">
+          <CheckCircle2 size={14} className="text-emerald-400" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
+      {/* Fixed Store Header Navigation */}
+      <div className="sticky top-0 z-30 bg-[#0C3E1E] text-white px-3.5 py-2.5 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition flex-shrink-0"
+            aria-label="Kembali"
+          >
+            <ArrowLeft size={18} className="text-white" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-[14.5px] font-extrabold truncate text-white leading-tight">
+              {store?.name || 'Detail Toko'}
+            </h1>
+            <p className="text-[10px] text-white/70 truncate flex items-center gap-1">
+              <ShieldCheck size={11} className="text-emerald-400" />
+              <span>{store?.type || 'Kios Resmi ESTO'}</span>
+              <span>·</span>
+              <span>{store?.region || 'Jawa'}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            onClick={() => {
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(window.location.href)
+              }
+              showToast('Tautan toko disalin!')
+            }}
+            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition"
+            aria-label="Bagikan"
+          >
+            <Share2 size={15} className="text-white/80" />
+          </button>
+          <button
+            onClick={onOpenCart}
+            className="relative w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition"
+            aria-label="Keranjang"
+          >
+            <ShoppingCart size={15} className="text-white/80" />
+            {totalCart > 0 && (
+              <span className="absolute -top-1 -end-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-xs">
+                {totalCart}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Main Scrollable Body */}
+      <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 24 }}>
+        {/* Store Hero Cover Photo */}
+        <div className="relative h-28 w-full overflow-hidden bg-gray-900">
+          <img
+            src={store?.coverImage || 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?q=80&w=800&auto=format&fit=crop'}
+            alt={store?.name}
+            className="w-full h-full object-cover opacity-75"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        </div>
+
+        {/* Store Profile Card (Floats over hero banner) */}
+        <div className="px-3.5 -mt-8 relative z-10">
+          <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-gray-100 flex flex-col gap-3">
+            <div className="flex items-start gap-3">
+              {/* Logo Squircle */}
+              <div
+                className="w-13 h-13 rounded-2xl flex items-center justify-center text-white font-black text-sm tracking-wider shadow-sm flex-shrink-0"
+                style={{ background: store?.logoBg || 'linear-gradient(135deg, #1B6B3A, #2E7D32)' }}
+              >
+                {store?.logoText || 'GV'}
+              </div>
+
+              {/* Store Identity */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <h2 className="text-[15px] font-extrabold text-gray-900 leading-tight">
+                    {store?.name}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px] text-gray-500 mt-1">
+                  <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200 flex items-center gap-0.5">
+                    <ShieldCheck size={10} />
+                    {store?.type || 'Resmi'}
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-0.5 text-amber-500 font-bold">
+                    <Star size={11} className="fill-amber-400 text-amber-400" />
+                    {store?.rating}
+                  </span>
+                  <span>·</span>
+                  <span>{store?.soldCount}</span>
+                </div>
+
+                <div className="flex items-center gap-3 text-[11px] text-gray-500 mt-1.5 font-medium">
+                  <span className="flex items-center gap-1">
+                    <Zap size={11} className="text-amber-500" />
+                    {store?.eta || '30 mnt'}
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin size={11} className="text-gray-400" />
+                    {store?.distance || '2 km'} ({store?.address})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Store Bio / Description */}
+            {store?.desc && (
+              <p className="text-[11.5px] text-gray-600 leading-relaxed bg-gray-50/70 p-2 rounded-xl border border-gray-100">
+                {store.desc}
+              </p>
+            )}
+
+            {/* Actions: Follow + Chat */}
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setIsFollowing(!isFollowing)
+                  showToast(isFollowing ? 'Batal mengikuti toko' : 'Berhasil mengikuti toko!')
+                }}
+                className={`py-2 rounded-xl text-[12px] font-extrabold flex items-center justify-center gap-1.5 transition active:scale-95 ${
+                  isFollowing
+                    ? 'bg-gray-100 text-gray-700 border border-gray-200'
+                    : 'bg-[#1B6B3A] text-white shadow-xs'
+                }`}
+              >
+                {isFollowing ? (
+                  <>
+                    <Check size={14} />
+                    <span>Mengikuti</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus size={14} />
+                    <span>Ikuti Toko</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => showToast('Membuka obrolan resmi dengan penjual...')}
+                className="py-2 rounded-xl text-[12px] font-extrabold border border-[#1B6B3A] text-[#1B6B3A] bg-emerald-50/40 hover:bg-emerald-50 flex items-center justify-center gap-1.5 transition active:scale-95"
+              >
+                <MessageCircle size={14} />
+                <span>Chat Penjual</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Store Voucher Strip */}
+        <div className="px-3.5 pt-3">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-2.5 text-white flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
+                <Ticket size={14} className="text-white" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11.5px] font-extrabold leading-tight truncate">
+                  {store?.promoText || 'Diskon s/d Rp15.000'}
+                </p>
+                <p className="text-[9.5px] text-white/90">Klaim voucher khusus di toko ini</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setClaimedVoucher(true)
+                showToast('Voucher berhasil diklaim!')
+              }}
+              disabled={claimedVoucher}
+              className={`px-3 py-1 rounded-xl text-[10.5px] font-black transition active:scale-95 flex-shrink-0 ${
+                claimedVoucher
+                  ? 'bg-white/30 text-white cursor-default'
+                  : 'bg-white text-orange-600 shadow-xs'
+              }`}
+            >
+              {claimedVoucher ? 'Klaim ✓' : 'Klaim'}
+            </button>
+          </div>
+        </div>
+
+        {/* Store Tabs: [Toko, Produk, Kategori, Ulasan] */}
+        <div className="px-3.5 pt-3">
+          <div className="bg-white rounded-xl p-1 shadow-2xs border border-gray-100 flex items-center gap-1">
+            {[
+              { id: 'toko', label: 'Toko' },
+              { id: 'produk', label: `Produk (${store?.products?.length || 0})` },
+              { id: 'kategori', label: 'Kategori' },
+              { id: 'ulasan', label: 'Ulasan (4.9)' },
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveStoreTab(t.id)}
+                className={`flex-1 py-2 text-center rounded-lg text-[11.5px] font-bold transition ${
+                  activeStoreTab === t.id
+                    ? 'bg-[#1B6B3A] text-white shadow-xs'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab 1: Toko & Tab 2: Produk */}
+        {(activeStoreTab === 'toko' || activeStoreTab === 'produk') && (
+          <div className="px-3.5 pt-3">
+            {/* Search inside store */}
+            <div className="mb-2.5">
+              <SearchBar
+                value={storeSearch}
+                onChange={(e) => setStoreSearch(e.target.value)}
+                onClear={() => setStoreSearch('')}
+                placeholder={`Cari di ${store?.name}...`}
+                className="w-full bg-white border border-gray-200/90 shadow-2xs text-[12px]"
+              />
+            </div>
+
+            {/* Sub-sort chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2">
+              {[
+                { id: 'populer', label: 'Populer' },
+                { id: 'terbaru', label: 'Terbaru' },
+                { id: 'terlaris', label: 'Terlaris' },
+                { id: 'harga_asc', label: 'Harga: Terendah' },
+                { id: 'harga_desc', label: 'Harga: Tertinggi' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setStoreSort(s.id)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap transition ${
+                    storeSort === s.id
+                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                      : 'bg-white text-gray-600 border border-gray-200'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Category filter if multiple categories */}
+            {storeCategories.length > 2 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-2.5">
+                {storeCategories.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setSelectedCatFilter(c)}
+                    className={`px-2.5 py-1 rounded-full text-[10.5px] font-bold whitespace-nowrap transition ${
+                      selectedCatFilter === c
+                        ? 'bg-[#1B6B3A] text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Product Grid */}
+            {displayProducts.length === 0 ? (
+              <div className="py-12 text-center text-gray-400">
+                <p className="text-sm font-semibold">Tidak ada produk ditemukan</p>
+                <button
+                  onClick={() => {
+                    setStoreSearch('')
+                    setSelectedCatFilter('Semua')
+                  }}
+                  className="mt-2 text-xs text-[#1B6B3A] font-bold"
+                >
+                  Reset Filter
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 pb-4">
+                {displayProducts.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    inCartQty={cart[p.id] || 0}
+                    isLiked={liked.has(p.id)}
+                    onToggleLike={onToggleLike}
+                    onOpenDetail={onOpenDetail}
+                    onAddToCart={onAddToCart}
+                    onUpdateQty={onUpdateQty}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 3: Kategori */}
+        {activeStoreTab === 'kategori' && (
+          <div className="px-3.5 pt-3 pb-6 flex flex-col gap-2.5">
+            {storeCategories.filter(c => c !== 'Semua').map((cat) => {
+              const catCount = (store?.products || []).filter(p => p.cat === cat).length
+              return (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setSelectedCatFilter(cat)
+                    setActiveStoreTab('produk')
+                  }}
+                  className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-2xs flex items-center justify-between hover:bg-gray-50 active:scale-[0.99] transition text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#1B6B3A] flex items-center justify-center font-bold text-sm">
+                      {cat[0]}
+                    </div>
+                    <div>
+                      <p className="text-[13.5px] font-extrabold text-gray-900">{cat}</p>
+                      <p className="text-[11px] text-gray-400">{catCount} produk siap dikirim</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-400" />
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Tab 4: Ulasan */}
+        {activeStoreTab === 'ulasan' && (
+          <div className="px-3.5 pt-3 pb-6 flex flex-col gap-3">
+            {/* Rating Summary Card */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-2xs flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="text-center">
+                  <p className="text-3xl font-black text-gray-900 leading-none">
+                    {store?.rating || 4.9}
+                  </p>
+                  <div className="flex items-center gap-0.5 mt-1 justify-center">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                </div>
+                <div className="h-10 w-[1px] bg-gray-200" />
+                <div>
+                  <p className="text-[12.5px] font-extrabold text-gray-900">99% Pembeli Puas</p>
+                  <p className="text-[11px] text-gray-500">Berdasarkan ulasan terverifikasi</p>
+                </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10.5px] font-bold border border-emerald-200">
+                Puas
+              </span>
+            </div>
+
+            {/* Review List */}
+            <div className="flex flex-col gap-2.5">
+              {REVIEWS_DUMMY.map((rev) => (
+                <div key={rev.id} className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-2xs">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center">
+                        {rev.name[0]}
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-bold text-gray-900 leading-tight">{rev.name}</p>
+                        <p className="text-[9.5px] text-gray-400">{rev.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(rev.rating)].map((_, i) => (
+                        <Star key={i} size={10} className="fill-amber-400 text-amber-400" />
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="text-[11.5px] text-gray-700 leading-relaxed mt-1">
+                    "{rev.comment}"
+                  </p>
+
+                  <div className="mt-2 pt-2 border-t border-gray-50 flex items-center gap-1 text-[10px] text-gray-400">
+                    <span>Produk:</span>
+                    <span className="font-semibold text-gray-600 truncate">{rev.product}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Floating Bottom Cart Bar */}
+      {totalCart > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg max-w-md mx-auto">
+          <button
+            onClick={onOpenCart}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-between px-5 shadow-lg active:scale-95 transition"
+            style={{
+              background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
+              boxShadow: '0 4px 14px rgba(27,107,58,0.3)',
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <ShoppingCart size={18} />
+              <span>Lihat Keranjang ({totalCart})</span>
+            </div>
+            <span className="tabular-nums font-extrabold text-[15px]">
+              Rp {totalPrice.toLocaleString('id')}
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Screen ────────────────────────────────────────────
 export default function Pasar({ navigate, userProfile, initialTab }) {
   const [showEmptyCart, setEmptyCart] = useState(false)
@@ -3398,6 +4075,12 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [activeTab, setActiveTab] = useState(initialTab || 'belanja')
   const [bannerIdx, setBannerIdx] = useState(0)
 
+  // E-commerce ESTO States
+  const [selectedStore, setSelectedStore] = useState(null)
+  const [showWishlist, setShowWishlist] = useState(false)
+  const [showAllStores, setShowAllStores] = useState(false)
+  const [voucherClaimed, setVoucherClaimed] = useState(false)
+
   // Order routing details
   const [lastCreatedOrder, setLastCreatedOrder] = useState(null)
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
@@ -3407,7 +4090,10 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
   const isSeller = userProfile?.capabilities?.includes('Penjual')
 
-  // Filter + search + sort
+  // Filter + search + sort (for community products in Produk dari Penjual)
+  const communityProducts = PRODUCTS
+    .filter(p => !searchQ || p.name.toLowerCase().includes(searchQ.toLowerCase()) || p.seller.toLowerCase().includes(searchQ.toLowerCase()))
+
   const filtered = PRODUCTS
     .filter(p => selectedCats.length === 0 || selectedCats.includes(p.cat))
     .filter(p => !searchQ || p.name.toLowerCase().includes(searchQ.toLowerCase()) || p.seller.toLowerCase().includes(searchQ.toLowerCase()))
@@ -3420,12 +4106,12 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
   const totalCart = Object.values(cart).reduce((a, b) => a + b, 0)
   const totalPrice = Object.entries(cart).reduce((s, [id, q]) => {
-    const p = PRODUCTS.find(x => x.id === parseInt(id))
+    const p = ALL_PRODUCTS.find(x => x.id === parseInt(id))
     return s + (p?.price || 0) * q
   }, 0)
 
   const addToCart = (id, qty = 1) => {
-    const p = PRODUCTS.find(x => x.id === Number(id))
+    const p = ALL_PRODUCTS.find(x => x.id === Number(id))
     if (!p || p.stock === 0) return
     setCart((prev) => {
       const current = prev[id] || 0
@@ -3466,7 +4152,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
   const checkoutItems = Object.entries(cart)
     .map(([id, qty]) => {
-      const p = PRODUCTS.find(x => x.id === Number(id))
+      const p = ALL_PRODUCTS.find(x => x.id === Number(id))
       return p ? { ...p, qty } : null
     })
     .filter(Boolean)
@@ -3508,6 +4194,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         onCheckout={() => setScreen('checkout')}
         onBack={() => setScreen('list')}
         onBrowse={() => setScreen('list')}
+        allProducts={ALL_PRODUCTS}
       />
     )
   }
@@ -3616,6 +4303,144 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
     )
   }
 
+  // Store Detail View
+  if (selectedStore) {
+    return (
+      <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+        <StoreDetailScreen
+          store={selectedStore}
+          onBack={() => setSelectedStore(null)}
+          cart={cart}
+          onAddToCart={addToCart}
+          onUpdateQty={updateCartQty}
+          liked={liked}
+          onToggleLike={toggleLike}
+          onOpenDetail={openDetail}
+          onOpenCart={() => {
+            setSelectedStore(null)
+            setScreen('cart')
+          }}
+          totalCart={totalCart}
+          totalPrice={totalPrice}
+        />
+
+        {/* Product detail bottom sheet inside Store view if detail opened */}
+        {detail && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setDetail(null)} />
+            <div
+              className="relative bg-white rounded-t-3xl overflow-hidden max-h-[85vh] flex flex-col"
+              style={{ boxShadow: '0 -4px 32px rgba(0,0,0,0.2)' }}
+            >
+              <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mt-3 mb-2 flex-shrink-0" />
+              <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-4">
+                <div className="relative w-full h-56 rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center">
+                  <img
+                    src={getProductImage(detail)}
+                    alt={detail.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => toggleLike(detail.id)}
+                    className="absolute top-3 end-3 w-9 h-9 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm"
+                  >
+                    <Heart
+                      size={18}
+                      className={liked.has(detail.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+                    />
+                  </button>
+                </div>
+
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <h2 className="text-[17px] font-black text-gray-900">{detail.name}</h2>
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      {detail.cat}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 font-semibold">
+                    <span className="flex items-center gap-0.5 text-amber-500">
+                      <Star size={12} className="fill-amber-400 text-amber-400" />
+                      {detail.rating || 4.8}
+                    </span>
+                    <span>·</span>
+                    <span>{detail.sold || '100+'} terjual</span>
+                    <span>·</span>
+                    <span>Toko: {detail.seller}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[20px] font-black text-[#1B6B3A]">
+                    Rp {detail.price?.toLocaleString('id')}
+                  </span>
+                  {detail.orig && (
+                    <span className="text-xs text-gray-400 line-through">
+                      Rp {detail.orig?.toLocaleString('id')}
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-500 font-medium">/{detail.unit}</span>
+                </div>
+
+                <p className="text-[12.5px] text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl">
+                  {detail.desc || 'Kualitas terjamin asli dan segar.'}
+                </p>
+
+                {/* Quantity Selector */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <span className="text-xs font-bold text-gray-700">Jumlah Pembelian</span>
+                  <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-xl">
+                    <button
+                      onClick={() => setDQty(Math.max(1, detailQty - 1))}
+                      className="text-gray-600 hover:text-black font-extrabold"
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="text-sm font-extrabold tabular-nums text-gray-900 w-5 text-center">
+                      {detailQty}
+                    </span>
+                    <button
+                      onClick={() => setDQty(Math.min(detail.stock, detailQty + 1))}
+                      className="text-[#1B6B3A] font-extrabold"
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0 pb-6">
+                <button
+                  onClick={() => {
+                    addToCart(detail.id, detailQty)
+                    setDetail(null)
+                  }}
+                  className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold border-2 active:scale-95 transition"
+                  style={{ borderColor: PRIMARY, color: PRIMARY }}
+                >
+                  + Keranjang
+                </button>
+                <button
+                  onClick={() => {
+                    addToCart(detail.id, detailQty)
+                    setDetail(null)
+                    setSelectedStore(null)
+                    setScreen('checkout')
+                  }}
+                  className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold text-white active:scale-95 transition shadow-md"
+                  style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)' }}
+                >
+                  Beli Sekarang
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </ScreenBackground>
+    )
+  }
+
   return (
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
 
@@ -3667,29 +4492,59 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       <ScreenHeader
         title="ESTO"
         actions={
-          <button
-            type="button"
-            className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
-            style={{
-              background: 'rgba(255, 255, 255, 0.14)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-            }}
-            onClick={() => setScreen('cart')}
-          >
-            <ShoppingCart size={16} className="text-white/80" />
-            {totalCart > 0 && (
-              <span
-                className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums"
-                style={{
-                  background: '#EF4444',
-                  boxShadow: '0 0 0 2px #0C3E1E',
-                }}
-              >
-                {totalCart}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+              onClick={() => setShowWishlist(true)}
+              aria-label="Wishlist Produk Favorit"
+            >
+              <Heart
+                size={16}
+                className={liked.size > 0 ? 'text-red-400 fill-red-400' : 'text-white/80'}
+              />
+              {liked.size > 0 && (
+                <span
+                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums bg-red-500"
+                  style={{
+                    boxShadow: '0 0 0 2px #0C3E1E',
+                  }}
+                >
+                  {liked.size}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+              onClick={() => setScreen('cart')}
+              aria-label="Keranjang Belanja"
+            >
+              <ShoppingCart size={16} className="text-white/80" />
+              {totalCart > 0 && (
+                <span
+                  className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums"
+                  style={{
+                    background: '#EF4444',
+                    boxShadow: '0 0 0 2px #0C3E1E',
+                  }}
+                >
+                  {totalCart}
+                </span>
+              )}
+            </button>
+          </div>
         }
       >
         <NavTabs
@@ -3880,78 +4735,116 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
           </div>
 
-          {/* Quick Category Filter Pills */}
-          <div className="px-3.5 pt-1 pb-1">
-            <CategoryPills
-              categories={CATS}
-              selectedCategory={selectedCats.length === 0 ? 'Semua' : selectedCats}
-              onSelect={(cat) => {
-                if (cat === 'Semua') {
-                  setSelectedCats([])
-                } else {
-                  setSelectedCats([cat])
-                }
-              }}
-            />
-          </div>
-
-          {/* Section Header with result count & single down arrow sort button chip */}
-          <div className="px-3.5 pt-1.5 pb-2">
-            <SectionHeader
-              title={
-                searchQ
-                  ? `Hasil "${searchQ}"`
-                  : selectedCats.length === 0
-                  ? 'Katalog Produk Desa'
-                  : `Kategori: ${selectedCats.join(', ')}`
-              }
-              subtitle={`${filtered.length} produk segar & alami`}
-              actionLabel={SORT_OPTIONS.find((s) => s.id === sortBy)?.label || 'Terlaris'}
-              actionIcon={ChevronDown}
-              actionVariant="chip"
-              onAction={() => setShowSort(true)}
-              className="mb-0"
-            />
-          </div>
-
-          {/* Empty state */}
-          {filtered.length === 0 && (
-            <div className="py-16 text-center px-8 flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-2xl mb-3">
-                🔍
+          {/* Quick Voucher Strip (Image 5) */}
+          <div className="px-3.5 pt-1 pb-2">
+            <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl p-2.5 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
+                  <Ticket size={16} className="text-white" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-extrabold leading-tight truncate">VOUCHER DISKON 50%</p>
+                  <p className="text-[10px] text-white/90">s.d. Rp15.000 Min. Belanja Rp0</p>
+                </div>
               </div>
-              <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
-                Produk tidak ditemukan
-              </p>
-              <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-4">
-                Coba kata kunci lain atau pilih kategori produk yang berbeda.
-              </p>
               <button
-                onClick={() => {
-                  setSearchQ('')
-                  setSelectedCats([])
-                }}
-                className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-[11.5px] font-bold border border-emerald-200 active:scale-95 transition"
+                onClick={() => setVoucherClaimed(true)}
+                disabled={voucherClaimed}
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-black transition active:scale-95 flex-shrink-0 ${
+                  voucherClaimed
+                    ? 'bg-white/30 text-white cursor-default'
+                    : 'bg-white text-orange-600 shadow-xs'
+                }`}
               >
-                Reset Filter
+                {voucherClaimed ? 'Klaim ✓' : 'Klaim'}
               </button>
             </div>
-          )}
+          </div>
 
-          {/* Product grid with ProductCard Molecule */}
-          <div className="grid grid-cols-2 gap-3 px-3.5 pb-4">
-            {filtered.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                inCartQty={cart[p.id] || 0}
-                isLiked={liked.has(p.id)}
-                onToggleLike={toggleLike}
-                onOpenDetail={openDetail}
-                onAddToCart={(id, qty) => addToCart(id, qty)}
-                onUpdateQty={(id, qty) => updateCartQty(id, qty)}
-              />
-            ))}
+          {/* ── Section Toko Pilihan (Image 2) ── */}
+          <div className="pt-2 pb-2">
+            <div className="px-3.5 flex items-center justify-between mb-2">
+              <div>
+                <h3 className="text-[14px] font-extrabold text-gray-900 leading-tight">
+                  Toko Pilihan
+                </h3>
+                <p className="text-[11px] text-gray-500">
+                  Kios & Grosir Resmi ESTO terdekat siap antar kilat
+                </p>
+              </div>
+            </div>
+
+            <div className="px-3.5 flex flex-col gap-3">
+              {(showAllStores ? ESTO_STORES : ESTO_STORES.slice(0, 2)).map((store) => (
+                <StoreCard
+                  key={store.id}
+                  store={store}
+                  onSelectStore={(s) => setSelectedStore(s)}
+                  onSelectProduct={(product) => openDetail(product)}
+                />
+              ))}
+
+              {/* Cek Toko Lainnya Toggle Button */}
+              <button
+                onClick={() => setShowAllStores(!showAllStores)}
+                className="w-full py-2.5 rounded-xl bg-white border border-gray-200 text-gray-700 text-[12px] font-extrabold flex items-center justify-center gap-1.5 shadow-2xs hover:bg-gray-50 active:scale-[0.99] transition mt-0.5"
+              >
+                <span>{showAllStores ? 'TAMPILKAN LEBIH SEDIKIT' : 'CEK TOKO LAINNYA'}</span>
+                <ChevronRight
+                  size={14}
+                  className={`transition-transform duration-200 ${showAllStores ? '-rotate-90' : 'rotate-90'}`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* ── Section Produk dari Penjual (Image 3) ── */}
+          <div className="pt-3 pb-2">
+            <div className="px-3.5 mb-2.5">
+              <h3 className="text-[14px] font-extrabold text-gray-900 leading-tight">
+                Produk dari Penjual
+              </h3>
+              <p className="text-[11px] text-gray-500">
+                Pangan & olahan segar dari warga komunitas desa
+              </p>
+            </div>
+
+            {/* Empty state for search */}
+            {communityProducts.length === 0 && (
+              <div className="py-12 text-center px-8 flex flex-col items-center">
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-xl mb-2">
+                  🔍
+                </div>
+                <p className="text-[13.5px] font-extrabold text-gray-900 mb-1">
+                  Produk tidak ditemukan
+                </p>
+                <p className="text-[11.5px] text-gray-400 max-w-xs leading-relaxed mb-3">
+                  Coba kata kunci lain untuk mencari produk dari penjual desa.
+                </p>
+                <button
+                  onClick={() => setSearchQ('')}
+                  className="px-4 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 active:scale-95 transition"
+                >
+                  Reset Pencarian
+                </button>
+              </div>
+            )}
+
+            {/* Product grid with ProductCard Molecule */}
+            <div className="grid grid-cols-2 gap-3 px-3.5 pb-4">
+              {communityProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  inCartQty={cart[p.id] || 0}
+                  isLiked={liked.has(p.id)}
+                  onToggleLike={toggleLike}
+                  onOpenDetail={openDetail}
+                  onAddToCart={(id, qty) => addToCart(id, qty)}
+                  onUpdateQty={(id, qty) => updateCartQty(id, qty)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -4171,6 +5064,19 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           </div>
         </div>
       )}
+
+      {/* Dedicated Wishlist Drawer Sheet */}
+      <WishlistSheet
+        isOpen={showWishlist}
+        onClose={() => setShowWishlist(false)}
+        wishlistIds={Array.from(liked)}
+        allProducts={ALL_PRODUCTS}
+        onRemoveFavorite={toggleLike}
+        onAddToCart={(p) => {
+          addToCart(p.id, 1)
+        }}
+        onOpenDetail={(p) => openDetail(p)}
+      />
 
       <BottomNav active="pasar" navigate={navigate} />
     </ScreenBackground>

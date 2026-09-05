@@ -1,5 +1,6 @@
 import React from 'react'
-import { Heart, Star, Plus, Minus, Package } from 'lucide-react'
+import { Heart, Star, Plus, Minus, Package, Zap } from 'lucide-react'
+import { getProductImage } from '@/utils/productImages'
 
 const PRIMARY = '#1B6B3A'
 
@@ -38,22 +39,25 @@ export default function ProductCard({
               : '#F5F5F5',
           }}
         >
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover border border-black/10"
-              loading="lazy"
-            />
-          ) : product.Icon ? (
-            <product.Icon
-              size={48}
-              className="text-white drop-shadow-sm relative z-10"
-              strokeWidth={1.5}
-            />
-          ) : (
-            <Package size={48} className="text-gray-400" />
-          )}
+          {(() => {
+            const imgSrc = getProductImage(product)
+            return imgSrc ? (
+              <img
+                src={imgSrc}
+                alt={product.name}
+                className="w-full h-full object-cover border border-black/10"
+                loading="lazy"
+              />
+            ) : product.Icon ? (
+              <product.Icon
+                size={48}
+                className="text-white drop-shadow-sm relative z-10"
+                strokeWidth={1.5}
+              />
+            ) : (
+              <Package size={48} className="text-gray-400" />
+            )
+          })()}
 
           {/* Favorite Heart Button */}
           <button
@@ -67,7 +71,7 @@ export default function ProductCard({
           >
             <Heart
               size={14}
-              className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-300'}
+              className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-red-400'}
             />
           </button>
 
@@ -107,12 +111,23 @@ export default function ProductCard({
           <p className="text-[13px] font-bold text-gray-900 leading-snug line-clamp-2 mb-1">
             {product.name}
           </p>
-          <p className="text-[11px] text-gray-400 mb-2">{product.unit}</p>
-          <div className="flex items-center gap-1 mb-2">
+          <p className="text-[11px] text-gray-400 mb-1.5">{product.unit}</p>
+
+          <div className="flex items-center gap-1 mb-1.5">
             <Star size={11} className="fill-amber-400 text-amber-400 flex-shrink-0" />
             <span className="text-[11px] text-gray-600 font-semibold">
               {product.rating} · {product.sold} terjual
             </span>
+          </div>
+
+          {/* ETA / Location tag */}
+          <div className="flex items-center gap-1.5 text-[10.5px] text-gray-400">
+            <span className="text-emerald-700 font-bold flex items-center gap-0.5">
+              <Zap size={9.5} className="fill-emerald-700 text-emerald-700" />
+              {product.eta || '30 mnt'}
+            </span>
+            <span>·</span>
+            <span className="truncate">{product.location || 'Sukamaju'}</span>
           </div>
         </div>
       </div>
