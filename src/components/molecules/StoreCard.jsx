@@ -1,24 +1,33 @@
 import React from 'react'
-import { Star, Zap, Ticket, ChevronRight, Store } from 'lucide-react'
+import { Star, MapPin, Ticket, ChevronRight, Store } from 'lucide-react'
 import { getProductImage } from '@/utils/productImages'
 
 /**
  * StoreCard Molecule (Model Card Toko Pilihan)
- * Sesuai dengan gambar referensi ke-2 (Shopee-style Store Showcase Card).
- * Menampilkan profil toko, promo gratis ongkir, estimasi waktu & jarak,
+ * Sesuai dengan preferensi e-commerce modern.
+ * Menampilkan nama toko, rating, lokasi, jarak,
  * serta horizontal scroll thumbnail produk-produk unggulan toko tersebut.
  */
-export default function StoreCard({ store, onOpenStore, onOpenProduct }) {
+export default function StoreCard({
+  store,
+  onSelectStore,
+  onOpenStore,
+  onSelectProduct,
+  onOpenProduct,
+}) {
   if (!store) return null
+
+  const handleOpenStore = onSelectStore || onOpenStore
+  const handleOpenProduct = onSelectProduct || onOpenProduct
 
   return (
     <div className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-xs hover:shadow-md transition-all">
       {/* ── Store Header ── */}
       <div
-        onClick={() => onOpenStore?.(store)}
+        onClick={() => handleOpenStore?.(store)}
         className="flex items-start justify-between gap-3 cursor-pointer group select-none"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* Store Logo */}
           <div
             className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 text-white font-black text-[15px] shadow-2xs"
@@ -42,29 +51,27 @@ export default function StoreCard({ store, onOpenStore, onOpenProduct }) {
               <ChevronRight size={14} className="text-gray-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
             </div>
 
+            {/* Rating & Lokasi Toko */}
             <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500">
-              <span className="flex items-center gap-0.5 font-bold text-gray-800">
+              <span className="flex items-center gap-0.5 font-bold text-gray-800 flex-shrink-0">
                 <Star size={11} className="fill-amber-400 text-amber-400" />
                 {store.rating || '4.8'}
               </span>
               <span className="text-gray-300">·</span>
-              <span className="truncate text-emerald-700 font-medium">
-                {store.promoText || 'Beli Rp0, diskon Gratis Ongkir s/d Rp15RB'}
+              <span className="flex items-center gap-1 text-gray-500 truncate min-w-0">
+                <MapPin size={10} className="text-gray-400 flex-shrink-0" />
+                <span className="truncate">{store.address || store.region || 'Yogyakarta'}</span>
               </span>
             </div>
           </div>
         </div>
 
-        {/* ETA & Distance Badges */}
-        <div className="flex flex-col items-end flex-shrink-0">
-          <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-            <Zap size={10} className="fill-emerald-700 text-emerald-700" />
-            {store.eta || '30 menit'}
-          </span>
-          <span className="text-[10px] text-gray-400 font-medium mt-1">
-            {store.distance || '2.1 km'}
-          </span>
-        </div>
+        {/* Distance on top right (without the 30 mnt badge) */}
+        {store.distance && (
+          <div className="flex items-center text-[11px] text-gray-400 font-medium flex-shrink-0 pt-0.5">
+            <span>{store.distance}</span>
+          </div>
+        )}
       </div>
 
       {/* ── Mini Products Horizontal Scroll ── */}
@@ -77,8 +84,8 @@ export default function StoreCard({ store, onOpenStore, onOpenProduct }) {
                 key={p.id}
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (onOpenProduct) onOpenProduct(p, store)
-                  else onOpenStore?.(store)
+                  if (handleOpenProduct) handleOpenProduct(p, store)
+                  else handleOpenStore?.(store)
                 }}
                 className="w-22 flex-shrink-0 cursor-pointer group/item select-none"
               >
