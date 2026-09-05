@@ -6,7 +6,9 @@ import SearchBar from '@/components/molecules/SearchBar'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
-  CircleDot, Leaf, Coffee, Droplet, Palette, Wheat, Egg, Landmark, Wallet, Box, Scale, ScanLine
+  CircleDot, Leaf, Coffee, Droplet, Palette, Wheat, Egg, Landmark, Wallet, Box, Scale, ScanLine,
+  AlertTriangle, Trash2, Copy, CheckCircle2, Info, ShieldCheck, CloudRain, RotateCcw,
+  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
@@ -47,6 +49,27 @@ const SORT_OPTIONS = [
   { id:'harga_asc',  label:'Harga: Terendah' },
   { id:'harga_desc', label:'Harga: Tertinggi' },
   { id:'rating',     label:'Rating Tertinggi' },
+]
+
+const INITIAL_ADDRESSES = [
+  {
+    id: 1,
+    label: 'Rumah',
+    name: 'Budi Santoso',
+    phone: '0812-3456-7890',
+    address: 'Jl. Melati No. 14, RT 02 / RW 04, Desa Sukamaju, Kec. Sukamakmur, Bogor 16830',
+    locationLabel: 'Jl. Melati No. 14, Desa Sukamaju',
+    isDefault: true,
+  },
+  {
+    id: 2,
+    label: 'Kebun / Kantor Desa',
+    name: 'Budi Santoso',
+    phone: '0812-3456-7890',
+    address: 'Balai Warga Blok B, Desa Sukamaju, Kec. Sukamakmur, Bogor 16830',
+    locationLabel: 'Balai Warga Desa Sukamaju',
+    isDefault: false,
+  },
 ]
 
 // ── Address Management Modals ──────────────────────────────
@@ -202,216 +225,906 @@ function AddressMapModal({ onBack, onConfirm }) {
         </div>
       </div>
 
-      <div className="absolute bottom-0 inset-x-0 bg-white rounded-t-3xl p-5 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
-        <p className="text-[14px] font-bold text-gray-900 mb-1">Jl. Raya Desa Nagrak RT 03/02</p>
-        <p className="text-[12px] text-gray-500 mb-4 line-clamp-1">Kec. Sukamakmur, Bogor, Jawa Barat 16830</p>
-        <button onClick={() => onConfirm('Jl. Raya Desa Nagrak RT 03/02, Kec. Sukamakmur, Bogor, Jawa Barat 16830')}
-          className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white active:scale-[0.96] transition-transform"
-          style={{background:`linear-gradient(135deg, #1B6B3A, #15803d)`}}>
-          Konfirmasi Lokasi
+      {/* Bottom confirmation sheet */}
+      <div className="p-4 bg-white rounded-t-3xl shadow-lg flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-gray-800">
+          <MapPin size={18} className="text-emerald-700" />
+          <span className="text-xs font-bold truncate">Desa Sukamaju, Kec. Sukamakmur, Bogor</span>
+        </div>
+        <button
+          onClick={onConfirm}
+          className="w-full py-3.5 rounded-2xl text-white font-bold text-sm bg-emerald-700 active:scale-95 transition shadow-md"
+        >
+          Pilih Lokasi Ini
         </button>
       </div>
     </div>
   )
 }
 
-// ── Checkout Screen ────────────────────────────────────────
-function CheckoutScreen({ items, onBack, onConfirm }) {
-  const [delivery,   setDelivery]  = useState('gvman')
-  const [payment,    setPayment]   = useState('gvpay')
-  const subtotal = items.reduce((s,i)=>s+i.price*i.qty, 0)
-  const ongkir   = delivery==='gvman' ? 8000 : 0
-  const total    = subtotal + ongkir
+// ── Cart Screen (Keranjang Belanja Mandiri) ─────────────────
+function CartScreen({
+  cart = {},
+  setCart,
+  selectedItems: propSelectedItems,
+  setSelectedItems: propSetSelectedItems,
+  sellerNotes: propSellerNotes,
+  setSellerNotes: propSetSellerNotes,
+  onBack,
+  onCheckout,
+  onExploreProducts,
+  onBrowse,
+  onUpdateQty,
+  onRemoveItem,
+  allProducts = PRODUCTS,
+}) {
+  const [internalSelected, setInternalSelected] = useState(() => new Set(Object.keys(cart).map(Number)))
+  const [internalNotes, setInternalNotes] = useState({})
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState(null)
+  const [voucherApplied, setVoucherApplied] = useState(true)
+
+  const selectedItems = propSelectedItems || internalSelected
+  const setSelectedItems = propSetSelectedItems || setInternalSelected
+  const sellerNotes = propSellerNotes || internalNotes
+  const setSellerNotes = propSetSellerNotes || setInternalNotes
+
+  // Map cart entries to product objects
+  const cartList = Object.entries(cart)
+    .map(([id, qty]) => {
+      const p = allProducts.find(x => x.id === Number(id))
+      return p ? { ...p, cartQty: qty } : null
+    })
+    .filter(Boolean)
+
+  // Group by seller
+  const sellersMap = {}
+  cartList.forEach(item => {
+    if (!sellersMap[item.seller]) sellersMap[item.seller] = []
+    sellersMap[item.seller].push(item)
+  })
+  const sellers = Object.keys(sellersMap)
+
+  // Total calculation for checked items
+  const checkedItems = cartList.filter(item => selectedItems.has(item.id) && item.stock > 0)
+  const subtotal = checkedItems.reduce((acc, item) => acc + item.price * item.cartQty, 0)
+  const discount = voucherApplied && checkedItems.length > 0 ? 5000 : 0
+  const grandTotal = Math.max(0, subtotal - discount)
+
+  const isAllSelected = cartList.length > 0 && cartList.filter(i => i.stock > 0).every(i => selectedItems.has(i.id))
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedItems(new Set())
+    } else {
+      const allAvailableIds = cartList.filter(i => i.stock > 0).map(i => i.id)
+      setSelectedItems(new Set(allAvailableIds))
+    }
+  }
+
+  const toggleItemSelect = (id, stock) => {
+    if (stock === 0) return
+    setSelectedItems(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSellerSelect = (sellerName) => {
+    const sellerItems = sellersMap[sellerName].filter(i => i.stock > 0)
+    const allSellerChecked = sellerItems.every(i => selectedItems.has(i.id))
+    setSelectedItems(prev => {
+      const next = new Set(prev)
+      sellerItems.forEach(i => {
+        if (allSellerChecked) next.delete(i.id)
+        else next.add(i.id)
+      })
+      return next
+    })
+  }
+
+  const updateItemQty = (id, newQty, stock) => {
+    if (newQty <= 0) {
+      const item = cartList.find(i => i.id === id)
+      setDeleteConfirmItem(item)
+      return
+    }
+    const safeQty = Math.min(newQty, stock)
+    if (onUpdateQty) {
+      onUpdateQty(id, safeQty)
+    } else if (setCart) {
+      setCart(prev => ({ ...prev, [id]: safeQty }))
+    }
+  }
+
+  const removeItem = (id) => {
+    if (onRemoveItem) {
+      onRemoveItem(id)
+    } else if (setCart) {
+      setCart(prev => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    }
+    setSelectedItems(prev => {
+      const next = new Set(prev)
+      next.delete(id)
+      return next
+    })
+    setDeleteConfirmItem(null)
+  }
+
+  return (
+    <div className="flex flex-col h-full relative" style={{ background: '#FAFBF9' }}>
+      {/* Top Header */}
+      <div
+        className="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white border-b"
+        style={{ borderColor: 'rgba(27,107,58,0.08)' }}
+      >
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <ArrowLeft size={16} className="text-gray-700" />
+          </button>
+          <div>
+            <p className="font-extrabold text-[15px] text-gray-900 leading-tight">Keranjang Belanja</p>
+            <p className="text-[11px] text-gray-400 font-medium">{cartList.length} produk tersimpan</p>
+          </div>
+        </div>
+        {cartList.length > 0 && (
+          <button
+            onClick={() => {
+              if (window.confirm('Kosongkan semua barang dari keranjang belanja?')) {
+                setCart({})
+                setSelectedItems(new Set())
+              }
+            }}
+            className="text-[11.5px] font-semibold text-red-600 hover:text-red-700 active:scale-95 px-2 py-1"
+          >
+            Hapus Semua
+          </button>
+        )}
+      </div>
+
+      {/* Cart Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3.5 flex flex-col gap-3.5 pb-28">
+        {cartList.length === 0 ? (
+          /* Empty State */
+          <div className="flex-1 flex flex-col items-center justify-center py-20 px-6 text-center">
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center mb-4 shadow-sm"
+              style={{ background: '#E8F5E9' }}
+            >
+              <ShoppingCart size={32} style={{ color: PRIMARY }} />
+            </div>
+            <p className="text-[16px] font-extrabold text-gray-900 mb-1">Keranjang Belanjamu Kosong</p>
+            <p className="text-[12px] text-gray-500 max-w-[260px] leading-relaxed mb-6">
+              Yuk, temukan hasil panen segar, camilan khas, dan kerajinan tangan dari UMKM desa!
+            </p>
+            <button
+              onClick={onExploreProducts || onBack}
+              className="px-6 py-3 rounded-2xl text-[13px] font-bold text-white shadow-md active:scale-95 transition-all"
+              style={{ background: PRIMARY }}
+            >
+              Mulai Belanja Produk Desa
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Select All Bar */}
+            <div className="bg-white rounded-2xl p-3 px-4 flex items-center justify-between border border-gray-100 shadow-xs">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 rounded text-emerald-700 accent-emerald-700 focus:ring-0"
+                />
+                <span className="text-[12.5px] font-bold text-gray-800">
+                  Pilih Semua ({cartList.length} Produk)
+                </span>
+              </label>
+              <span className="text-[11px] text-gray-400 font-medium">
+                {checkedItems.length} dipilih
+              </span>
+            </div>
+
+            {/* Grouped by Seller */}
+            {sellers.map(sellerName => {
+              const items = sellersMap[sellerName]
+              const sellerAvailable = items.filter(i => i.stock > 0)
+              const isSellerChecked = sellerAvailable.length > 0 && sellerAvailable.every(i => selectedItems.has(i.id))
+
+              return (
+                <div
+                  key={sellerName}
+                  className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs flex flex-col gap-3"
+                >
+                  {/* Seller Header */}
+                  <div className="flex items-center justify-between pb-2.5 border-b border-gray-100">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSellerChecked}
+                        onChange={() => toggleSellerSelect(sellerName)}
+                        disabled={sellerAvailable.length === 0}
+                        className="w-4 h-4 rounded text-emerald-700 accent-emerald-700 focus:ring-0"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <Store size={14} className="text-emerald-700" />
+                        <span className="text-[13px] font-extrabold text-gray-900">{sellerName}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold">
+                          Desa Sukamaju
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Items for this seller */}
+                  <div className="flex flex-col gap-3">
+                    {items.map(item => {
+                      const isChecked = selectedItems.has(item.id) && item.stock > 0
+                      const isOutOfStock = item.stock === 0
+                      const isLowStock = item.stock > 0 && item.stock <= 4
+
+                      return (
+                        <div
+                          key={item.id}
+                          className={`flex items-start gap-3 p-2.5 rounded-xl border transition-all ${
+                            isOutOfStock
+                              ? 'bg-gray-50/70 border-gray-200/80 opacity-70'
+                              : isChecked
+                              ? 'bg-emerald-50/25 border-emerald-600/30'
+                              : 'bg-white border-gray-100'
+                          }`}
+                        >
+                          {/* Item Checkbox */}
+                          <div className="pt-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              disabled={isOutOfStock}
+                              onChange={() => toggleItemSelect(item.id, item.stock)}
+                              className="w-4 h-4 rounded text-emerald-700 accent-emerald-700 focus:ring-0 disabled:opacity-40"
+                            />
+                          </div>
+
+                          {/* Item Image / Icon */}
+                          <div
+                            className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
+                            style={{
+                              background: item.image
+                                ? 'transparent'
+                                : `linear-gradient(135deg, ${item.g?.[0] || '#2E7D32'} 0%, ${item.g?.[1] || '#4CAF50'} 100%)`,
+                            }}
+                          >
+                            {item.image ? (
+                              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <item.Icon size={24} className="text-white drop-shadow-xs relative z-10" />
+                            )}
+                            {isOutOfStock && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                <span className="text-[9px] font-black text-white bg-red-600 px-1 py-0.5 rounded">
+                                  HABIS
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Item Details */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[13px] font-bold text-gray-900 leading-snug truncate">{item.name}</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">{item.unit}</p>
+
+                            {/* Stock badges */}
+                            {isOutOfStock ? (
+                              <p className="text-[11px] text-red-600 font-bold mt-1 flex items-center gap-1">
+                                <AlertTriangle size={11} /> Stok sedang habis di toko
+                              </p>
+                            ) : isLowStock ? (
+                              <p className="text-[11px] text-amber-600 font-semibold mt-0.5">
+                                Sisa stok tinggal {item.stock} lagi!
+                              </p>
+                            ) : null}
+
+                            {/* Price & Quantity Controls */}
+                            <div className="flex items-center justify-between mt-2 pt-1">
+                              <p className="text-[13px] font-extrabold text-emerald-800">
+                                Rp {item.price.toLocaleString('id')}
+                              </p>
+
+                              {isOutOfStock ? (
+                                <button
+                                  onClick={() => removeItem(item.id)}
+                                  className="text-red-500 hover:text-red-700 text-[11px] font-bold flex items-center gap-1"
+                                >
+                                  <Trash2 size={12} /> Hapus
+                                </button>
+                              ) : (
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    onClick={() => updateItemQty(item.id, item.cartQty - 1, item.stock)}
+                                    className="w-6 h-6 rounded-lg border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100 active:scale-95 transition-all"
+                                  >
+                                    <Minus size={11} />
+                                  </button>
+                                  <span className="text-[12.5px] font-bold text-gray-900 w-6 text-center tabular-nums">
+                                    {item.cartQty}
+                                  </span>
+                                  <button
+                                    onClick={() => updateItemQty(item.id, item.cartQty + 1, item.stock)}
+                                    disabled={item.cartQty >= item.stock}
+                                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-white active:scale-95 transition-all ${
+                                      item.cartQty >= item.stock ? 'bg-gray-300 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800'
+                                    }`}
+                                  >
+                                    <Plus size={11} />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmItem(item)}
+                                    className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 transition-colors ms-1"
+                                    title="Hapus produk"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Seller Note Input */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <input
+                      type="text"
+                      placeholder={`Catatan untuk ${sellerName} (misal: bungkus terpisah, pilih yang segar)`}
+                      value={sellerNotes[sellerName] || ''}
+                      onChange={(e) => setSellerNotes(prev => ({ ...prev, [sellerName]: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200/80 text-[11.5px] text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-600 focus:bg-white transition-all"
+                    />
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* Voucher Card */}
+            <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-3.5 border border-emerald-200/70 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Tag size={15} />
+                </div>
+                <div>
+                  <p className="text-[12px] font-extrabold text-emerald-950">VOUCHER DESA: HEMATONGKIR</p>
+                  <p className="text-[11px] text-emerald-700">Potongan ongkir Rp 5.000 terpasang</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setVoucherApplied(!voucherApplied)}
+                className="text-[11px] font-bold text-emerald-800 underline active:scale-95"
+              >
+                {voucherApplied ? 'Lepas' : 'Pakai'}
+              </button>
+            </div>
+
+            {/* Ringkasan Belanja Cepat */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Ringkasan Biaya Produk</p>
+              <div className="flex justify-between py-1 text-[12px] text-gray-600">
+                <span>Subtotal ({checkedItems.length} produk terpilih)</span>
+                <span className="font-semibold text-gray-900">Rp {subtotal.toLocaleString('id')}</span>
+              </div>
+              {voucherApplied && checkedItems.length > 0 && (
+                <div className="flex justify-between py-1 text-[12px] text-emerald-700 font-medium">
+                  <span>Diskon Promo Desa</span>
+                  <span>-Rp 5.000</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-2 mt-1 border-t border-gray-100 text-[13px] font-extrabold text-gray-900">
+                <span>Total Sementara</span>
+                <span className="text-emerald-800 font-black">Rp {grandTotal.toLocaleString('id')}</span>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Sticky Bottom Checkout Bar */}
+      {cartList.length > 0 && (
+        <div
+          className="absolute bottom-0 inset-x-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-between gap-3 shadow-lg z-20"
+        >
+          <div className="min-w-0">
+            <p className="text-[10.5px] text-gray-400 font-medium">Total Pembayaran ({checkedItems.length} barang):</p>
+            <p className="text-[16px] font-black text-emerald-800 leading-tight">
+              Rp {grandTotal.toLocaleString('id')}
+            </p>
+          </div>
+          <button
+            onClick={() => onCheckout(checkedItems, voucherApplied)}
+            disabled={checkedItems.length === 0}
+            className={`px-5 py-3.5 rounded-2xl text-[13px] font-extrabold flex items-center gap-1.5 transition-all shadow-md ${
+              checkedItems.length === 0
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                : 'bg-gradient-to-r from-emerald-700 to-green-800 text-white active:scale-95'
+            }`}
+          >
+            <span>Checkout ({checkedItems.length})</span>
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      )}
+
+      {/* Delete Item Confirmation Modal */}
+      {deleteConfirmItem && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center px-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl p-5 max-w-xs w-full shadow-xl animate-scale-up">
+            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+              <Trash2 size={22} />
+            </div>
+            <p className="text-[14px] font-extrabold text-gray-900 text-center">Hapus dari Keranjang?</p>
+            <p className="text-[12px] text-gray-500 text-center mt-1 leading-relaxed">
+              Apakah kamu yakin ingin mengeluarkan <span className="font-bold text-gray-800">{deleteConfirmItem.name}</span> dari keranjang?
+            </p>
+            <div className="flex gap-2.5 mt-5">
+              <button
+                onClick={() => setDeleteConfirmItem(null)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-300 text-[12px] font-bold text-gray-700 active:scale-95"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => removeItem(deleteConfirmItem.id)}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-[12px] font-bold text-white shadow-sm active:scale-95"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Checkout Screen (Pengiriman & Rincian Transparan) ───────
+function CheckoutScreen({
+  items,
+  sellerNotes = {},
+  userProfile,
+  onBack,
+  onConfirm,
+  addresses,
+  setAddresses,
+  selectedAddressId,
+  setSelectedAddressId,
+  hasVoucher = true,
+}) {
+  const [delivery, setDelivery] = useState('reguler') // reguler, kilat, pickup
+  const [payment, setPayment] = useState('gvpay') // gvpay, qris, transfer, cod
 
   // Address state
-  const [addresses, setAddresses] = useState([])
-  const [selectedAddressId, setSelectedAddressId] = useState(null)
-  
-  // UI states for flow
   const [addressModalView, setAddressModalView] = useState(null) // 'list', 'form', 'map'
   const [newAddressDraft, setNewAddressDraft] = useState({})
 
-  const DELIVERY = [
-    { id:'gvman',  label:'GV Man',        sub:'Antar ke rumah · Est. 30-45 mnt', Icon: Truck, g: ['#1B5E20', '#2E7D32'], price:8000 },
-    { id:'pickup', label:'Ambil Sendiri', sub:'Langsung ke lokasi penjual',       Icon: Package, g: ['#0D47A1', '#1976D2'], price:0    },
+  const userBalance = userProfile?.balance ?? 125000
+
+  const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0)
+  const ongkir = delivery === 'kilat' ? 12000 : delivery === 'reguler' ? 8000 : 0
+  const biayaLayanan = 1000
+  const diskonVoucher = hasVoucher && ongkir > 0 ? 5000 : 0
+  const grandTotal = Math.max(0, subtotal + ongkir + biayaLayanan - diskonVoucher)
+
+  const isGvPayInsufficient = payment === 'gvpay' && userBalance < grandTotal
+
+  const DELIVERY_OPTIONS = [
+    {
+      id: 'reguler',
+      label: 'GV Man Reguler',
+      sub: 'Antar ke rumah · Est. 30-45 mnt',
+      badge: 'Terpopuler',
+      Icon: Truck,
+      g: ['#1B5E20', '#2E7D32'],
+      price: 8000,
+    },
+    {
+      id: 'kilat',
+      label: 'GV Man Kilat (Express)',
+      sub: 'Prioritas langsung jalan · Est. 15-25 mnt',
+      badge: 'Cepat Tiba',
+      Icon: Zap,
+      g: ['#E65100', '#F57C00'],
+      price: 12000,
+    },
+    {
+      id: 'pickup',
+      label: 'Ambil Sendiri di Toko',
+      sub: 'Ambil langsung ke lokasi kebun/toko penjual',
+      badge: 'Gratis',
+      Icon: Store,
+      g: ['#0D47A1', '#1976D2'],
+      price: 0,
+    },
   ]
 
-  const PAYMENT = [
-    { id:'gvpay',   label:'GV Pay',          sub:'Saldo GV Pay tersedia',             Icon: CreditCard, g: ['#1B5E20', '#2E7D32'] },
-    { id:'qris',    label:'QRIS',             sub:'Scan kode QR saat konfirmasi',      Icon: ScanLine, g: ['#000000', '#424242'] },
-    { id:'transfer',label:'Transfer Bank',    sub:'BRI · BCA · Mandiri · BNI',         Icon: Landmark, g: ['#0D47A1', '#1976D2'] },
-    { id:'cod',     label:'Bayar di Tempat',  sub:'Bayar tunai saat pesanan tiba',     Icon: Wallet, g: ['#E65100', '#F57C00'] },
+  const PAYMENT_OPTIONS = [
+    {
+      id: 'gvpay',
+      label: 'GV Pay (Saldo Desa)',
+      sub: `Saldo tersedia: Rp ${userBalance.toLocaleString('id')}`,
+      Icon: CreditCard,
+      g: ['#1B5E20', '#2E7D32'],
+    },
+    {
+      id: 'qris',
+      label: 'QRIS',
+      sub: 'Scan QR m-Banking / e-Wallet (BCA, GoPay, OVO, dll)',
+      Icon: ScanLine,
+      g: ['#000000', '#424242'],
+    },
+    {
+      id: 'transfer',
+      label: 'Transfer Bank (VA)',
+      sub: 'BRI, BCA, Mandiri, BNI',
+      Icon: Landmark,
+      g: ['#0D47A1', '#1976D2'],
+    },
+    {
+      id: 'cod',
+      label: 'Bayar di Tempat (COD)',
+      sub: 'Bayar tunai kepada kurir GV Man saat tiba',
+      Icon: Wallet,
+      g: ['#E65100', '#F57C00'],
+    },
   ]
+
+  const activeAddress = addresses.find(a => a.id === selectedAddressId) || addresses[0]
 
   return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white" style={{borderBottom:'1px solid rgba(27,107,58,0.08)'}}>
-        <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-          <ArrowLeft size={16} className="text-gray-700"/>
+    <div className="flex flex-col h-full relative" style={{ background: '#FAFBF9' }}>
+      {/* Top Header */}
+      <div
+        className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white border-b"
+        style={{ borderColor: 'rgba(27,107,58,0.08)' }}
+      >
+        <button
+          onClick={onBack}
+          className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95 transition-transform"
+        >
+          <ArrowLeft size={16} className="text-gray-700" />
         </button>
-        <p className="font-bold text-gray-900">Keranjang</p>
-        <span className="text-gray-400 text-sm">({items.length} produk)</span>
+        <div>
+          <p className="font-extrabold text-[15px] text-gray-900 leading-tight">Pengiriman & Pembayaran</p>
+          <p className="text-[11px] text-gray-400 font-medium">Langkah konfirmasi pesanan</p>
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 flex flex-col gap-3">
-        {/* Shipping Address */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          {selectedAddressId ? (() => {
-            const addr = addresses.find(a => a.id === selectedAddressId)
-            return (
-              <>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-[11px] font-bold text-gray-400">Alamat Pengiriman</p>
-                  <button onClick={()=>setAddressModalView('list')} className="text-[11px] font-bold active:scale-95 transition" style={{color:PRIMARY}}>Ubah</button>
-                </div>
-                <div className="flex gap-3 items-start">
-                  <div className="w-10 h-10 rounded-[12px] flex items-center justify-center flex-shrink-0 shadow-inner" style={{background:`linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)`}}>
-                    <MapPin size={18} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-bold text-gray-900 leading-snug">{addr.label} - {addr.name}</p>
-                    <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed">{addr.address}</p>
-                    <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                      <Phone size={12}/> {addr.phone}
-                    </p>
-                  </div>
-                </div>
-              </>
-            )
-          })() : (
-            <>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-[11px] font-bold text-gray-400">Alamat Pengiriman</p>
+
+      {/* Body Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3.5 flex flex-col gap-3 pb-24">
+        {/* Shipping Address Card */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-1.5">
+              <MapPin size={14} className="text-emerald-700" />
+              <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider">
+                Alamat Pengiriman
+              </p>
+            </div>
+            <button
+              onClick={() => setAddressModalView('list')}
+              className="text-[11.5px] font-bold text-emerald-700 hover:text-emerald-800 active:scale-95"
+            >
+              Ubah Alamat
+            </button>
+          </div>
+
+          {activeAddress ? (
+            <div className="flex gap-3 items-start p-2.5 rounded-xl bg-gray-50/70 border border-gray-200/60">
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-xs"
+                style={{ background: 'linear-gradient(135deg, #1B6B3A, #2E7D32)' }}
+              >
+                <MapPin size={16} />
               </div>
-              <div className="flex flex-col items-center text-center py-2">
-                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-3 border border-gray-100">
-                  <MapPin size={20} className="text-gray-300" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-[13px] font-extrabold text-gray-900">{activeAddress.label}</p>
+                  <span className="text-[10px] font-bold text-gray-600">({activeAddress.name})</span>
                 </div>
-                <p className="text-[13px] font-bold text-gray-900 mb-1">Belum ada alamat</p>
-                <p className="text-[11px] text-gray-500 mb-4 max-w-[200px] leading-relaxed">Kamu belum menyimpan alamat pengiriman apapun.</p>
-                <button onClick={()=>{ setAddressModalView('form'); setNewAddressDraft({}) }} 
-                  className="px-5 py-2.5 rounded-xl text-[12px] font-bold text-white transition active:scale-[0.96]"
-                  style={{background:PRIMARY}}>
-                  Tambah Alamat Baru
-                </button>
+                <p className="text-[12px] text-gray-600 mt-0.5 leading-relaxed line-clamp-2">
+                  {activeAddress.address}
+                </p>
+                <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                  <Phone size={10} /> {activeAddress.phone}
+                </p>
               </div>
-            </>
+            </div>
+          ) : (
+            <div className="text-center py-3">
+              <p className="text-[12.5px] text-gray-500 mb-2">Belum ada alamat pengiriman yang tersimpan</p>
+              <button
+                onClick={() => {
+                  setNewAddressDraft({})
+                  setAddressModalView('form')
+                }}
+                className="px-4 py-2 rounded-xl bg-emerald-700 text-white font-bold text-[11.5px]"
+              >
+                + Tambah Alamat Baru
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Item list */}
-        <div className="bg-white rounded-2xl" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 px-4 pt-3 pb-2">Pesanan</p>
-          {items.map((item,i)=>(
-            <div key={item.id}
-              className="flex items-center gap-3 px-4 py-3"
-              style={i<items.length-1?{borderBottom:'1px solid #F9FAFB'}:{}}>
-              {/* Product image/icon */}
-              <div className="w-12 h-12 rounded-[14px] overflow-hidden flex-shrink-0 flex items-center justify-center shadow-inner relative"
-                style={{background:item.image?'transparent':`linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`}}>
-                {item.image
-                  ? <img src={item.image} alt="" className="w-full h-full object-cover border border-black/10"/>
-                  : <item.Icon size={24} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-gray-900 leading-snug">{item.name}</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{item.qty} × Rp {item.price.toLocaleString('id')}</p>
-              </div>
-              <p className="text-[13px] font-bold flex-shrink-0" style={{color:PRIMARY}}>
-                Rp {(item.price*item.qty).toLocaleString('id')}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Delivery */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Pengiriman</p>
-          <div className="flex flex-col gap-2">
-            {DELIVERY.map(d=>(
-              <button key={d.id} onClick={()=>setDelivery(d.id)}
-                className="flex items-center gap-3 p-3 rounded-2xl text-left transition"
-                style={delivery===d.id?{border:`2px solid ${PRIMARY}`,background:`${PRIMARY}06`}:{border:'2px solid #F0F0F0',background:'#FAFAFA'}}>
-                <div className="w-10 h-10 flex-shrink-0 rounded-[12px] flex items-center justify-center shadow-inner" style={{background:`linear-gradient(135deg, ${d.g[0]} 0%, ${d.g[1]} 100%)`}}>
-                  <d.Icon size={18} className="text-white drop-shadow-sm" strokeWidth={1.5} />
+        {/* Ordered Items Summary */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider">
+              Produk yang Dipesan ({items.length})
+            </p>
+            <button onClick={onBack} className="text-[11px] font-bold text-emerald-700">
+              Edit Keranjang
+            </button>
+          </div>
+          <div className="flex flex-col gap-2.5">
+            {items.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3 pb-2.5 border-b border-gray-50 last:border-0 last:pb-0">
+                <div
+                  className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
+                  style={{
+                    background: item.image
+                      ? 'transparent'
+                      : `linear-gradient(135deg, ${item.g?.[0] || '#2E7D32'} 0%, ${item.g?.[1] || '#4CAF50'} 100%)`,
+                  }}
+                >
+                  {item.image ? (
+                    <img src={item.image} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <item.Icon size={20} className="text-white drop-shadow-xs" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-gray-900">{d.label}</p>
-                  <p className="text-[12px] text-gray-400 mt-0.5">{d.sub}</p>
+                  <p className="text-[12.5px] font-bold text-gray-900 leading-snug truncate">{item.name}</p>
+                  <p className="text-[11px] text-gray-400">
+                    {item.qty} × Rp {item.price.toLocaleString('id')}
+                  </p>
+                  {sellerNotes[item.seller] && (
+                    <p className="text-[10.5px] text-emerald-700 font-medium italic truncate mt-0.5">
+                      Catatan: "{sellerNotes[item.seller]}"
+                    </p>
+                  )}
                 </div>
-                <div className="text-right flex-shrink-0">
-                  {d.price===0
-                    ? <p className="text-[11px] font-bold" style={{color:PRIMARY}}>Gratis</p>
-                    : <p className="text-[11px] font-bold text-gray-700">Rp {d.price.toLocaleString('id')}</p>}
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                  style={delivery===d.id?{borderColor:PRIMARY}:{borderColor:'#D1D5DB'}}>
-                  {delivery===d.id && <div className="w-2 h-2 rounded-full" style={{background:PRIMARY}}/>}
-                </div>
-              </button>
+                <p className="text-[12.5px] font-extrabold text-emerald-800 flex-shrink-0">
+                  Rp {(item.price * item.qty).toLocaleString('id')}
+                </p>
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Payment */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Pembayaran</p>
+        {/* Delivery Options */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+          <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider mb-3">
+            Pilihan Metode Pengiriman
+          </p>
           <div className="flex flex-col gap-2">
-            {PAYMENT.map(p=>(
-              <button key={p.id} onClick={()=>setPayment(p.id)}
-                className="flex items-center gap-3 p-3 rounded-2xl text-left transition"
-                style={payment===p.id?{border:`2px solid ${PRIMARY}`,background:`${PRIMARY}06`}:{border:'2px solid #F0F0F0',background:'#FAFAFA'}}>
-                <div className="w-10 h-10 flex-shrink-0 rounded-[12px] flex items-center justify-center shadow-inner" style={{background:`linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)`}}>
-                  <p.Icon size={18} className="text-white drop-shadow-sm" strokeWidth={1.5} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-gray-900">{p.label}</p>
-                  <p className="text-[12px] text-gray-400 mt-0.5">{p.sub}</p>
-                </div>
-                <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
-                  style={payment===p.id?{borderColor:PRIMARY}:{borderColor:'#D1D5DB'}}>
-                  {payment===p.id && <div className="w-2 h-2 rounded-full" style={{background:PRIMARY}}/>}
-                </div>
-              </button>
-            ))}
+            {DELIVERY_OPTIONS.map(d => {
+              const isSelected = delivery === d.id
+              const IconComp = d.Icon
+              return (
+                <button
+                  key={d.id}
+                  onClick={() => setDelivery(d.id)}
+                  className={`flex items-center gap-3 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] ${
+                    isSelected
+                      ? 'bg-emerald-50/40 border-emerald-600 shadow-xs'
+                      : 'bg-white border-gray-200/80 hover:bg-gray-50'
+                  }`}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-xs"
+                    style={{ background: `linear-gradient(135deg, ${d.g[0]} 0%, ${d.g[1]} 100%)` }}
+                  >
+                    <IconComp size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[12.5px] font-extrabold text-gray-900">{d.label}</p>
+                      {d.badge && (
+                        <span className="text-[9.5px] font-black px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                          {d.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{d.sub}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-[12.5px] font-black text-gray-900">
+                      {d.price === 0 ? <span className="text-emerald-700">Gratis</span> : `Rp ${d.price.toLocaleString('id')}`}
+                    </p>
+                  </div>
+                  <div
+                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ms-1 ${
+                      isSelected ? 'border-emerald-700' : 'border-gray-300'
+                    }`}
+                  >
+                    {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-700" />}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Ringkasan Biaya</p>
-          {[['Subtotal',`Rp ${subtotal.toLocaleString('id')}`],
-            ['Ongkir', ongkir===0?'Gratis':`Rp ${ongkir.toLocaleString('id')}`]].map(([l,v])=>(
-            <div key={l} className="flex justify-between py-1.5">
-              <span className="text-[12px] text-gray-500">{l}</span>
-              <span className="text-[12px] text-gray-700">{v}</span>
+        {/* Payment Methods */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+          <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider mb-3">
+            Metode Pembayaran
+          </p>
+          <div className="flex flex-col gap-2">
+            {PAYMENT_OPTIONS.map(p => {
+              const isSelected = payment === p.id
+              const IconComp = p.Icon
+              const isInsufficient = p.id === 'gvpay' && userBalance < grandTotal
+
+              return (
+                <div key={p.id} className="flex flex-col">
+                  <button
+                    onClick={() => setPayment(p.id)}
+                    className={`flex items-center gap-3 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] ${
+                      isSelected
+                        ? isInsufficient
+                          ? 'bg-red-50/40 border-red-400'
+                          : 'bg-emerald-50/40 border-emerald-600 shadow-xs'
+                        : 'bg-white border-gray-200/80 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-xs"
+                      style={{ background: `linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)` }}
+                    >
+                      <IconComp size={18} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12.5px] font-extrabold text-gray-900">{p.label}</p>
+                      <p className={`text-[11px] mt-0.5 ${isInsufficient ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
+                        {p.sub}
+                      </p>
+                    </div>
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ms-1 ${
+                        isSelected ? (isInsufficient ? 'border-red-500' : 'border-emerald-700') : 'border-gray-300'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div
+                          className={`w-2 h-2 rounded-full ${isInsufficient ? 'bg-red-500' : 'bg-emerald-700'}`}
+                        />
+                      )}
+                    </div>
+                  </button>
+
+                  {/* Insufficient balance alert */}
+                  {isSelected && isInsufficient && (
+                    <div className="mt-1.5 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5">
+                        <AlertTriangle size={13} className="text-red-600 flex-shrink-0" />
+                        <span>Saldo kurang Rp {(grandTotal - userBalance).toLocaleString('id')}</span>
+                      </div>
+                      <span className="font-bold underline cursor-pointer" onClick={() => setPayment('qris')}>
+                        Ganti ke QRIS
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Cost Summary Breakdown */}
+        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+          <p className="text-[11.5px] font-extrabold text-gray-500 uppercase tracking-wider mb-2.5">
+            Rincian Pembayaran
+          </p>
+          <div className="flex justify-between py-1 text-[12px] text-gray-600">
+            <span>Subtotal Produk</span>
+            <span className="font-semibold text-gray-900">Rp {subtotal.toLocaleString('id')}</span>
+          </div>
+          <div className="flex justify-between py-1 text-[12px] text-gray-600">
+            <span>Biaya Pengiriman ({delivery === 'pickup' ? 'Ambil Sendiri' : delivery.toUpperCase()})</span>
+            <span className="font-semibold text-gray-900">
+              {ongkir === 0 ? <span className="text-emerald-700">Gratis</span> : `Rp ${ongkir.toLocaleString('id')}`}
+            </span>
+          </div>
+          <div className="flex justify-between py-1 text-[12px] text-gray-600">
+            <span>Biaya Layanan & Pembinaan UMKM Desa</span>
+            <span className="font-semibold text-gray-900">Rp {biayaLayanan.toLocaleString('id')}</span>
+          </div>
+          {diskonVoucher > 0 && (
+            <div className="flex justify-between py-1 text-[12px] text-emerald-700 font-bold">
+              <span>Diskon Ongkir Desa</span>
+              <span>-Rp {diskonVoucher.toLocaleString('id')}</span>
             </div>
-          ))}
-          <div className="flex justify-between pt-2.5 mt-1 border-t border-gray-100">
-            <span className="text-[13px] font-bold text-gray-900">Total</span>
-            <span className="text-[15px] font-extrabold tabular-nums" style={{color:PRIMARY}}>Rp {total.toLocaleString('id')}</span>
+          )}
+          <div className="flex justify-between pt-2.5 mt-1.5 border-t border-gray-100 text-[14px] font-black text-gray-900">
+            <span>Total Pembayaran</span>
+            <span className="text-emerald-800 text-[16px]">Rp {grandTotal.toLocaleString('id')}</span>
+          </div>
+
+          <div className="mt-3 p-2.5 rounded-xl bg-emerald-50/60 border border-emerald-100 flex items-center gap-2">
+            <ShieldCheck size={16} className="text-emerald-700 flex-shrink-0" />
+            <p className="text-[11px] text-emerald-900 leading-snug">
+              <span className="font-bold">Transaksi Amanah Desa:</span> Dana baru diteruskan ke penjual setelah paket Anda periksa & terima.
+            </p>
           </div>
         </div>
       </div>
-      <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white">
-        <button onClick={()=>onConfirm(payment)}
-          className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-          style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:`0 4px 12px ${PRIMARY}40`}}>
-          Konfirmasi Pesanan · Rp {total.toLocaleString('id')}
+
+      {/* Sticky Bottom Action */}
+      <div className="absolute bottom-0 inset-x-0 bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-between gap-3 shadow-lg z-20">
+        <div className="min-w-0">
+          <p className="text-[10.5px] text-gray-400 font-medium">Total Tagihan:</p>
+          <p className="text-[16px] font-black text-emerald-800 leading-tight">
+            Rp {grandTotal.toLocaleString('id')}
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            if (isGvPayInsufficient) {
+              alert('Saldo GV Pay Anda tidak mencukupi. Silakan pilih metode pembayaran lain seperti QRIS atau COD.')
+              return
+            }
+            onConfirm(payment, {
+              items,
+              delivery,
+              payment,
+              subtotal,
+              ongkir,
+              biayaLayanan,
+              diskonVoucher,
+              total: grandTotal,
+              address: activeAddress?.address || 'Desa Sukamaju',
+              recipientName: activeAddress?.name || userProfile?.name || 'Warga GV',
+              recipientPhone: activeAddress?.phone || '0812-3456-7890',
+            })
+          }}
+          disabled={isGvPayInsufficient}
+          className={`px-6 py-3.5 rounded-2xl text-[13px] font-black transition-all shadow-md ${
+            isGvPayInsufficient
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+              : 'bg-gradient-to-r from-emerald-700 to-green-800 text-white active:scale-95'
+          }`}
+        >
+          {isGvPayInsufficient ? 'Saldo Kurang' : payment === 'cod' ? 'Konfirmasi Pesanan COD' : 'Bayar Sekarang'}
         </button>
       </div>
 
+      {/* Address Modals */}
       {addressModalView === 'list' && (
-        <AddressListModal 
-          addresses={addresses} 
+        <AddressListModal
+          addresses={addresses}
           selectedId={selectedAddressId}
-          onSelect={(id) => { setSelectedAddressId(id); setAddressModalView(null) }}
-          onAdd={() => { setNewAddressDraft({}); setAddressModalView('form') }}
+          onSelect={(id) => {
+            setSelectedAddressId(id)
+            setAddressModalView(null)
+          }}
+          onAdd={() => {
+            setNewAddressDraft({})
+            setAddressModalView('form')
+          }}
           onClose={() => setAddressModalView(null)}
         />
       )}
       {addressModalView === 'form' && (
-        <AddressFormModal 
-          draft={newAddressDraft} 
+        <AddressFormModal
+          draft={newAddressDraft}
           setDraft={setNewAddressDraft}
           onBack={() => setAddressModalView(addresses.length > 0 ? 'list' : null)}
           onOpenMap={() => setAddressModalView('map')}
@@ -424,7 +1137,7 @@ function CheckoutScreen({ items, onBack, onConfirm }) {
         />
       )}
       {addressModalView === 'map' && (
-        <AddressMapModal 
+        <AddressMapModal
           onBack={() => setAddressModalView('form')}
           onConfirm={(locationLabel) => {
             setNewAddressDraft({ ...newAddressDraft, locationLabel })
@@ -436,270 +1149,357 @@ function CheckoutScreen({ items, onBack, onConfirm }) {
   )
 }
 
-// ── Payment Flow ───────────────────────────────────────────
+// ── Interactive Payment Flow ───────────────────────────────
 function PaymentFlow({ method, total, onComplete, onBack }) {
-  const [step,      setStep]    = useState('main') // main | processing | done
-  const [pin,       setPin]     = useState('')
-  const [bank,      setBank]    = useState('bri')
-  const [timer,     setTimer]   = useState(900) // 15 min QRIS
-  const [verified,  setVerified]= useState(false)
+  const [step, setStep] = useState('main') // main | processing | done
+  const [pin, setPin] = useState('')
+  const [bank, setBank] = useState('bri')
+  const [timer, setTimer] = useState(900) // 15 min for QRIS
+  const [copied, setCopied] = useState(false)
 
-  React.useEffect(()=>{
-    if (method==='qris' && step==='main') {
-      const t = setInterval(()=>setTimer(s=>s>0?s-1:0),1000)
-      return ()=>clearInterval(t)
+  useEffect(() => {
+    if (method === 'qris' && step === 'main') {
+      const t = setInterval(() => setTimer(s => (s > 0 ? s - 1 : 0)), 1000)
+      return () => clearInterval(t)
     }
-  },[method,step])
+  }, [method, step])
 
-  const fmt = s => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`
+  const fmt = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
-  const process = (delay=1800) => {
+  const processPayment = (delay = 1400) => {
     setStep('processing')
-    setTimeout(()=>{ setStep('done'); setTimeout(onComplete, 1200) }, delay)
+    setTimeout(() => {
+      setStep('done')
+      setTimeout(() => {
+        onComplete({ method, total, timestamp: Date.now() })
+      }, 1000)
+    }, delay)
   }
 
   const BANKS = [
-    { id:'bri',     label:'BRI',     va:'0081 2345 6789 001', color:'#1565C0' },
-    { id:'bca',     label:'BCA',     va:'8277 1234 5678 902', color:'#1976D2' },
-    { id:'mandiri', label:'Mandiri', va:'8900 0012 3456 789', color:'#F57F17' },
-    { id:'bni',     label:'BNI',     va:'8800 9900 1122 334', color:'#FF6F00' },
+    { id: 'bri', name: 'BRI Virtual Account', code: '8801928374928172', logo: '🏦' },
+    { id: 'mandiri', name: 'Mandiri Virtual Account', code: '8950293847582910', logo: '🏛️' },
+    { id: 'bca', name: 'BCA Virtual Account', code: '1240293847593821', logo: '💳' },
   ]
-  const activeBank = BANKS.find(b=>b.id===bank)
 
-  // Processing overlay
-  if (step==='processing') return (
-    <div className="flex flex-col h-full items-center justify-center bg-white">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5 animate-pulse"
-        style={{background:'#E8F5E9'}}>
-        <span className="text-3xl">⏳</span>
-      </div>
-      <p className="text-[16px] font-extrabold text-gray-900 mb-1">Memproses pembayaran...</p>
-      <p className="text-[12px] text-gray-400">Mohon tunggu sebentar</p>
-    </div>
-  )
+  const handlePinKey = (val) => {
+    if (val === 'del') {
+      setPin(p => p.slice(0, -1))
+    } else if (val === 'clear') {
+      setPin('')
+    } else if (pin.length < 6) {
+      const nextPin = pin + val
+      setPin(nextPin)
+      if (nextPin.length === 6) {
+        setTimeout(() => processPayment(1200), 300)
+      }
+    }
+  }
 
-  // Success overlay
-  if (step==='done') return (
-    <div className="flex flex-col h-full items-center justify-center bg-white">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-        style={{background:'#E8F5E9'}}>
-        <Check size={36} style={{color:PRIMARY}}/>
-      </div>
-      <p className="text-[16px] font-extrabold text-gray-900">Pembayaran Berhasil!</p>
-    </div>
-  )
+  const copyVA = (code) => {
+    navigator.clipboard?.writeText?.(code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
-  // ── GV Pay — PIN ──
-  if (method==='gvpay') return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-        <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-          <ArrowLeft size={16} className="text-gray-700"/>
-        </button>
-        <p className="font-bold text-gray-900">Masukkan PIN GV Pay</p>
+  if (step === 'processing') {
+    return (
+      <div className="flex flex-col h-full items-center justify-center bg-white p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mb-4">
+          <RefreshCw size={28} className="animate-spin" />
+        </div>
+        <h3 className="text-lg font-black text-gray-900">Memproses Pembayaran...</h3>
+        <p className="text-xs text-gray-500 mt-1">Menghubungkan ke sistem transaksi aman Global Village</p>
       </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6"
-          style={{background:'#E8F5E9'}}>
-          <span className="text-2xl">💳</span>
-        </div>
-        <p className="text-[13px] text-gray-400 mb-1">Total pembayaran</p>
-        <p className="text-[28px] font-extrabold mb-8" style={{color:PRIMARY}}>
-          Rp {total.toLocaleString('id')}
-        </p>
-        {/* PIN dots */}
-        <div className="flex gap-4 mb-10">
-          {Array.from({length:6}).map((_,i)=>(
-            <div key={i} className="w-4 h-4 rounded-full"
-              style={{background:i<pin.length?PRIMARY:'#E0E0E0'}}/>
-          ))}
-        </div>
-        {/* Numpad */}
-        <div className="grid grid-cols-3 gap-3 w-full max-w-[240px]">
-          {[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map((n,i)=>(
-            <button key={i}
-              onClick={()=>{
-                if (n==='⌫') setPin(p=>p.slice(0,-1))
-                else if (n==='' || pin.length>=6) return
-                else { const np=pin+n; setPin(np); if(np.length===6) setTimeout(()=>process(),300) }
-              }}
-              className="h-14 rounded-2xl text-[18px] font-bold text-gray-900 transition active:scale-[0.96]"
-              style={{background:n===''?'transparent':'#F5F5F5'}}>
-              {n}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
+    )
+  }
 
-  // ── QRIS ──
-  if (method==='qris') return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-        <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-          <ArrowLeft size={16} className="text-gray-700"/>
-        </button>
-        <p className="font-bold text-gray-900">Bayar dengan QRIS</p>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <p className="text-[13px] text-gray-400 mb-1">Total pembayaran</p>
-        <p className="text-[26px] font-extrabold mb-5" style={{color:PRIMARY}}>
-          Rp {total.toLocaleString('id')}
-        </p>
-        {/* QR mockup */}
-        <div className="w-48 h-48 rounded-3xl p-4 mb-3"
-          style={{background:'#fff',border:`3px solid ${PRIMARY}`,boxShadow:'0 4px 20px rgba(27,107,58,0.15)'}}>
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {/* Corner squares */}
-            {[[0,0],[70,0],[0,70]].map(([x,y],i)=>(
-              <g key={i}>
-                <rect x={x+2} y={y+2} width={26} height={26} rx={3} fill="none" stroke={PRIMARY} strokeWidth={3}/>
-                <rect x={x+8} y={y+8} width={14} height={14} rx={1} fill={PRIMARY}/>
-              </g>
-            ))}
-            {/* Data dots */}
-            {Array.from({length:200}).map((_,i)=>{
-              const r=Math.random(); const x=30+Math.random()*45; const y=30+Math.random()*45
-              return r>0.45?<rect key={i} x={x} y={y} width={3} height={3} rx={0.5} fill={PRIMARY} opacity={0.8}/>:null
-            })}
-          </svg>
+  if (step === 'done') {
+    return (
+      <div className="flex flex-col h-full items-center justify-center bg-white p-6 text-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-4 animate-in zoom-in duration-200">
+          <CheckCircle2 size={36} />
         </div>
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-2 h-2 rounded-full animate-pulse" style={{background:timer>60?'#4CAF50':'#F44336'}}/>
-          <p className="text-[13px] font-bold" style={{color:timer>60?'#2E7D32':'#C62828'}}>
-            Berlaku {fmt(timer)}
-          </p>
-        </div>
-        <p className="text-[11px] text-gray-400 text-center mb-6 leading-relaxed">
-          Scan QR ini menggunakan aplikasi bank atau e-wallet manapun yang mendukung QRIS
-        </p>
-        <button onClick={()=>process(1500)}
-          className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white"
-          style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>
-          Simulasi Pembayaran Berhasil
-        </button>
+        <h3 className="text-lg font-black text-gray-900">Pembayaran Berhasil!</h3>
+        <p className="text-xs text-gray-500 mt-1">Pesanan Anda segera disiapkan oleh penjual</p>
       </div>
-    </div>
-  )
+    )
+  }
 
-  // ── Transfer Bank ──
-  if (method==='transfer') return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white" style={{borderBottom:'1px solid rgba(27,107,58,0.08)'}}>
-        <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-          <ArrowLeft size={16} className="text-gray-700"/>
-        </button>
-        <p className="font-bold text-gray-900">Transfer Bank</p>
-      </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 flex flex-col gap-3">
-        {/* Bank selector */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Pilih Bank</p>
-          <div className="grid grid-cols-2 gap-2">
-            {BANKS.map(b=>(
-              <button key={b.id} onClick={()=>setBank(b.id)}
-                className="py-3 rounded-2xl text-[13px] font-bold transition border-2"
-                style={bank===b.id?{borderColor:PRIMARY,background:`${PRIMARY}08`,color:PRIMARY}:{borderColor:'#F0F0F0',background:'#FAFAFA',color:'#374151'}}>
-                {b.label}
-              </button>
-            ))}
+  return (
+    <div className="flex flex-col h-full bg-[#FAFBF9] relative">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3.5 bg-white border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95 text-gray-700">
+            <ArrowLeft size={16} />
+          </button>
+          <div>
+            <p className="text-[14px] font-extrabold text-gray-900">
+              {method === 'gvpay' ? 'PIN GV Pay' : method === 'qris' ? 'Pembayaran QRIS' : method === 'transfer' ? 'Transfer Virtual Account' : 'Konfirmasi COD'}
+            </p>
+            <p className="text-[11px] text-gray-400">Total: Rp {total.toLocaleString('id')}</p>
           </div>
         </div>
-        {/* VA details */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Detail Transfer</p>
-          <div className="space-y-3">
+        <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full">
+          <ShieldCheck size={13} />
+          <span>Aman</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar p-5 flex flex-col items-center">
+        {/* Total Summary Banner */}
+        <div className="w-full max-w-sm bg-white rounded-2xl p-4 shadow-xs border border-gray-100 mb-5 text-center">
+          <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Total Tagihan</p>
+          <p className="text-2xl font-black text-emerald-800 mt-0.5">Rp {total.toLocaleString('id')}</p>
+        </div>
+
+        {/* 1. GV PAY (6 Digit PIN) */}
+        {method === 'gvpay' && (
+          <div className="w-full max-w-sm flex flex-col items-center flex-1 justify-between">
             <div>
-              <p className="text-[12px] text-gray-400 mb-1">Bank Tujuan</p>
-              <p className="text-[13px] font-bold" style={{color:activeBank.color}}>{activeBank.label}</p>
+              <p className="text-[13px] font-bold text-gray-800 text-center mb-1">Masukkan 6 Digit PIN GV Pay</p>
+              <p className="text-[11px] text-gray-400 text-center mb-6">PIN default demo: sembarang 6 angka</p>
+
+              {/* PIN Dots */}
+              <div className="flex justify-center gap-3 mb-8">
+                {[0, 1, 2, 3, 4, 5].map((idx) => (
+                  <div
+                    key={idx}
+                    className={`w-4 h-4 rounded-full border-2 transition-all ${
+                      pin.length > idx
+                        ? 'bg-emerald-700 border-emerald-700 scale-110'
+                        : 'border-gray-300 bg-transparent'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-            <div>
-              <p className="text-[12px] text-gray-400 mb-1">Nomor Virtual Account</p>
-              <div className="flex items-center justify-between">
-                <p className="text-[16px] font-extrabold text-gray-900 tracking-wider">{activeBank.va}</p>
-                <button onClick={()=>{ navigator.clipboard?.writeText(activeBank.va); }}
-                  className="text-[11px] font-bold px-2.5 py-1 rounded-lg" style={{background:'#E8F5E9',color:PRIMARY}}>
-                  Salin
+
+            {/* Keypad */}
+            <div className="w-full grid grid-cols-3 gap-3 mb-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 'clear', 0, 'del'].map((val) => (
+                <button
+                  key={String(val)}
+                  onClick={() => handlePinKey(val)}
+                  className="h-14 rounded-2xl bg-white border border-gray-100 shadow-xs flex items-center justify-center text-lg font-bold text-gray-800 active:scale-95 active:bg-gray-100 transition"
+                >
+                  {val === 'del' ? '⌫' : val === 'clear' ? 'C' : val}
                 </button>
-              </div>
-            </div>
-            <div className="h-px bg-gray-100"/>
-            <div className="flex items-center justify-between">
-              <p className="text-[12px] text-gray-500">Total Transfer</p>
-              <p className="text-[15px] font-extrabold" style={{color:PRIMARY}}>Rp {total.toLocaleString('id')}</p>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-[12px] text-gray-500">Batas Pembayaran</p>
-              <p className="text-[12px] font-semibold text-orange-600">24 jam dari sekarang</p>
+              ))}
             </div>
           </div>
-        </div>
-        {/* Instructions */}
-        <div className="bg-white rounded-2xl p-4" style={{boxShadow:'0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">Cara Transfer</p>
-          {['Buka aplikasi m-banking atau ATM','Pilih Transfer → Virtual Account','Masukkan nomor VA di atas','Masukkan nominal sesuai tagihan','Konfirmasi dan simpan bukti transfer'].map((s,i)=>(
-            <div key={i} className="flex items-start gap-3 mb-2.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
-                style={{background:`${PRIMARY}15`}}>
-                <span className="text-[12px] font-bold" style={{color:PRIMARY}}>{i+1}</span>
+        )}
+
+        {/* 2. QRIS (Interactive QR Code & Countdown) */}
+        {method === 'qris' && (
+          <div className="w-full max-w-sm flex flex-col items-center">
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full">
+              <div className="flex items-center gap-2 mb-3">
+                <ScanLine size={18} className="text-emerald-700" />
+                <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">QRIS Nasional</span>
               </div>
-              <p className="text-[12px] text-gray-600 leading-snug">{s}</p>
+
+              {/* QR Code Container */}
+              <div className="w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl flex items-center justify-center relative p-3 mb-4">
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=GV-ORDER-MOCK-PAYMENT"
+                  alt="QRIS"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-amber-800 font-bold bg-amber-50 px-3 py-1 rounded-full mb-2">
+                <Clock size={13} />
+                <span>Batas Waktu: {fmt(timer)}</span>
+              </div>
+              <p className="text-[11px] text-gray-400 text-center leading-relaxed">
+                Scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking apa saja.
+              </p>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white">
-        {!verified ? (
-          <button onClick={()=>{setVerified(true);process(2000)}}
-            className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white"
-            style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>
-            Saya Sudah Transfer ✓
-          </button>
-        ) : (
-          <button disabled className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white"
-            style={{background:'#9CA3AF'}}>
-            Memverifikasi...
-          </button>
+
+            <button
+              onClick={() => processPayment(1000)}
+              className="w-full mt-5 py-3.5 rounded-2xl bg-emerald-700 text-white font-bold text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2"
+            >
+              <span>Simulasi Cek Status Pembayaran</span>
+              <Check size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* 3. VIRTUAL ACCOUNT TRANSFER */}
+        {method === 'transfer' && (
+          <div className="w-full max-w-sm space-y-4">
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Pilih Bank</p>
+              <div className="space-y-2">
+                {BANKS.map((b) => (
+                  <label
+                    key={b.id}
+                    onClick={() => setBank(b.id)}
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${
+                      bank === b.id ? 'border-emerald-600 bg-emerald-50/40' : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">{b.logo}</span>
+                      <span className="text-[12px] font-bold text-gray-800">{b.name}</span>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      bank === b.id ? 'border-emerald-600' : 'border-gray-300'
+                    }`}>
+                      {bank === b.id && <div className="w-2 h-2 rounded-full bg-emerald-600" />}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Selected VA Details */}
+            {(() => {
+              const activeBank = BANKS.find(b => b.id === bank) || BANKS[0]
+              return (
+                <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs space-y-3">
+                  <div>
+                    <p className="text-[11px] text-gray-400">Nomor Virtual Account</p>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="font-mono text-base font-extrabold text-gray-900 tracking-wider">
+                        {activeBank.code}
+                      </span>
+                      <button
+                        onClick={() => copyVA(activeBank.code)}
+                        className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold flex items-center gap-1 active:scale-95 transition"
+                      >
+                        <Copy size={13} />
+                        <span>{copied ? 'Tersalin!' : 'Salin'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
+                    <p>• Masukkan kartu ATM atau buka m-Banking.</p>
+                    <p>• Pilih menu Transfer &gt; Virtual Account.</p>
+                    <p>• Masukkan nomor VA di atas dan konfirmasi nama penerima.</p>
+                  </div>
+                </div>
+              )
+            })()}
+
+            <button
+              onClick={() => processPayment(1200)}
+              className="w-full py-3.5 rounded-2xl bg-emerald-700 text-white font-bold text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2"
+            >
+              <span>Saya Sudah Transfer</span>
+              <Check size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* 4. COD (Bayar di Tempat) */}
+        {method === 'cod' && (
+          <div className="w-full max-w-sm space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs text-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-3 text-3xl">
+                🤝
+              </div>
+              <h4 className="text-[15px] font-extrabold text-gray-900">Bayar Tunai di Tempat (COD)</h4>
+              <p className="text-[12px] text-gray-500 mt-1 leading-relaxed">
+                Siapkan uang pas sebesar <strong className="text-gray-900 font-extrabold">Rp {total.toLocaleString('id')}</strong> untuk diserahkan kepada kurir GV Man saat pesanan tiba.
+              </p>
+              <div className="mt-4 p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center gap-2 text-left">
+                <ShieldCheck size={18} className="text-emerald-700 flex-shrink-0" />
+                <span className="text-[11px] text-emerald-900 font-medium">
+                  Periksa keutuhan paket sebelum kurir meninggalkan lokasi Anda.
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => processPayment(800)}
+              className="w-full py-3.5 rounded-2xl bg-emerald-700 text-white font-bold text-sm shadow-md active:scale-95 transition"
+            >
+              Konfirmasi Pesanan COD
+            </button>
+          </div>
         )}
       </div>
     </div>
   )
+}
 
-  // ── COD ──
+// ── Order Success Screen (Invoice & Live Tracking Gateway) ─
+function OrderSuccessScreen({ order, onTrack, onHistory }) {
+  const orderId = order?.id || `GV-${Date.now().toString().slice(-8)}`
+  const nowTime = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' })
+  const total = order?.total || 0
+
   return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white" style={{borderBottom:'1px solid rgba(27,107,58,0.08)'}}>
-        <button onClick={onBack} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-          <ArrowLeft size={16} className="text-gray-700"/>
-        </button>
-        <p className="font-bold text-gray-900">Bayar di Tempat</p>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-6">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-          style={{background:'#FFF8E1'}}>
-          <span className="text-4xl">💵</span>
+    <div className="flex flex-col h-full bg-[#FAFBF9] relative animate-in fade-in duration-200">
+      <div className="flex-1 overflow-y-auto no-scrollbar p-5 flex flex-col items-center justify-center text-center">
+        {/* Animated Check */}
+        <div className="relative mb-4">
+          <div className="w-20 h-20 rounded-full bg-emerald-100 animate-ping absolute inset-0 opacity-40" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-700 to-green-600 text-white flex items-center justify-center text-3xl shadow-xl shadow-emerald-700/30 relative">
+            <Check size={40} strokeWidth={3} />
+          </div>
         </div>
-        <p className="text-[18px] font-extrabold text-gray-900 mb-2 text-center">Bayar Saat Pesanan Tiba</p>
-        <p className="text-[13px] text-gray-400 text-center leading-relaxed mb-6">
-          Siapkan uang tunai sebesar
-          <span className="font-extrabold text-gray-900"> Rp {total.toLocaleString('id')}</span>
-          {' '}saat GV Man mengantarkan pesananmu.
+
+        <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2">
+          Pesanan Sukses Dibuat
+        </span>
+        <h2 className="text-2xl font-black text-gray-900">Terima Kasih!</h2>
+        <p className="text-xs text-gray-500 max-w-xs mt-1 leading-relaxed">
+          Pesananmu telah diteruskan ke penjual dan saat ini sedang dalam proses penyiapan.
         </p>
-        <div className="w-full bg-amber-50 rounded-2xl p-4 mb-6 border border-amber-100">
-          {[['🏍️','GV Man akan segera menjemput pesananmu'],['⏱️','Estimasi pengiriman 30-45 menit'],['💰','Bayar tunai ke GV Man saat barang diterima'],['🧾','Minta struk tanda terima dari GV Man']].map(([ic,t])=>(
-            <div key={t} className="flex items-start gap-3 mb-2.5 last:mb-0">
-              <span className="text-base flex-shrink-0">{ic}</span>
-              <p className="text-[12px] text-amber-800 leading-snug">{t}</p>
+
+        {/* Invoice Card */}
+        <div className="w-full max-w-sm bg-white rounded-3xl p-5 shadow-xs border border-gray-100 my-5 text-left space-y-3">
+          <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div>
+              <p className="text-[11px] text-gray-400">Nomor Pesanan</p>
+              <p className="text-[13px] font-extrabold text-gray-900 font-mono">{orderId}</p>
             </div>
-          ))}
+            <div className="text-right">
+              <p className="text-[11px] text-gray-400">Waktu</p>
+              <p className="text-[12px] font-bold text-gray-800">{nowTime}</p>
+            </div>
+          </div>
+
+          <div className="space-y-1.5 text-[12px]">
+            <div className="flex justify-between">
+              <span className="text-gray-400">Metode Bayar</span>
+              <span className="font-bold text-gray-800">{order?.payment || 'GV Pay'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Pengiriman</span>
+              <span className="font-bold text-gray-800">{order?.delivery || 'Pengiriman Kilat Desa'}</span>
+            </div>
+            <div className="flex justify-between pt-2 border-t border-gray-50 text-[13px]">
+              <span className="font-bold text-gray-900">Total Pembayaran</span>
+              <span className="font-extrabold text-emerald-800">Rp {total.toLocaleString('id')}</span>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="flex-shrink-0 px-4 pb-8 pt-3 border-t border-gray-100 bg-white">
-        <button onClick={()=>process(800)}
-          className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white"
-          style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>
-          Konfirmasi Pesanan COD
+
+      {/* Bottom CTA */}
+      <div className="p-4 bg-white border-t border-gray-100 space-y-2.5">
+        <button
+          onClick={onTrack}
+          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-700 to-green-800 text-white text-sm font-extrabold shadow-lg shadow-emerald-700/25 active:scale-95 transition flex items-center justify-center gap-2"
+        >
+          <Navigation size={16} />
+          <span>Lacak Pengiriman Live</span>
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+        </button>
+        <button
+          onClick={onHistory}
+          className="w-full py-3 rounded-2xl border border-gray-200 text-gray-700 text-xs font-bold active:scale-95 transition"
+        >
+          Lihat Riwayat Pesanan
         </button>
       </div>
     </div>
@@ -725,26 +1525,83 @@ const SELLER_ACTIONS = {
 }
 
 const DUMMY_BUYER_ORDERS = [
-  { id:'GV-20260801', date:'1 Agt 2026, 09:15', seller:'Ibu Sari', payment:'GV Pay',
-    delivery:'Pengiriman', total:25000, status:'done',
-    items:[{name:'Bayam Organik Segar',qty:2,price:8500,Icon:Leaf,g:['#2E7D32','#4CAF50']},{name:'Tempe Mendoan Jumbo',qty:1,price:12000,Icon:CircleDot,g:['#E65100','#F57C00']}],
-    timeline:[
-      {s:'waiting',   time:'09:15', label:'Pesanan dibuat'},
-      {s:'confirmed', time:'09:18', label:'Penjual mengkonfirmasi'},
-      {s:'preparing', time:'09:30', label:'Pesanan disiapkan'},
-      {s:'shipped',   time:'09:55', label:'Dalam perjalanan'},
-      {s:'done',      time:'10:28', label:'Pesanan selesai'},
-    ]},
-  { id:'GV-20260725', date:'25 Jul 2026, 14:30', seller:'Pak Asep', payment:'Transfer Bank',
-    delivery:'Pengiriman', total:100000, status:'done',
-    items:[{name:'Kopi Robusta Segar',qty:1,price:35000,Icon:Coffee,g:['#4E342E','#6D4C41']},{name:'Madu Hutan Murni',qty:1,price:65000,Icon:Droplet,g:['#F57F17','#FFCA28']}],
-    timeline:[
-      {s:'waiting',   time:'14:30', label:'Pesanan dibuat'},
-      {s:'confirmed', time:'14:45', label:'Penjual mengkonfirmasi'},
-      {s:'preparing', time:'15:10', label:'Pesanan disiapkan'},
-      {s:'shipped',   time:'15:55', label:'Dalam perjalanan'},
-      {s:'done',      time:'16:40', label:'Pesanan selesai'},
-    ]},
+  {
+    id: 'GV-20260902',
+    date: 'Hari ini, 10:15',
+    seller: 'Ibu Sari',
+    payment: 'GV Pay',
+    delivery: 'Pengiriman (Kilat Desa)',
+    total: 37000,
+    status: 'shipped',
+    address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+    courier: { name: 'Agus Santoso', rating: 4.9, vehicle: 'Honda Beat · B 4521 KDF' },
+    items: [
+      { id: 1, name: 'Bayam Organik Segar', qty: 2, price: 8500, Icon: Leaf, g: ['#2E7D32', '#4CAF50'] },
+      { id: 2, name: 'Tempe Mendoan Jumbo', qty: 1, price: 12000, Icon: CircleDot, g: ['#E65100', '#F57C00'] },
+    ],
+    timeline: [
+      { s: 'waiting', time: '10:15', label: 'Pesanan dibuat' },
+      { s: 'confirmed', time: '10:18', label: 'Penjual mengkonfirmasi' },
+      { s: 'preparing', time: '10:30', label: 'Pesanan disiapkan & dikemas' },
+      { s: 'shipped', time: '10:45', label: 'GV Man sedang dalam perjalanan' },
+    ],
+  },
+  {
+    id: 'GV-20260901',
+    date: 'Hari ini, 08:30',
+    seller: 'Pak Wahyu',
+    payment: 'GV Pay',
+    delivery: 'Pengiriman (Reguler)',
+    total: 73000,
+    status: 'waiting',
+    address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+    items: [
+      { id: 3, name: 'Beras Pandan Wangi Premium 5kg', qty: 1, price: 65000, Icon: Wheat, g: ['#827717', '#9E9D24'] },
+    ],
+    timeline: [
+      { s: 'waiting', time: '08:30', label: 'Menunggu konfirmasi penjual' },
+    ],
+  },
+  {
+    id: 'GV-20260815',
+    date: '15 Agt 2026, 14:20',
+    seller: 'Pak Asep',
+    payment: 'Transfer Bank',
+    delivery: 'Pengiriman (Reguler)',
+    total: 108000,
+    status: 'done',
+    address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+    items: [
+      { id: 8, name: 'Kopi Robusta Segar', qty: 1, price: 35000, Icon: Coffee, g: ['#4E342E', '#6D4C41'] },
+      { id: 9, name: 'Madu Hutan Murni', qty: 1, price: 65000, Icon: Droplet, g: ['#F57F17', '#FFCA28'] },
+    ],
+    timeline: [
+      { s: 'waiting', time: '14:20', label: 'Pesanan dibuat' },
+      { s: 'confirmed', time: '14:25', label: 'Penjual mengkonfirmasi' },
+      { s: 'preparing', time: '14:40', label: 'Pesanan disiapkan' },
+      { s: 'shipped', time: '15:05', label: 'Dalam perjalanan' },
+      { s: 'done', time: '15:45', label: 'Pesanan selesai diterima' },
+    ],
+  },
+  {
+    id: 'GV-20260718',
+    date: '18 Jul 2026, 11:10',
+    seller: 'Ibu Rina',
+    payment: 'GV Pay',
+    delivery: 'Pengiriman',
+    total: 40000,
+    status: 'cancelled',
+    cancelReason: 'Ingin mengubah pesanan / alamat pengiriman',
+    refundNotice: 'Dana Rp 40.000 telah dikembalikan 100% ke saldo GV Pay.',
+    address: 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+    items: [
+      { id: 5, name: 'Telur Ayam Kampung (10 butir)', qty: 1, price: 32000, Icon: Egg, g: ['#F57F17', '#FBC02D'] },
+    ],
+    timeline: [
+      { s: 'waiting', time: '11:10', label: 'Pesanan dibuat' },
+      { s: 'cancelled', time: '11:18', label: 'Pesanan dibatalkan pembeli (Refund Selesai)' },
+    ],
+  },
 ]
 
 const DUMMY_SELLER_ORDERS = [
@@ -762,12 +1619,109 @@ const DUMMY_SELLER_ORDERS = [
     items:[{name:'Pupuk Organik Kompos 25kg',qty:1,price:45000,Icon:Leaf,g:['#2E7D32','#4CAF50']},{name:'Bibit Cabai Rawit Lokal',qty:1,price:15000,Icon:Leaf,g:['#C62828','#EF5350']}]},
 ]
 
-// ── Order Detail Sheet (Buyer - bottom sheet) ──────────────
-function OrderDetailSheet({ order, onClose, onRate, onBuyAgain }) {
-  const st = STATUS_CONFIG[order.status]
+// ── Cancel Order Modal (with instant refund explanation) ───
+function CancelOrderModal({ order, onClose, onConfirm }) {
+  const [selectedReason, setSelectedReason] = useState('Ingin mengubah pesanan atau varian')
+  const [customReason, setCustomReason] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const REASONS = [
+    'Ingin mengubah pesanan atau varian',
+    'Alamat pengiriman salah atau ingin diubah',
+    'Menemukan harga lebih hemat di tempat lain',
+    'Waktu pengiriman dirasa terlalu lama',
+    'Lainnya (Tulis alasan di bawah)',
+  ]
+
+  const handleCancel = () => {
+    setIsSubmitting(true)
+    setTimeout(() => {
+      const finalReason = selectedReason.startsWith('Lainnya') ? (customReason.trim() || 'Alasan lainnya') : selectedReason
+      onConfirm(order.id, finalReason)
+      setIsSubmitting(false)
+    }, 600)
+  }
+
   return (
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose}/>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl px-5 pt-4 pb-8 flex flex-col max-h-[85%] overflow-hidden shadow-2xl animate-in slide-in-from-bottom duration-200">
+        <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-3 flex-shrink-0" />
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-2 text-red-600 font-extrabold text-[15px]">
+            <AlertTriangle size={18} />
+            <span>Batalkan Pesanan</span>
+          </div>
+          <button onClick={onClose} className="text-xs font-bold text-gray-400 p-1">Tutup</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto no-scrollbar py-4 space-y-4">
+          <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/60">
+            <div className="flex items-start gap-2.5">
+              <ShieldCheck size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[12px] font-bold text-amber-900">Kebijakan Pengembalian Dana (Refund)</p>
+                <p className="text-[11px] text-amber-800/90 mt-0.5 leading-relaxed">
+                  Karena pesanan belum diproses kurir, dana sebesar <strong className="font-extrabold text-amber-950">Rp {order.total.toLocaleString('id')}</strong> akan langsung dikembalikan 100% ke saldo <strong className="font-bold text-emerald-800">GV Pay</strong> Anda secara instan tanpa potongan biaya.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[12px] font-bold text-gray-800 mb-2.5">Pilih alasan pembatalan:</p>
+            <div className="space-y-2">
+              {REASONS.map((r) => (
+                <label key={r} onClick={() => setSelectedReason(r)}
+                  className={`flex items-center gap-3 p-3 rounded-2xl border text-left cursor-pointer transition ${
+                    selectedReason === r ? 'border-emerald-600 bg-emerald-50/50' : 'border-gray-200 bg-gray-50/40'
+                  }`}>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                    selectedReason === r ? 'border-emerald-600' : 'border-gray-300'
+                  }`}>
+                    {selectedReason === r && <div className="w-2 h-2 rounded-full bg-emerald-600" />}
+                  </div>
+                  <span className="text-[12px] font-semibold text-gray-800">{r}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {selectedReason.startsWith('Lainnya') && (
+            <textarea
+              value={customReason}
+              onChange={(e) => setCustomReason(e.target.value)}
+              placeholder="Tulis alasan spesifik Anda..."
+              rows={2}
+              className="w-full text-[12px] p-3 rounded-xl border border-gray-200 outline-none focus:border-emerald-600 bg-white"
+            />
+          )}
+        </div>
+
+        <div className="pt-3 border-t border-gray-100 flex gap-2.5 flex-shrink-0">
+          <button onClick={onClose} disabled={isSubmitting}
+            className="flex-1 py-3 rounded-2xl border border-gray-200 text-[13px] font-bold text-gray-600 active:scale-95 transition">
+            Kembali
+          </button>
+          <button onClick={handleCancel} disabled={isSubmitting}
+            className="flex-1 py-3 rounded-2xl bg-red-600 text-white text-[13px] font-bold active:scale-95 transition shadow-md shadow-red-600/20 flex items-center justify-center gap-1.5">
+            {isSubmitting ? <RefreshCw size={14} className="animate-spin" /> : 'Konfirmasi Batal'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Order Detail Sheet (Buyer - bottom sheet) ──────────────
+function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCancelPrompt }) {
+  const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.waiting
+  const isActive = ['confirmed', 'preparing', 'shipped'].includes(order.status)
+  const canCancel = ['waiting', 'confirmed'].includes(order.status)
+
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={onClose}/>
       <div className="relative bg-white flex flex-col rounded-t-3xl"
         style={{maxHeight:'88%',boxShadow:'0 -4px 32px rgba(0,0,0,0.15)'}}>
         <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
@@ -778,13 +1732,54 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain }) {
             <p className="text-[14px] font-extrabold text-gray-900">Detail Pesanan</p>
             <p className="text-[12px] text-gray-400">{order.id} · {order.date}</p>
           </div>
-          <span className="text-[12px] font-bold px-2.5 py-1 rounded-full"
-            style={{background:st.bg,color:st.color}}>{st.label}</span>
+          <span className="text-[12px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5"
+            style={{background:st.bg,color:st.color}}>
+            {isActive && <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{background:st.color}}/>}
+            {st.label}
+          </span>
         </div>
         <div className="flex-1 overflow-y-auto no-scrollbar px-5 py-4 flex flex-col gap-4">
+          
+          {/* Active status banner if shipped */}
+          {order.status === 'shipped' && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center text-sm shadow-sm">
+                  🏍️
+                </div>
+                <div>
+                  <p className="text-[12px] font-extrabold text-emerald-950">Pesanan Sedang Diantar</p>
+                  <p className="text-[11px] text-emerald-700">GV Man sedang menuju ke lokasimu</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { onClose(); onTrack(order) }}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-[11px] font-bold active:scale-95 transition shadow-sm">
+                Lacak
+              </button>
+            </div>
+          )}
+
+          {/* Cancelled reason & refund banner */}
+          {order.status === 'cancelled' && (
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[12px] font-bold text-red-900">Pesanan Telah Dibatalkan</p>
+                  {order.cancelReason && <p className="text-[11px] text-red-700 mt-0.5">Alasan: "{order.cancelReason}"</p>}
+                  <p className="text-[11px] text-emerald-700 font-bold mt-1.5 flex items-center gap-1">
+                    <CheckCircle2 size={13} />
+                    <span>{order.refundNotice || 'Dana telah dikembalikan 100% ke saldo GV Pay.'}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Items */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 mb-2">Produk</p>
+            <p className="text-[11px] font-bold text-gray-400 mb-2">Produk yang Dibeli</p>
             {order.items.map((item,i)=>(
               <div key={i} className="flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
                 <div className="w-11 h-11 rounded-[14px] flex items-center justify-center flex-shrink-0 shadow-inner overflow-hidden relative"
@@ -800,25 +1795,32 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain }) {
                 </p>
               </div>
             ))}
-            <div className="flex justify-between pt-3">
-              <span className="text-[12px] font-bold text-gray-900">Total</span>
+            <div className="flex justify-between pt-3 border-t border-gray-100">
+              <span className="text-[12px] font-bold text-gray-900">Total Pembayaran</span>
               <span className="text-[14px] font-extrabold" style={{color:PRIMARY}}>Rp {order.total.toLocaleString('id')}</span>
             </div>
           </div>
+
           {/* Info */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 mb-2">Info Pesanan</p>
-            {[['Penjual',order.seller],['Pembayaran',order.payment],['Pengiriman',order.delivery]].map(([l,v])=>(
+            <p className="text-[11px] font-bold text-gray-400 mb-2">Info Pengiriman & Pembayaran</p>
+            {[
+              ['Alamat Pengiriman', order.address || 'Desa Sukamaju'],
+              ['Penjual', order.seller],
+              ['Pembayaran', order.payment],
+              ['Opsi Pengiriman', order.delivery],
+            ].map(([l,v])=>(
               <div key={l} className="flex justify-between py-2 border-b border-gray-50 last:border-0">
                 <span className="text-[12px] text-gray-400">{l}</span>
-                <span className="text-[12px] font-semibold text-gray-800">{v}</span>
+                <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{v}</span>
               </div>
             ))}
           </div>
+
           {/* Timeline */}
           {order.timeline && (
             <div>
-              <p className="text-[11px] font-bold text-gray-400 mb-3">Timeline</p>
+              <p className="text-[11px] font-bold text-gray-400 mb-3">Riwayat Status</p>
               {order.timeline.map((t,i)=>(
                 <div key={i} className="flex gap-3 relative">
                   {i<order.timeline.length-1&&<div className="absolute left-[13px] top-7 w-0.5 h-8" style={{background:`${PRIMARY}30`}}/>}
@@ -836,10 +1838,11 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain }) {
               ))}
             </div>
           )}
+
           {/* Existing rating */}
           {order.rating && (
             <div className="p-3 rounded-2xl" style={{background:'#FFF8E1'}}>
-              <p className="text-[11px] font-bold text-gray-400 mb-2">Ulasanmu</p>
+              <p className="text-[11px] font-bold text-gray-400 mb-2">Ulasan Anda</p>
               <div className="flex gap-1 mb-1">
                 {[1,2,3,4,5].map(s=>(
                   <span key={s} className="text-xl" style={{color:s<=order.rating?'#F9A825':'#E0E0E0'}}>★</span>
@@ -849,19 +1852,47 @@ function OrderDetailSheet({ order, onClose, onRate, onBuyAgain }) {
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 px-5 pb-8 pt-3 border-t border-gray-100 flex gap-3">
-          {order.status==='done' && !order.rating && (
-            <button onClick={()=>onRate(order)}
-              className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold text-white"
-              style={{background:'#F9A825',boxShadow:'0 4px 12px rgba(249,168,37,0.4)'}}>
-              ★ Beri Rating
+
+        {/* Action buttons */}
+        <div className="flex-shrink-0 px-5 pb-8 pt-3 border-t border-gray-100 flex flex-col gap-2.5">
+          {isActive && (
+            <button
+              onClick={() => { onClose(); onTrack(order) }}
+              className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white flex items-center justify-center gap-2 active:scale-95 transition shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)', boxShadow: '0 4px 14px rgba(27,107,58,0.3)' }}
+            >
+              <Navigation size={15} />
+              <span>Lacak Pengiriman Live</span>
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             </button>
           )}
-          <button onClick={onClose}
-            className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold border-2"
-            style={{borderColor:'#E0E0E0',color:'#6B7280'}}>
-            Tutup
-          </button>
+
+          <div className="flex gap-2.5">
+            {order.status==='done' && !order.rating && (
+              <button onClick={()=>onRate(order)}
+                className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold text-white active:scale-95 transition"
+                style={{background:'#F9A825',boxShadow:'0 4px 12px rgba(249,168,37,0.4)'}}>
+                ★ Beri Rating
+              </button>
+            )}
+            {order.status==='done' && (
+              <button onClick={()=>onBuyAgain(order)}
+                className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 active:scale-95 transition">
+                Beli Lagi
+              </button>
+            )}
+            {canCancel && (
+              <button onClick={()=>onCancelPrompt(order)}
+                className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold text-red-600 bg-red-50/70 border border-red-200 active:scale-95 transition flex items-center justify-center gap-1.5">
+                <AlertTriangle size={14} />
+                <span>Batalkan</span>
+              </button>
+            )}
+            <button onClick={onClose}
+              className="flex-1 py-3.5 rounded-2xl text-[13px] font-bold border border-gray-200 text-gray-600 active:scale-95 transition">
+              Tutup
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1194,111 +2225,309 @@ function SellerOrderSheet({ order, onClose, onUpdateStatus }) {
 }
 
 
-// ── Order Tracking ─────────────────────────────────────────
-const GVMAN = { name:'Agus Santoso', rating:4.9, trips:'234', vehicle:'Honda Beat · B 4521 KDF', avatar:'👨' }
-const ORDER_NO = `GV-${Date.now().toString().slice(-8)}`
+// ── Phone Call Simulation Modal ────────────────────────────
+function PhoneCallModal({ courier, onClose }) {
+  const [callDuration, setCallDuration] = useState(0)
+  const [status, setStatus] = useState('Menghubungkan...')
+  const [isMuted, setIsMuted] = useState(false)
+  const [isSpeaker, setIsSpeaker] = useState(false)
 
-const TRACK_PHASES = [
-  { id:'confirmed', label:'Pesanan dikonfirmasi',         sub:'Penjual menerima pesananmu',          icon:'✅' },
-  { id:'preparing', label:'Penjual menyiapkan pesanan',   sub:'Produk sedang dikemas dengan baik',   icon:'📦' },
-  { id:'pickup',    label:'GV Man menjemput pesanan',     sub:'GV Man sedang menuju toko penjual',   icon:'🏍️' },
-  { id:'onway',     label:'GV Man dalam perjalanan',      sub:'Sedang menuju lokasi pengirimanmu',   icon:'🛣️' },
-  { id:'arrived',   label:'Pesanan tiba di lokasimu',     sub:'Terima dan periksa pesananmu',        icon:'📍' },
-]
-// Auto-advance delays (ms)
-const PHASE_DELAYS = [3500, 7000, 12000, 20000]
+  useEffect(() => {
+    const t1 = setTimeout(() => setStatus('Berdering...'), 1200)
+    const t2 = setTimeout(() => setStatus('Terhubung'), 2800)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [])
 
-function OrderTracking({ onDone }) {
-  const [phase,     setPhase]  = useState(0)
-  const [phaseTimes,setTimes]  = useState(Array(5).fill(''))
-  const [eta,       setEta]    = useState(28)
-  const [chatOpen,  setChat]   = useState(false)
-  const [chatMsg,   setChatMsg]= useState('')
-  const [chatLog,   setChatLog]= useState([
-    { from:'gvman', text:'Halo kak, pesanan sudah saya ambil. Sedang dalam perjalanan!' }
-  ])
-  const orderNo = useRef(ORDER_NO)
+  useEffect(() => {
+    if (status !== 'Terhubung') return
+    const timer = setInterval(() => setCallDuration((d) => d + 1), 1000)
+    return () => clearInterval(timer)
+  }, [status])
 
-  useEffect(()=>{
-    // Mark phase 0 time immediately
-    const now = () => new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})
-    setTimes(t=>{ const n=[...t]; n[0]=now(); return n })
-
-    const timers = PHASE_DELAYS.map((delay,i)=>
-      setTimeout(()=>{
-        setPhase(i+1)
-        setTimes(t=>{ const n=[...t]; n[i+1]=now(); return n })
-        if (i===2) setEta(10) // pickup → onway: update ETA
-        if (i===3) setEta(3)  // onway → arrived
-      }, delay)
-    )
-    const etaT = setInterval(()=>setEta(e=>Math.max(0,e-1)),60000)
-    return ()=>{ timers.forEach(clearTimeout); clearInterval(etaT) }
-  },[])
-
-  const isArrived = phase >= 4
-  // Motorcycle x position: 8% → 88% across phases 0-4
-  const motoX = 8 + (phase/4)*80
-  // Arc y: peaks at center (follow a sine curve for the route)
-  const motoY = 50 - Math.sin((phase/4)*Math.PI)*28
-
-  const sendChat = () => {
-    if (!chatMsg.trim()) return
-    setChatLog(l=>[...l,{from:'me',text:chatMsg}])
-    setChatMsg('')
-    setTimeout(()=>setChatLog(l=>[...l,{from:'gvman',text:'Siap kak, sebentar lagi sampai! 🙏'}]),1200)
+  const formatSecs = (sec) => {
+    const m = String(Math.floor(sec / 60)).padStart(2, '0')
+    const s = String(sec % 60).padStart(2, '0')
+    return `${m}:${s}`
   }
 
   return (
-    <div className="flex flex-col h-full relative" style={{background:'#FAFBF9'}}>
+    <div className="absolute inset-0 z-50 flex flex-col justify-between bg-gradient-to-b from-gray-900 via-gray-950 to-black text-white p-6 animate-in fade-in duration-200">
+      <div className="flex items-center justify-between pt-4">
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
+          <ShieldCheck size={14} className="text-emerald-400" />
+          <span>Panggilan Aman GV</span>
+        </div>
+        <button onClick={onClose} className="p-2 text-white/60 hover:text-white">
+          <X size={20} />
+        </button>
+      </div>
 
-      {/* Chat overlay */}
-      {chatOpen && (
-        <div className="absolute inset-0 z-50 flex flex-col bg-white">
-          <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-            <button onClick={()=>setChat(false)}
-              className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-              <ArrowLeft size={16} className="text-gray-700"/>
-            </button>
-            <div className="w-9 h-9 rounded-2xl bg-green-50 flex items-center justify-center text-xl flex-shrink-0">
-              {GVMAN.avatar}
-            </div>
-            <div className="flex-1">
-              <p className="text-[13px] font-bold text-gray-900">{GVMAN.name}</p>
-              <p className="text-[12px] text-gray-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"/>GV Man · Online
+      <div className="flex flex-col items-center text-center my-auto">
+        <div className="relative mb-6">
+          <div className="w-24 h-24 rounded-full bg-emerald-600/30 animate-ping absolute inset-0 -m-2 opacity-50" />
+          <div className="w-24 h-24 rounded-full bg-emerald-700/60 flex items-center justify-center text-4xl shadow-xl relative border-2 border-emerald-400/40">
+            {courier.avatar || '👨'}
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold tracking-tight">{courier.name}</h3>
+        <p className="text-sm text-emerald-400 font-semibold mt-1">Driver GV Man · {courier.vehicle}</p>
+        <p className="text-xs text-white/50 mt-3 font-mono">
+          {status === 'Terhubung' ? formatSecs(callDuration) : status}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-6 pb-6">
+        <div className="flex justify-center gap-8">
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition active:scale-95 ${
+              isMuted ? 'bg-white text-gray-950' : 'bg-white/15 text-white'
+            }`}
+          >
+            <Volume2 size={20} />
+          </button>
+          <button
+            onClick={() => setIsSpeaker(!isSpeaker)}
+            className={`w-14 h-14 rounded-full flex items-center justify-center transition active:scale-95 ${
+              isSpeaker ? 'bg-white text-gray-950' : 'bg-white/15 text-white'
+            }`}
+          >
+            <PhoneCall size={20} />
+          </button>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={onClose}
+            className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center text-white shadow-xl shadow-red-600/40 active:scale-90 transition"
+          >
+            <PhoneOff size={28} />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Courier Chat Modal (with quick chips & automated replies) ─
+function CourierChatModal({ courier, onClose }) {
+  const [chatLog, setChatLog] = useState([
+    { from: 'driver', text: 'Halo kak! Saya Agus, driver GV Man yang mengantar pesananmu. Sedang menuju ke lokasimu ya 👍', time: '10:46' },
+  ])
+  const [msgInput, setMsgInput] = useState('')
+  const chatBottomRef = useRef(null)
+
+  const QUICK_CHIPS = [
+    'Lokasi di mana mas?',
+    'Pagar rumah warna hitam ya',
+    'Titip di teras / satpam aja ya',
+    'Hati-hati di jalan mas 🙏',
+  ]
+
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatLog])
+
+  const sendMsg = (text) => {
+    const clean = (text || msgInput).trim()
+    if (!clean) return
+    const nowTime = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' })
+    setChatLog((prev) => [...prev, { from: 'me', text: clean, time: nowTime }])
+    if (!text) setMsgInput('')
+
+    // Simulated quick driver reply
+    setTimeout(() => {
+      let reply = 'Siap kak, sudah tercatat! Segera saya laksanakan 🙏'
+      if (clean.toLowerCase().includes('mana')) {
+        reply = 'Sekitar 400 meter lagi kak, sudah masuk gang utama desa Sukamaju 🏍️'
+      } else if (clean.toLowerCase().includes('pagar') || clean.toLowerCase().includes('hitam')) {
+        reply = 'Siap kak, patokan pagar hitam sudah kelihatan. Sebentar lagi sampai depan rumah! 🏠'
+      } else if (clean.toLowerCase().includes('teras') || clean.toLowerCase().includes('satpam')) {
+        reply = 'Baik kak, paket akan saya letakkan rapi dan difotokan buktinya ya 👍'
+      }
+      setChatLog((prev) => [...prev, { from: 'driver', text: reply, time: new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }) }])
+    }, 1000)
+  }
+
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col bg-white">
+      {/* Header */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
+        <div className="flex items-center gap-3">
+          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95">
+            <ArrowLeft size={16} className="text-gray-700" />
+          </button>
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-xl flex-shrink-0 border border-emerald-100">
+            {courier.avatar || '👨'}
+          </div>
+          <div>
+            <p className="text-[13px] font-extrabold text-gray-900">{courier.name}</p>
+            <p className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>GV Man · Aktif Mengantar</span>
+            </p>
+          </div>
+        </div>
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">
+          {courier.vehicle}
+        </span>
+      </div>
+
+      {/* Message list */}
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col gap-2.5 bg-gray-50/50">
+        <div className="text-center my-1">
+          <span className="text-[10px] font-bold text-gray-400 bg-gray-100/80 px-2.5 py-0.5 rounded-full">
+            Hari ini
+          </span>
+        </div>
+
+        {chatLog.map((m, i) => (
+          <div key={i} className={`flex ${m.from === 'me' ? 'justify-end' : 'justify-start'}`}>
+            {m.from === 'driver' && (
+              <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-xs me-1.5 flex-shrink-0 self-end mb-1">
+                {courier.avatar || '👨'}
+              </div>
+            )}
+            <div
+              className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-[12px] leading-relaxed shadow-xs ${
+                m.from === 'me'
+                  ? 'bg-emerald-800 text-white rounded-br-xs'
+                  : 'bg-white text-gray-900 border border-gray-100 rounded-bl-xs'
+              }`}
+            >
+              <p>{m.text}</p>
+              <p className={`text-[9px] mt-1 text-right font-medium ${m.from === 'me' ? 'text-emerald-200' : 'text-gray-400'}`}>
+                {m.time}
               </p>
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-4 flex flex-col gap-3">
-            {chatLog.map((m,i)=>(
-              <div key={i} className={`flex ${m.from==='me'?'justify-end':'justify-start'}`}>
-                {m.from==='gvman' && (
-                  <div className="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center text-sm me-2 flex-shrink-0 self-end">
-                    {GVMAN.avatar}
-                  </div>
-                )}
-                <div className="max-w-[72%] px-3.5 py-2.5 rounded-2xl"
-                  style={m.from==='me'
-                    ?{background:PRIMARY,borderBottomRightRadius:4}
-                    :{background:'#F0F0F0',borderBottomLeftRadius:4}}>
-                  <p className="text-[13px] leading-snug"
-                    style={{color:m.from==='me'?'#fff':'#111'}}>{m.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex-shrink-0 flex items-center gap-2 px-4 py-3 border-t border-gray-100">
-            <div className="flex-1 flex items-center rounded-2xl px-3.5 py-2.5" style={{background:'#F5F5F5'}}>
-              <input value={chatMsg} onChange={e=>setChatMsg(e.target.value)}
-                onKeyDown={e=>e.key==='Enter'&&sendChat()}
-                placeholder="Ketik pesan..." className="flex-1 text-[13px] outline-none bg-transparent"/>
+        ))}
+        <div ref={chatBottomRef} />
+      </div>
+
+      {/* Quick response chips */}
+      <div className="px-3 py-2 bg-white border-t border-gray-100 overflow-x-auto no-scrollbar flex gap-1.5 flex-shrink-0">
+        {QUICK_CHIPS.map((chip, idx) => (
+          <button
+            key={idx}
+            onClick={() => sendMsg(chip)}
+            className="whitespace-nowrap px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-900 text-[11px] font-semibold active:scale-95 transition hover:bg-emerald-100/60"
+          >
+            {chip}
+          </button>
+        ))}
+      </div>
+
+      {/* Input bar */}
+      <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white border-t border-gray-100">
+        <input
+          value={msgInput}
+          onChange={(e) => setMsgInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && sendMsg()}
+          placeholder="Tulis pesan ke driver..."
+          className="flex-1 text-[12px] bg-gray-100/80 rounded-xl px-3.5 py-2.5 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-600 transition"
+        />
+        <button
+          onClick={() => sendMsg()}
+          disabled={!msgInput.trim()}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 ${
+            msgInput.trim() ? 'bg-emerald-700 text-white shadow-md' : 'bg-gray-200 text-gray-400'
+          }`}
+        >
+          <Navigation size={15} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Redesigned Order Tracking (with 6 phases, weather delay, route SVG, call/chat modals) ──
+const DEFAULT_COURIER = {
+  name: 'Agus Santoso',
+  rating: 4.9,
+  trips: '234',
+  vehicle: 'Honda Beat · B 4521 KDF',
+  avatar: '👨',
+}
+
+const FULL_TRACK_PHASES = [
+  { id: 'confirmed', label: 'Pesanan Dikonfirmasi',       sub: 'Penjual menerima dan memverifikasi pesanan', icon: '✅' },
+  { id: 'preparing', label: 'Pesanan Sedang Disiapkan',  sub: 'Produk sedang dikemas rapi & higienis',       icon: '📦' },
+  { id: 'heading',   label: 'GV Man Menuju Toko',        sub: 'Driver meluncur menjemput paket di toko',     icon: '🛵' },
+  { id: 'pickup',    label: 'GV Man Mengambil Paket',     sub: 'Paket telah diperiksa & dimuat di motor',     icon: '🛍️' },
+  { id: 'onway',     label: 'Dalam Perjalanan ke Lokasimu', sub: 'Driver sedang melaju ke alamat tujuan',   icon: '🛣️' },
+  { id: 'arrived',   label: 'Pesanan Tiba di Lokasi!',   sub: 'Paket telah sampai di depan rumah',           icon: '📍' },
+]
+
+function OrderTracking({ order, onBack, onDone }) {
+  const [phase, setPhase] = useState(4) // default to 'Dalam Perjalanan' for rich live impression
+  const [eta, setEta] = useState(18)
+  const [weatherDelay, setWeatherDelay] = useState(false)
+  const [showCallModal, setShowCallModal] = useState(false)
+  const [showChatModal, setShowChatModal] = useState(false)
+  const [showItemsAccordion, setShowItemsAccordion] = useState(false)
+  const [showReceiptDialog, setShowReceiptDialog] = useState(false)
+
+  const courier = order?.courier || DEFAULT_COURIER
+  const orderId = order?.id || 'GV-20260902'
+  const isArrived = phase >= 5
+
+  // Calculate adjusted ETA with weather
+  const effectiveEta = isArrived ? 0 : Math.max(2, eta + (weatherDelay ? 10 : 0))
+
+  // Motorcycle x position: 10% to 88% across 6 phases (0 to 5)
+  const progressRatio = phase / 5
+  const motoX = 10 + progressRatio * 78
+  const motoY = 48 - Math.sin(progressRatio * Math.PI) * 24
+
+  const phaseTimes = [
+    '10:18',
+    '10:30',
+    '10:38',
+    '10:45',
+    '10:52',
+    isArrived ? '11:05' : 'Estimasi 11:05',
+  ]
+
+  const toggleWeather = () => {
+    setWeatherDelay((prev) => !prev)
+  }
+
+  return (
+    <div className="flex flex-col h-full relative bg-[#FAFBF9]">
+      {/* Call Simulation Modal */}
+      {showCallModal && <PhoneCallModal courier={courier} onClose={() => setShowCallModal(false)} />}
+
+      {/* Chat Simulation Modal */}
+      {showChatModal && <CourierChatModal courier={courier} onClose={() => setShowChatModal(false)} />}
+
+      {/* Receipt Confirmation Dialog */}
+      {showReceiptDialog && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center p-5 bg-black/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-5 w-full max-w-xs shadow-2xl text-center animate-in zoom-in-95 duration-150">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-3 text-2xl">
+              📦
             </div>
-            <button onClick={sendChat}
-              className="w-9 h-9 rounded-full flex items-center justify-center"
-              style={{background:chatMsg.trim()?PRIMARY:'#E0E0E0'}}>
-              <Navigation size={14} className="text-white" style={{marginInlineStart:1}}/>
-            </button>
+            <h4 className="text-[16px] font-extrabold text-gray-900">Konfirmasi Terima Pesanan?</h4>
+            <p className="text-[12px] text-gray-500 mt-1 leading-relaxed">
+              Pastikan produk yang diterima dalam kondisi baik, segar, dan sesuai dengan pesananmu.
+            </p>
+            <div className="flex gap-2.5 mt-5">
+              <button
+                onClick={() => setShowReceiptDialog(false)}
+                className="flex-1 py-3 rounded-2xl border border-gray-200 text-[12px] font-bold text-gray-600 active:scale-95 transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  setShowReceiptDialog(false)
+                  onDone?.()
+                }}
+                className="flex-1 py-3 rounded-2xl bg-emerald-700 text-white text-[12px] font-bold active:scale-95 transition shadow-md shadow-emerald-700/20"
+              >
+                Sudah Diterima
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1306,211 +2535,384 @@ function OrderTracking({ onDone }) {
       {/* Header */}
       <div className="flex-shrink-0 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="flex items-center justify-between">
-          <p className="text-[16px] font-extrabold text-gray-900">Pesanan Dalam Perjalanan</p>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{background:'#E8F5E9'}}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{background:PRIMARY}}/>
-            <span className="text-[12px] font-bold" style={{color:PRIMARY}}>LIVE</span>
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onBack}
+              className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95 text-gray-700 transition"
+            >
+              <ArrowLeft size={16} />
+            </button>
+            <div>
+              <p className="text-[15px] font-extrabold text-gray-900">Lacak Pengiriman</p>
+              <p className="text-[11px] text-gray-400 font-medium">{orderId}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/60">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-extrabold text-emerald-800">LIVE TRACKING</span>
           </div>
         </div>
-        <p className="text-[12px] text-gray-400 mt-0.5">No. Pesanan: {orderNo.current}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3.5 pb-24">
+        {/* Demo Controls Toolbar (Convenient for Review) */}
+        <div className="p-3 rounded-2xl bg-white border border-gray-200/80 shadow-xs">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Simulasi Alur Pengiriman</span>
+            <button
+              onClick={toggleWeather}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border transition active:scale-95 ${
+                weatherDelay
+                  ? 'bg-amber-100 border-amber-300 text-amber-900'
+                  : 'bg-gray-50 border-gray-200 text-gray-600'
+              }`}
+            >
+              <CloudRain size={12} className={weatherDelay ? 'text-amber-700' : 'text-gray-400'} />
+              <span>{weatherDelay ? 'Hujan (+10 mnt)' : 'Simulasi Hujan'}</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-6 gap-1">
+            {['Konfirm', 'Siap', 'Jemput', 'Ambil', 'Jalan', 'Tiba'].map((label, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setPhase(idx)
+                  if (idx === 5) setEta(0)
+                  else if (idx === 4) setEta(18)
+                  else if (idx === 3) setEta(25)
+                  else setEta(35)
+                }}
+                className={`py-1 rounded-lg text-[10px] font-extrabold transition ${
+                  phase === idx
+                    ? 'bg-emerald-700 text-white shadow-xs'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200/70'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        {/* Route map */}
-        <div className="mx-4 mt-4 bg-white rounded-3xl p-4" style={{boxShadow:'0 2px 16px rgba(0,0,0,0.08)'}}>
+        {/* Weather Alert Banner (Conditional) */}
+        {weatherDelay && (
+          <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-start gap-2.5 animate-in fade-in">
+            <CloudRain size={18} className="text-amber-700 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-[12px] font-bold text-amber-950">Peringatan Cuaca: Hujan di Jalur Pengantaran</p>
+              <p className="text-[11px] text-amber-800/90 mt-0.5 leading-relaxed">
+                Driver berkendara ekstra hati-hati demi keselamatan paket makanan Anda. Estimasi bertambah +10 menit.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Hero ETA Card */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[13px] font-bold text-gray-900">
-              {isArrived ? '🎉 Pesanan sudah tiba!' : `Estimasi tiba: ${eta} menit lagi`}
-            </p>
-            <span className="text-[12px] font-semibold px-2 py-0.5 rounded-full"
-              style={{background:isArrived?'#E8F5E9':'#FFF3E0',color:isArrived?PRIMARY:'#E65100'}}>
-              {isArrived ? 'Sampai' : 'Dalam perjalanan'}
+            <div>
+              <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                {isArrived ? 'Status Pengantaran' : 'Estimasi Waktu Tiba'}
+              </p>
+              <p className="text-2xl font-black text-gray-900 mt-0.5">
+                {isArrived ? '🎉 Sudah Sampai!' : `${effectiveEta} Menit Lagi`}
+              </p>
+            </div>
+            <span
+              className={`text-[12px] font-bold px-3 py-1 rounded-full ${
+                isArrived
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : 'bg-amber-100 text-amber-800'
+              }`}
+            >
+              {isArrived ? 'Tiba di Lokasi' : 'Dalam Pengantaran'}
             </span>
           </div>
 
-          {/* Route SVG */}
-          <div className="relative h-28 rounded-2xl overflow-hidden"
-            style={{background:'linear-gradient(135deg,#E8F5E9,#F1F8E9)'}}>
-            <svg viewBox="0 0 300 90" className="absolute inset-0 w-full h-full">
-              {/* Road base */}
-              <path d="M30 60 Q80 30 150 55 Q220 80 270 55"
-                fill="none" stroke="#C8E6C9" strokeWidth="6" strokeLinecap="round"/>
-              {/* Progress overlay */}
-              <path d="M30 60 Q80 30 150 55 Q220 80 270 55"
-                fill="none" stroke={PRIMARY} strokeWidth="4" strokeLinecap="round"
-                strokeDasharray="310" strokeDashoffset={310*(1-phase/4)}
-                style={{transition:'stroke-dashoffset 1.2s ease'}}/>
-              {/* Dashes on road */}
-              <path d="M30 60 Q80 30 150 55 Q220 80 270 55"
-                fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round"
-                strokeDasharray="8 10" opacity="0.5"/>
-              {/* Start pin */}
-              <text x="22" y="72" fontSize="18" textAnchor="middle">🏪</text>
-              {/* End pin */}
-              <text x="278" y="68" fontSize="18" textAnchor="middle">🏠</text>
+          {/* Interactive Route SVG Map */}
+          <div
+            className="relative h-32 rounded-2xl overflow-hidden border border-emerald-100/60 shadow-inner"
+            style={{ background: 'linear-gradient(135deg, #ECFDF5 0%, #F0FDF4 100%)' }}
+          >
+            <svg viewBox="0 0 320 100" className="absolute inset-0 w-full h-full">
+              {/* Background terrain paths */}
+              <path d="M 0 30 Q 80 15 160 40 T 320 20" fill="none" stroke="#D1FAE5" strokeWidth="12" opacity="0.4" />
+              <path d="M 0 75 Q 120 85 240 65 T 320 80" fill="none" stroke="#D1FAE5" strokeWidth="16" opacity="0.4" />
+
+              {/* Main Delivery Road */}
+              <path
+                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                fill="none"
+                stroke="#A7F3D0"
+                strokeWidth="8"
+                strokeLinecap="round"
+              />
+              {/* Completed Road Line */}
+              <path
+                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                fill="none"
+                stroke={PRIMARY}
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray="320"
+                strokeDashoffset={320 * (1 - progressRatio)}
+                style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
+              />
+              {/* Road Dash markings */}
+              <path
+                d="M 25 68 Q 90 28 160 58 Q 230 88 295 50"
+                fill="none"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeDasharray="6 8"
+                opacity="0.6"
+              />
+
+              {/* Origin Store Pin */}
+              <circle cx="25" cy="68" r="14" fill="white" stroke="#10B981" strokeWidth="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" />
+              <text x="25" y="73" fontSize="13" textAnchor="middle">🏪</text>
+
+              {/* Destination Home Pin */}
+              <circle cx="295" cy="50" r="14" fill="white" stroke="#10B981" strokeWidth="2" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.15))" />
+              <text x="295" y="55" fontSize="13" textAnchor="middle">🏠</text>
             </svg>
-            {/* Motorcycle (CSS animated) */}
-            <div className="absolute transition"
+
+            {/* Dynamic Motorcycle Pin */}
+            <div
+              className="absolute pointer-events-none transition-all duration-700 ease-out"
               style={{
-                left:`${motoX}%`, top:`${motoY}%`,
-                transform:'translate(-50%,-50%)',
-                fontSize:22,
-                transition:'left 1.2s ease, top 1.2s ease',
-                filter:'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-              }}>
-              🏍️
+                left: `${motoX}%`,
+                top: `${motoY}%`,
+                transform: 'translate(-50%, -50%)',
+                filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.25))',
+              }}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="absolute -inset-1 rounded-full bg-emerald-400/40 animate-ping" />
+                <div className="w-8 h-8 rounded-full bg-white border border-emerald-600 flex items-center justify-center text-base shadow-sm">
+                  🏍️
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-between mt-3">
+          <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-50 text-[11px]">
             <div>
-              <p className="text-[11px] text-gray-400">Dari</p>
-              <p className="text-[11px] font-bold text-gray-800">Toko Penjual</p>
-              <p className="text-[11px] text-gray-400">Desa Sukamaju</p>
+              <p className="text-gray-400">Titik Penjemputan</p>
+              <p className="font-bold text-gray-800">Toko {order?.seller || 'Ibu Sari'}</p>
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-gray-400">Ke</p>
-              <p className="text-[11px] font-bold text-gray-800">Lokasi Kamu</p>
-              <p className="text-[11px] text-gray-400">2.4 km dari toko</p>
+              <p className="text-gray-400">Jarak & Rute</p>
+              <p className="font-bold text-emerald-800">
+                {isArrived ? 'Sampai di Lokasi' : '1.4 km · ~30 km/jam'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* GV Man card */}
-        <div className="mx-4 mt-3 bg-white rounded-3xl p-4" style={{boxShadow:'0 2px 16px rgba(0,0,0,0.08)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-3">GV Man kamu</p>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
-              style={{background:'#E8F5E9'}}>
-              {GVMAN.avatar}
+        {/* Courier Info Card with Interactive Call & Chat buttons */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Driver Pengantar</span>
+            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full">
+              Driver Terpercaya Desa
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3.5 mb-4">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-3xl shadow-inner flex-shrink-0">
+              {courier.avatar || '👨'}
             </div>
-            <div className="flex-1">
-              <p className="text-[15px] font-extrabold text-gray-900">{GVMAN.name}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[15px] font-extrabold text-gray-900 truncate">{courier.name}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <Star size={12} className="fill-yellow-400 text-yellow-400"/>
-                <span className="text-[12px] font-bold text-gray-700">{GVMAN.rating}</span>
+                <Star size={12} className="fill-amber-400 text-amber-400" />
+                <span className="text-[12px] font-bold text-gray-800">{courier.rating}</span>
                 <span className="text-gray-300">·</span>
-                <span className="text-[11px] text-gray-400">{GVMAN.trips} perjalanan</span>
+                <span className="text-[11px] text-gray-400">{courier.trips} pengantaran</span>
               </div>
-              <p className="text-[12px] text-gray-400 mt-0.5">{GVMAN.vehicle}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">{courier.vehicle}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+
+          <div className="grid grid-cols-2 gap-2.5">
             <button
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl border-2 active:scale-[0.96] transition-transform"
-              style={{borderColor:PRIMARY,color:PRIMARY}}>
-              <Phone size={15}/>
-              <span className="text-[12px] font-bold">Telepon</span>
+              onClick={() => setShowCallModal(true)}
+              className="py-2.5 px-3 rounded-2xl border-2 border-emerald-700 text-emerald-800 text-[12px] font-bold flex items-center justify-center gap-2 active:scale-95 transition hover:bg-emerald-50/50"
+            >
+              <Phone size={14} />
+              <span>Telepon</span>
             </button>
-            <button onClick={()=>setChat(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-2xl active:scale-[0.96] transition-transform"
-              style={{background:PRIMARY,color:'#fff'}}>
-              <MessageCircle size={15}/>
-              <span className="text-[12px] font-bold">Chat</span>
+            <button
+              onClick={() => setShowChatModal(true)}
+              className="py-2.5 px-3 rounded-2xl bg-emerald-700 text-white text-[12px] font-bold flex items-center justify-center gap-2 active:scale-95 transition shadow-md shadow-emerald-700/20 hover:bg-emerald-800"
+            >
+              <MessageCircle size={14} />
+              <span>Chat Driver</span>
             </button>
           </div>
         </div>
 
-        {/* Status timeline */}
-        <div className="mx-4 mt-3 bg-white rounded-3xl px-5 py-4" style={{boxShadow:'0 2px 16px rgba(0,0,0,0.08)'}}>
-          <p className="text-[11px] font-bold text-gray-400 mb-4">Status Pengiriman</p>
-          {TRACK_PHASES.map((p,i)=>{
-            const done    = i <  phase
-            const current = i === phase
-            const pending = i >  phase
-            return (
-              <div key={p.id} className="flex gap-3 relative">
-                {/* Connector */}
-                {i < TRACK_PHASES.length-1 && (
-                  <div className="absolute left-[13px] top-7 w-0.5"
-                    style={{height:36, background:done?PRIMARY:'#E5E7EB',
-                      transition:'background 0.6s ease'}}/>
-                )}
-                {/* Dot */}
-                <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition"
-                  style={done
-                    ? {background:PRIMARY}
-                    : current
-                      ? {background:'#fff',border:`2px solid ${PRIMARY}`}
-                      : {background:'#F3F4F6',border:'2px solid #E5E7EB'}}>
-                  {done
-                    ? <Check size={13} className="text-white"/>
-                    : current
-                      ? <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{background:PRIMARY}}/>
-                      : <div className="w-2 h-2 rounded-full bg-gray-300"/>}
-                </div>
-                {/* Text */}
-                <div className="flex-1 pb-7">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-[13px] leading-snug font-bold"
-                      style={{color: done?'#111827' : current?PRIMARY : '#9CA3AF'}}>
-                      {p.label}
-                    </p>
-                    <p className="text-[12px] text-gray-400 flex-shrink-0 mt-0.5">{phaseTimes[i]}</p>
+        {/* Collapsible Order Summary Accordion */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
+          <button
+            onClick={() => setShowItemsAccordion((prev) => !prev)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <div>
+              <p className="text-[13px] font-bold text-gray-900">Rincian Paket yang Dikirim</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">
+                {order?.items?.length || 2} barang · Total Rp {(order?.total || 37000).toLocaleString('id')}
+              </p>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+              {showItemsAccordion ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
+          </button>
+
+          {showItemsAccordion && (
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5 animate-in slide-in-from-top-2 duration-150">
+              {(order?.items || [
+                { name: 'Bayam Organik Segar', qty: 2, price: 8500 },
+                { name: 'Tempe Mendoan Jumbo', qty: 1, price: 12000 },
+              ]).map((it, idx) => (
+                <div key={idx} className="flex items-center justify-between text-[12px]">
+                  <div className="text-gray-700">
+                    <span className="font-semibold">{it.name}</span>
+                    <span className="text-gray-400 ms-1.5">× {it.qty}</span>
                   </div>
-                  <p className="text-[11px] mt-0.5"
-                    style={{color: done?'#6B7280' : current?`${PRIMARY}CC` : '#D1D5DB'}}>
-                    {p.sub}
-                  </p>
-                  {current && (
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className="w-1.5 h-1.5 rounded-full animate-pulse inline-block" style={{background:PRIMARY}}/>
-                      <span className="text-[12px] font-semibold" style={{color:PRIMARY}}>Sedang berlangsung</span>
-                    </div>
-                  )}
+                  <span className="font-bold text-gray-900">
+                    Rp {(it.price * it.qty).toLocaleString('id')}
+                  </span>
                 </div>
+              ))}
+
+              <div className="p-2.5 rounded-xl bg-gray-50 text-[11px] text-gray-600 mt-2">
+                <p className="font-semibold text-gray-800">Alamat Tujuan:</p>
+                <p className="text-gray-500 mt-0.5">
+                  {order?.address || 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju'}
+                </p>
               </div>
-            )
-          })}
+            </div>
+          )}
         </div>
 
+        {/* 6-Phase Live Stepper Timeline */}
+        <div className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100">
+          <p className="text-[11px] font-bold text-gray-400 mb-4 uppercase tracking-wider">
+            Proses Pengiriman Lengkap
+          </p>
+          <div className="space-y-0">
+            {FULL_TRACK_PHASES.map((p, i) => {
+              const isDone = i < phase
+              const isCurrent = i === phase
+              const isUpcoming = i > phase
+              const isLast = i === FULL_TRACK_PHASES.length - 1
+
+              return (
+                <div key={p.id} className="flex gap-3 relative">
+                  {/* Connector Line */}
+                  {!isLast && (
+                    <div
+                      className="absolute left-[13px] top-7 w-0.5"
+                      style={{
+                        height: 38,
+                        background: isDone ? PRIMARY : '#E5E7EB',
+                        transition: 'background 0.5s ease',
+                      }}
+                    />
+                  )}
+
+                  {/* Step Dot */}
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
+                    style={
+                      isDone
+                        ? { background: PRIMARY }
+                        : isCurrent
+                        ? { background: '#fff', border: `2px solid ${PRIMARY}` }
+                        : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
+                    }
+                  >
+                    {isDone ? (
+                      <Check size={14} className="text-white" strokeWidth={3} />
+                    ) : isCurrent ? (
+                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-gray-300" />
+                    )}
+                  </div>
+
+                  {/* Step Text Details */}
+                  <div className="flex-1 pb-6">
+                    <div className="flex items-start justify-between gap-2">
+                      <p
+                        className={`text-[13px] font-bold leading-snug ${
+                          isDone ? 'text-gray-900' : isCurrent ? 'text-emerald-800' : 'text-gray-400'
+                        }`}
+                      >
+                        {p.label}
+                      </p>
+                      <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
+                        {phaseTimes[i]}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-[11px] mt-0.5 leading-relaxed ${
+                        isDone ? 'text-gray-500' : isCurrent ? 'text-emerald-700/90' : 'text-gray-300'
+                      }`}
+                    >
+                      {p.sub}
+                    </p>
+                    {isCurrent && (
+                      <div className="flex items-center gap-1.5 mt-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                        <span className="text-[11px] font-bold text-emerald-700">Sedang berlangsung</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
-      {/* CTA */}
-      <div className="flex-shrink-0 px-4 py-3 bg-white border-t border-gray-100">
-        {!isArrived ? (
-          <div className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2"
-            style={{background:'#F5F5F5'}}>
-            <Clock size={15} className="text-gray-400"/>
-            <span className="text-[13px] font-semibold text-gray-400">Menunggu pesanan tiba...</span>
-          </div>
-        ) : (
-          <button onClick={onDone}
-            className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white active:scale-[0.96] transition-transform"
-            style={{background:PRIMARY,boxShadow:`0 4px 12px ${PRIMARY}40`}}>
-            ✓ Konfirmasi Pesanan Diterima
+      {/* Sticky Bottom CTA */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-gray-100 z-20">
+        {isArrived ? (
+          <button
+            onClick={() => setShowReceiptDialog(true)}
+            className="w-full py-3.5 rounded-2xl text-[14px] font-bold text-white active:scale-95 transition shadow-lg flex items-center justify-center gap-2"
+            style={{
+              background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
+              boxShadow: '0 4px 14px rgba(27,107,58,0.3)',
+            }}
+          >
+            <CheckCircle2 size={16} />
+            <span>Konfirmasi Pesanan Diterima</span>
           </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="flex-1 py-3 px-4 rounded-2xl bg-gray-50 border border-gray-200/80 flex items-center gap-2.5">
+              <Clock size={16} className="text-emerald-700 animate-pulse flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-[12px] font-bold text-gray-900 truncate">Dalam Pengantaran...</p>
+                <p className="text-[10px] text-gray-500">Estimasi tiba ~{effectiveEta} menit</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setPhase(5)}
+              className="py-3 px-3.5 rounded-2xl text-[12px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 active:scale-95 transition hover:bg-emerald-100 flex-shrink-0"
+              title="Percepat demo sampai tujuan"
+            >
+              Simulasi Tiba
+            </button>
+          </div>
         )}
       </div>
-    </div>
-  )
-}
-
-// ── Order Success ──────────────────────────────────────────
-function OrderSuccess({ onDone }) {
-  return (
-    <div className="flex flex-col h-full items-center justify-center bg-white px-8">
-      <div className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-        style={{background:'#E8F5E9'}}>
-        <Check size={36} style={{color:PRIMARY}}/>
-      </div>
-      <p className="text-xl font-extrabold text-gray-900 mb-2">Pesanan Dikonfirmasi!</p>
-      <p className="text-sm text-gray-500 text-center leading-relaxed mb-8">
-        Pesanan kamu sedang diproses oleh penjual. GV Man akan segera menjemput paketmu.
-      </p>
-      <div className="w-full bg-gray-50 rounded-2xl p-4 mb-6 flex items-center gap-3">
-        <span className="text-2xl">🏍️</span>
-        <div>
-          <p className="text-[12px] font-bold text-gray-900">GV Man sedang dalam perjalanan</p>
-          <p className="text-[12px] text-gray-400">Estimasi tiba: 30-45 menit</p>
-        </div>
-      </div>
-      <button onClick={onDone}
-        className="w-full py-3.5 rounded-2xl text-white font-bold text-sm"
-        style={{background:PRIMARY}}>
-        Kembali ke Beranda
-      </button>
     </div>
   )
 }
@@ -1719,23 +3121,29 @@ function FilterSheet({ currentSort, onSort, currentCats, onCats, onClose }) {
 
 // ── Main Screen ────────────────────────────────────────────
 export default function Pasar({ navigate, userProfile, initialTab }) {
-  const [showEmptyCart,setEmptyCart]  = useState(false)
-  const [paymentMethod,setPayMethod]  = useState('gvpay')
-  const [buyerOrders,  setBuyerOrders]= useState(DUMMY_BUYER_ORDERS)
-  const [orderDetailSheet,setOrderDetail] = useState(null)
-  const [orderToRate,  setOrderToRate]= useState(null)
-  const [orderFilter,  setOrderFilter]= useState('all')
-  const [selectedCats, setSelectedCats]= useState([])
-  const [searchQ,      setSearchQ]     = useState('')
-  const [sortBy,       setSortBy]      = useState('terlaris')
-  const [showSort,     setShowSort]    = useState(false)
-  const [cart,         setCart]        = useState({})
-  const [liked,        setLiked]       = useState(new Set())
-  const [detail,       setDetail]      = useState(null)
-  const [detailQty,    setDQty]        = useState(1)
-  const [screen,       setScreen]      = useState('list')
-  const [activeTab,    setActiveTab]   = useState(initialTab || 'belanja')
-  const [bannerIdx,    setBannerIdx]   = useState(0)
+  const [showEmptyCart, setEmptyCart] = useState(false)
+  const [paymentMethod, setPayMethod] = useState('gvpay')
+  const [buyerOrders, setBuyerOrders] = useState(DUMMY_BUYER_ORDERS)
+  const [orderDetailSheet, setOrderDetail] = useState(null)
+  const [orderToCancel, setOrderToCancel] = useState(null)
+  const [orderToRate, setOrderToRate] = useState(null)
+  const [orderFilter, setOrderFilter] = useState('all')
+  const [selectedCats, setSelectedCats] = useState([])
+  const [searchQ, setSearchQ] = useState('')
+  const [sortBy, setSortBy] = useState('terlaris')
+  const [showSort, setShowSort] = useState(false)
+  const [cart, setCart] = useState({})
+  const [liked, setLiked] = useState(new Set())
+  const [detail, setDetail] = useState(null)
+  const [detailQty, setDQty] = useState(1)
+  const [screen, setScreen] = useState('list') // 'list' | 'cart' | 'checkout' | 'payment' | 'success' | 'tracking'
+  const [activeTab, setActiveTab] = useState(initialTab || 'belanja')
+  const [bannerIdx, setBannerIdx] = useState(0)
+
+  // Order routing details
+  const [lastCreatedOrder, setLastCreatedOrder] = useState(null)
+  const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
+  const [checkoutData, setCheckoutData] = useState(null)
 
   const isSeller = userProfile?.capabilities?.includes('Penjual')
 
@@ -1750,74 +3158,244 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       return parseInt(b.sold) - parseInt(a.sold) // terlaris
     })
 
-  const totalCart  = Object.values(cart).reduce((a,b)=>a+b,0)
-  const totalPrice = Object.entries(cart).reduce((s,[id,q])=>{
-    const p = PRODUCTS.find(x=>x.id===parseInt(id)); return s+(p?.price||0)*q
-  },0)
+  const totalCart = Object.values(cart).reduce((a, b) => a + b, 0)
+  const totalPrice = Object.entries(cart).reduce((s, [id, q]) => {
+    const p = PRODUCTS.find(x => x.id === parseInt(id))
+    return s + (p?.price || 0) * q
+  }, 0)
 
-  const addToCart     = (id,qty=1) => setCart(p=>({...p,[id]:(p[id]||0)+qty}))
-  const removeFromCart= (id)       => setCart(p=>{const n={...p};if(n[id]>1)n[id]--;else delete n[id];return n})
-  const toggleLike    = (id)       => setLiked(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n})
-  const openDetail    = (p)        => { setDetail(p); setDQty(1) }
+  const addToCart = (id, qty = 1) => {
+    const p = PRODUCTS.find(x => x.id === Number(id))
+    if (!p || p.stock === 0) return
+    setCart((prev) => {
+      const current = prev[id] || 0
+      const next = Math.min(p.stock, current + qty)
+      return { ...prev, [id]: next }
+    })
+  }
+
+  const updateCartQty = (id, qty) => {
+    setCart((prev) => {
+      if (qty <= 0) {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      }
+      return { ...prev, [id]: qty }
+    })
+  }
+
+  const removeCartItem = (id) => {
+    setCart((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }
+
+  const toggleLike = (id) => setLiked(p => {
+    const n = new Set(p)
+    n.has(id) ? n.delete(id) : n.add(id)
+    return n
+  })
+
+  const openDetail = (p) => {
+    setDetail(p)
+    setDQty(1)
+  }
 
   const checkoutItems = Object.entries(cart)
-    .map(([id,qty])=>{ const p = PRODUCTS.find(x=>x.id===Number(id)); return p?{...p,qty}:null })
+    .map(([id, qty]) => {
+      const p = PRODUCTS.find(x => x.id === Number(id))
+      return p ? { ...p, qty } : null
+    })
     .filter(Boolean)
 
-  if (screen==='checkout') return <CheckoutScreen items={checkoutItems} onBack={()=>setScreen('list')} onConfirm={(method)=>{setPayMethod(method);setScreen('payment')}}/>
-  if (screen==='payment')  return <PaymentFlow method={paymentMethod} total={checkoutItems.reduce((s,i)=>s+i.price*i.qty,0)+(paymentMethod==='pickup'?0:8000)} onComplete={()=>{
-    // Save order to buyer history
-    const newOrder = {
-      id:`GV-${Date.now().toString().slice(-8)}`,
-      date:`Hari ini, ${new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})}`,
-      seller: checkoutItems[0]?.seller || 'Penjual',
-      payment: {gvpay:'GV Pay',qris:'QRIS',transfer:'Transfer Bank',cod:'Bayar di Tempat'}[paymentMethod],
-      delivery: paymentMethod==='pickup'?'Ambil Sendiri':'Pengiriman',
-      total: checkoutItems.reduce((s,i)=>s+i.price*i.qty,0)+(paymentMethod==='pickup'?0:8000),
-      status:'waiting',
-      items: checkoutItems,
-      timeline:[{s:'waiting',time:new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'}),label:'Pesanan dibuat'}],
+  // Handle Order Cancellation with instant refund
+  const handleConfirmCancelOrder = (orderId, reason) => {
+    setBuyerOrders((prev) =>
+      prev.map((o) => {
+        if (o.id !== orderId) return o
+        return {
+          ...o,
+          status: 'cancelled',
+          cancelReason: reason,
+          refundNotice: `Dana Rp ${o.total.toLocaleString('id')} telah dikembalikan 100% ke saldo GV Pay.`,
+          timeline: [
+            ...(o.timeline || []),
+            {
+              s: 'cancelled',
+              time: new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' }),
+              label: `Pesanan dibatalkan (${reason}) · Refund Selesai`,
+            },
+          ],
+        }
+      })
+    )
+    setOrderToCancel(null)
+    if (orderDetailSheet && orderDetailSheet.id === orderId) {
+      setOrderDetail(null)
     }
-    setBuyerOrders(p=>[newOrder,...p])
-    setCart({})
-    setScreen('tracking')
-  }} onBack={()=>setScreen('checkout')}/>
-  if (screen==='tracking') return <OrderTracking onDone={()=>{setScreen('list');setActiveTab('pesanan')}}/>
-  if (screen==='success')  return <OrderSuccess onDone={()=>{setScreen('list');navigate('beranda')}}/>
+  }
+
+  // --- Sub-Screen Routing ---
+  if (screen === 'cart') {
+    return (
+      <CartScreen
+        cart={cart}
+        onUpdateQty={updateCartQty}
+        onRemoveItem={removeCartItem}
+        onCheckout={() => setScreen('checkout')}
+        onBack={() => setScreen('list')}
+        onBrowse={() => setScreen('list')}
+      />
+    )
+  }
+
+  if (screen === 'checkout') {
+    return (
+      <CheckoutScreen
+        items={checkoutItems}
+        userProfile={userProfile}
+        onBack={() => setScreen('cart')}
+        onConfirm={(method, address, note, subtotal, deliveryFee, discount, total) => {
+          setPayMethod(method)
+          setCheckoutData({ method, address, note, subtotal, deliveryFee, discount, total })
+          setScreen('payment')
+        }}
+      />
+    )
+  }
+
+  if (screen === 'payment') {
+    const totalAmount = checkoutData?.total || (checkoutItems.reduce((s, i) => s + i.price * i.qty, 0) + 8000)
+    return (
+      <PaymentFlow
+        method={paymentMethod}
+        total={totalAmount}
+        onBack={() => setScreen('checkout')}
+        onComplete={() => {
+          const nowStr = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' })
+          const createdOrder = {
+            id: `GV-${Date.now().toString().slice(-8)}`,
+            date: `Hari ini, ${nowStr}`,
+            seller: checkoutItems[0]?.seller || 'Penjual Pasar ESTO',
+            payment: { gvpay: 'GV Pay', qris: 'QRIS', transfer: 'Transfer Bank', cod: 'Bayar di Tempat' }[paymentMethod] || 'GV Pay',
+            delivery: checkoutData?.address?.label ? `Pengiriman (${checkoutData?.address?.label})` : 'Pengiriman Kilat Desa',
+            address: checkoutData?.address?.address || 'Jl. Melati No. 4, RT 02/01, Desa Sukamaju',
+            note: checkoutData?.note || '',
+            total: totalAmount,
+            status: 'confirmed',
+            items: checkoutItems.length > 0 ? checkoutItems : [{ name: 'Bayam Organik Segar', qty: 2, price: 8500 }],
+            courier: {
+              name: 'Agus Santoso',
+              rating: 4.9,
+              trips: '234',
+              vehicle: 'Honda Beat · B 4521 KDF',
+              avatar: '👨',
+            },
+            timeline: [
+              { s: 'waiting', time: nowStr, label: 'Pesanan dibuat & diverifikasi' },
+              { s: 'confirmed', time: nowStr, label: 'Pembayaran sukses, penjual mengonfirmasi' },
+            ],
+          }
+          setBuyerOrders((prev) => [createdOrder, ...prev])
+          setLastCreatedOrder(createdOrder)
+          setCart({})
+          setScreen('success')
+        }}
+      />
+    )
+  }
+
+  if (screen === 'success') {
+    return (
+      <OrderSuccessScreen
+        order={lastCreatedOrder}
+        onTrack={() => {
+          setActiveTrackingOrder(lastCreatedOrder)
+          setScreen('tracking')
+        }}
+        onHistory={() => {
+          setScreen('list')
+          setActiveTab('pesanan')
+        }}
+      />
+    )
+  }
+
+  if (screen === 'tracking') {
+    const orderToTrack = activeTrackingOrder || buyerOrders.find((o) => o.status === 'shipped') || buyerOrders[0]
+    return (
+      <OrderTracking
+        order={orderToTrack}
+        onBack={() => {
+          setScreen('list')
+          setActiveTab('pesanan')
+        }}
+        onDone={() => {
+          if (orderToTrack) {
+            setBuyerOrders((prev) =>
+              prev.map((o) =>
+                o.id === orderToTrack.id ? { ...o, status: 'done' } : o
+              )
+            )
+          }
+          setScreen('list')
+          setActiveTab('pesanan')
+        }}
+      />
+    )
+  }
 
   return (
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
 
       {/* Sort sheet */}
-      {showSort && <FilterSheet currentSort={sortBy} onSort={setSortBy} currentCats={selectedCats} onCats={setSelectedCats} onClose={()=>setShowSort(false)}/>}
+      {showSort && (
+        <FilterSheet
+          currentSort={sortBy}
+          onSort={setSortBy}
+          currentCats={selectedCats}
+          onCats={setSelectedCats}
+          onClose={() => setShowSort(false)}
+        />
+      )}
+
+      {/* Cancel Order Modal */}
+      {orderToCancel && (
+        <CancelOrderModal
+          order={orderToCancel}
+          onClose={() => setOrderToCancel(null)}
+          onConfirm={handleConfirmCancelOrder}
+        />
+      )}
 
       {/* Empty cart sheet */}
       {showEmptyCart && (
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={()=>setEmptyCart(false)}/>
+          <div className="absolute inset-0 bg-black/40" onClick={() => setEmptyCart(false)} />
           <div className="relative bg-white rounded-t-3xl px-6 pt-5 pb-10"
-            style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.15)'}}>
-            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-6"/>
+            style={{ boxShadow: '0 -4px 32px rgba(0,0,0,0.15)' }}>
+            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-6" />
             <div className="flex flex-col items-center text-center">
               <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-                style={{background:'#F5F5F5'}}>
-                <ShoppingCart size={32} className="text-gray-300"/>
+                style={{ background: '#F5F5F5' }}>
+                <ShoppingCart size={32} className="text-gray-300" />
               </div>
-              <p className="text-[16px] font-extrabold text-gray-900 mb-2">Keranjang kosong</p>
+              <p className="text-[16px] font-extrabold text-gray-900 mb-2">Keranjang belanja kosong</p>
               <p className="text-[13px] text-gray-400 leading-relaxed mb-6">
-                Belum ada produk yang ditambahkan. Yuk, temukan produk lokal favoritmu!
+                Belum ada produk yang ditambahkan. Yuk, temukan produk segar langsung dari petani desa!
               </p>
-              <button onClick={()=>setEmptyCart(false)}
-                className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white"
-                style={{background:PRIMARY}}>
+              <button onClick={() => setEmptyCart(false)}
+                className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white shadow-md"
+                style={{ background: PRIMARY }}>
                 Mulai Belanja
               </button>
             </div>
           </div>
         </div>
       )}
-
-
 
       {/* Unified ScreenHeader */}
       <ScreenHeader
@@ -1831,7 +3409,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               backdropFilter: 'blur(8px)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}
-            onClick={() => (totalCart > 0 ? setScreen('checkout') : setEmptyCart(true))}
+            onClick={() => setScreen('cart')}
           >
             <ShoppingCart size={16} className="text-white/80" />
             {totalCart > 0 && (
@@ -1892,146 +3470,214 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         />
       </ScreenHeader>
 
-      {/* ── PESANAN TAB (inline, no separate screen) ── */}
-      {activeTab==='pesanan' && (
+      {/* ── PESANAN TAB (inline, complete order lifecycle) ── */}
+      {activeTab === 'pesanan' && (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Order detail sheet */}
           {orderDetailSheet && (
             <OrderDetailSheet
               order={orderDetailSheet}
-              onClose={()=>setOrderDetail(null)}
-              onRate={(order)=>{setOrderToRate(order);setOrderDetail(null)}}
-              onBuyAgain={(order)=>{
-                order.items.forEach(item=>{ if(item.id) addToCart(item.id) })
-                setOrderDetail(null); setActiveTab('belanja')
-              }}/>
+              onClose={() => setOrderDetail(null)}
+              onRate={(order) => { setOrderToRate(order); setOrderDetail(null) }}
+              onBuyAgain={(order) => {
+                order.items.forEach(item => { if (item.id) addToCart(item.id, item.qty || 1) })
+                setOrderDetail(null)
+                setScreen('cart')
+              }}
+              onTrack={(order) => {
+                setActiveTrackingOrder(order)
+                setOrderDetail(null)
+                setScreen('tracking')
+              }}
+              onCancelPrompt={(order) => {
+                setOrderDetail(null)
+                setOrderToCancel(order)
+              }}
+            />
           )}
+
           {/* Rating sheet */}
           {orderToRate && (
             <RatingSheet
               order={orderToRate}
-              onClose={()=>setOrderToRate(null)}
-              onSubmit={(orderId,rating,comment)=>{
-                setBuyerOrders(p=>p.map(o=>o.id===orderId?{...o,rating,ratingComment:comment}:o))
+              onClose={() => setOrderToRate(null)}
+              onSubmit={(orderId, rating, comment) => {
+                setBuyerOrders(p => p.map(o => o.id === orderId ? { ...o, rating, ratingComment: comment } : o))
                 setOrderToRate(null)
-              }}/>
+              }}
+            />
           )}
+
           {/* Filter tabs */}
           <div className="flex border-b border-gray-100 bg-white flex-shrink-0">
-            {[['all','Semua'],['active','Berlangsung'],['done','Selesai']].map(([id,lbl])=>(
-              <button key={id} onClick={()=>setOrderFilter(id)}
-                className="flex-1 py-3 text-[12px] font-bold transition"
-                style={orderFilter===id?{color:PRIMARY,borderBottom:`2.5px solid ${PRIMARY}`}:{color:'#9CA3AF',borderBottom:'2.5px solid transparent'}}>
+            {[
+              ['all', 'Semua'],
+              ['active', 'Berlangsung'],
+              ['done', 'Selesai'],
+              ['cancelled', 'Dibatalkan'],
+            ].map(([id, lbl]) => (
+              <button key={id} onClick={() => setOrderFilter(id)}
+                className="flex-1 py-3 text-[12px] font-bold transition text-center"
+                style={orderFilter === id ? { color: PRIMARY, borderBottom: `2.5px solid ${PRIMARY}` } : { color: '#9CA3AF', borderBottom: '2.5px solid transparent' }}>
                 {lbl}
               </button>
             ))}
           </div>
+
           {/* Order list */}
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 flex flex-col gap-3">
             {(() => {
-              const filtered = orderFilter==='all' ? buyerOrders
-                : orderFilter==='active' ? buyerOrders.filter(o=>!['done','cancelled'].includes(o.status))
-                : buyerOrders.filter(o=>o.status==='done')
-              if (filtered.length===0) return (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <p className="text-4xl mb-3">🛍️</p>
-                  <p className="text-[14px] font-bold text-gray-900 mb-1">Belum ada pesanan</p>
-                  <p className="text-[12px] text-gray-400 text-center">Yuk mulai belanja produk lokal desa!</p>
-                </div>
-              )
-              return filtered.map(order=>{
-                const st = STATUS_CONFIG[order.status]
+              const filteredList = orderFilter === 'all' ? buyerOrders
+                : orderFilter === 'active' ? buyerOrders.filter(o => !['done', 'cancelled'].includes(o.status))
+                : orderFilter === 'done' ? buyerOrders.filter(o => o.status === 'done')
+                : buyerOrders.filter(o => o.status === 'cancelled')
+
+              if (filteredList.length === 0) {
                 return (
-                  <button key={order.id} onClick={()=>setOrderDetail(order)}
-                    className="bg-white rounded-2xl p-4 text-left w-full active:scale-[0.96] transition-transform"
-                    style={{boxShadow:'0 2px 8px rgba(0,0,0,0.07)'}}>
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <p className="text-4xl mb-3">🛍️</p>
+                    <p className="text-[14px] font-bold text-gray-900 mb-1">
+                      {orderFilter === 'cancelled' ? 'Tidak ada pesanan dibatalkan' : 'Belum ada pesanan'}
+                    </p>
+                    <p className="text-[12px] text-gray-400">
+                      {orderFilter === 'cancelled' ? 'Semua pesananmu berjalan dengan lancar.' : 'Yuk mulai belanja aneka produk segar desa!'}
+                    </p>
+                  </div>
+                )
+              }
+
+              return filteredList.map(order => {
+                const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.waiting
+                const isTrackable = ['confirmed', 'preparing', 'shipped'].includes(order.status)
+
+                return (
+                  <div key={order.id} onClick={() => setOrderDetail(order)}
+                    className="bg-white rounded-2xl p-4 text-left w-full cursor-pointer active:scale-[0.98] transition shadow-xs border border-gray-100">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="text-[11px] font-bold text-gray-400">{order.id}</p>
-                        <p className="text-[12px] text-gray-300 mt-0.5">{order.date}</p>
+                        <p className="text-[12px] text-gray-400 mt-0.5">{order.date}</p>
                       </div>
-                      <span className="text-[12px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ms-2"
-                        style={{background:st.bg,color:st.color}}>{st.label}</span>
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ms-2 flex items-center gap-1.5"
+                        style={{ background: st.bg, color: st.color }}>
+                        {isTrackable && <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />}
+                        {st.label}
+                      </span>
                     </div>
+
                     {/* Items */}
                     <div className="flex items-center gap-2.5 mb-3">
                       <div className="flex -space-x-2">
-                        {order.items.slice(0,3).map((item,i)=>(
+                        {order.items.slice(0, 3).map((item, i) => (
                           <div key={i} className="w-10 h-10 rounded-[12px] flex items-center justify-center border-2 border-white shadow-inner relative overflow-hidden"
-                            style={{background:item.g?`linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)`:'#F5F5F5',zIndex:order.items.length-i}}>
-                            {item.image?<img src={item.image} alt="" className="w-full h-full object-cover border border-black/10"/>:(item.Icon?<item.Icon size={18} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>:<Package size={18} className="text-gray-400"/>)}
+                            style={{ background: item.g ? `linear-gradient(135deg, ${item.g[0]} 0%, ${item.g[1]} 100%)` : '#F5F5F5', zIndex: order.items.length - i }}>
+                            {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover border border-black/10" /> : (item.Icon ? <item.Icon size={18} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} /> : <Package size={18} className="text-gray-400" />)}
                           </div>
                         ))}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[13px] font-semibold text-gray-900 line-clamp-2">
-                          {order.items[0].name}{order.items.length>1?` +${order.items.length-1} lainnya`:''}
+                          {order.items[0]?.name}{order.items.length > 1 ? ` +${order.items.length - 1} lainnya` : ''}
                         </p>
-                        <p className="text-[12px] text-gray-400">dari {order.seller}</p>
+                        <p className="text-[11px] text-gray-400">dari {order.seller}</p>
                       </div>
                     </div>
-                    {/* Rating (if done + rated) */}
+
+                    {/* Cancellation & Refund Info Preview */}
+                    {order.status === 'cancelled' && (
+                      <div className="p-2.5 rounded-xl bg-red-50 border border-red-100 text-[11px] text-red-700 mb-2.5">
+                        <span className="font-bold">Dibatalkan:</span> {order.cancelReason || 'Permintaan pembeli'}
+                        <p className="text-emerald-700 font-semibold mt-0.5">✓ Dana telah kembali ke GV Pay</p>
+                      </div>
+                    )}
+
+                    {/* Rating preview */}
                     {order.rating && (
                       <div className="flex items-center gap-1.5 mb-2 px-2.5 py-1.5 rounded-xl"
-                        style={{background:'#FFF8E1'}}>
-                        {[1,2,3,4,5].map(s=>(
-                          <span key={s} className="text-sm" style={{color:s<=order.rating?'#F9A825':'#E0E0E0'}}>★</span>
+                        style={{ background: '#FFF8E1' }}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                          <span key={s} className="text-sm" style={{ color: s <= order.rating ? '#F9A825' : '#E0E0E0' }}>★</span>
                         ))}
-                        <span className="text-[12px] text-gray-500 ms-1">
-                          {order.ratingComment ? `"${order.ratingComment.slice(0,30)}${order.ratingComment.length>30?'…':''}"` : 'Sudah diberi rating'}
+                        <span className="text-[11px] text-gray-600 ms-1 truncate">
+                          {order.ratingComment ? `"${order.ratingComment}"` : 'Ulasan selesai'}
                         </span>
                       </div>
                     )}
+
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-2.5 border-t border-gray-50">
                       <p className="text-[11px] text-gray-400">{order.delivery} · {order.payment}</p>
-                      <p className="text-[14px] font-extrabold" style={{color:PRIMARY}}>
+                      <p className="text-[14px] font-extrabold" style={{ color: PRIMARY }}>
                         Rp {order.total.toLocaleString('id')}
                       </p>
                     </div>
-                    {/* Rate CTA */}
-                    {order.status==='done' && !order.rating && (
-                      <div className="mt-2.5 pt-2.5 border-t border-gray-50">
-                        <span className="text-[11px] font-bold px-3 py-1.5 rounded-xl"
-                          style={{background:`${PRIMARY}12`,color:PRIMARY}}>
-                          ★ Beri rating produk
+
+                    {/* Card Actions */}
+                    {isTrackable && (
+                      <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
+                        <span className="text-[11px] text-emerald-800 font-semibold flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>GV Man sedang aktif</span>
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveTrackingOrder(order)
+                            setScreen('tracking')
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-700 text-white text-[11px] font-bold active:scale-95 transition shadow-sm flex items-center gap-1.5"
+                        >
+                          <Navigation size={12} />
+                          <span>Lacak Live</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {order.status === 'done' && !order.rating && (
+                      <div className="mt-2.5 pt-2.5 border-t border-gray-50 flex justify-end">
+                        <span className="text-[11px] font-bold px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+                          ★ Beri Rating
                         </span>
                       </div>
                     )}
-                  </button>
+                  </div>
                 )
               })
             })()}
           </div>
         </div>
       )}
-      {activeTab==='belanja' && (
-        <div className="flex-1 overflow-y-auto no-scrollbar" style={{paddingBottom:totalCart>0?72:16}}>
+
+      {/* ── BELANJA TAB (Product catalog & promotions) ── */}
+      {activeTab === 'belanja' && (
+        <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 16 }}>
           {/* Promo banners */}
           <div className="px-3 pt-3 pb-2">
             <div className="rounded-2xl overflow-hidden h-24 relative cursor-pointer"
-              style={{background:`linear-gradient(135deg,${BANNERS_ESTO[bannerIdx].g[0]},${BANNERS_ESTO[bannerIdx].g[1]})`,
-                boxShadow:'0 4px 16px rgba(0,0,0,0.12)'}}>
+              style={{
+                background: `linear-gradient(135deg,${BANNERS_ESTO[bannerIdx].g[0]},${BANNERS_ESTO[bannerIdx].g[1]})`,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+              }}>
               <div className="absolute inset-0 flex items-center px-4 gap-3">
                 <div className="flex-shrink-0 relative z-10">
-                   {React.createElement(BANNERS_ESTO[bannerIdx].Icon, {size: 36, className: "text-white drop-shadow-md", strokeWidth: 1.5})}
+                  {React.createElement(BANNERS_ESTO[bannerIdx].Icon, { size: 36, className: 'text-white drop-shadow-md', strokeWidth: 1.5 })}
                 </div>
                 <div className="flex-1">
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-md"
-                    style={{background:'rgba(255,255,255,0.2)',color:'rgba(255,255,255,0.9)'}}>
+                    style={{ background: 'rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.9)' }}>
                     {BANNERS_ESTO[bannerIdx].tag}
                   </span>
                   <p className="text-white font-extrabold text-[14px] leading-snug mt-1">{BANNERS_ESTO[bannerIdx].title}</p>
-                  <p className="text-white/60 text-[12px] mt-0.5">{BANNERS_ESTO[bannerIdx].sub}</p>
+                  <p className="text-white/70 text-[11px] mt-0.5">{BANNERS_ESTO[bannerIdx].sub}</p>
                 </div>
               </div>
             </div>
             <div className="flex justify-center gap-1.5 mt-2">
-              {BANNERS_ESTO.map((_,i)=>(
-                <button key={i} onClick={()=>setBannerIdx(i)}
+              {BANNERS_ESTO.map((_, i) => (
+                <button key={i} onClick={() => setBannerIdx(i)}
                   className="h-1.5 rounded-full transition"
-                  style={{width:i===bannerIdx?20:5,background:i===bannerIdx?PRIMARY:'#C8D8C8'}}/>
+                  style={{ width: i === bannerIdx ? 20 : 5, background: i === bannerIdx ? PRIMARY : '#C8D8C8' }} />
               ))}
             </div>
           </div>
@@ -2039,17 +3685,17 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           {/* Sort indicator + result count */}
           <div className="flex items-center justify-between px-3 py-2">
             <p className="text-[12px] font-bold text-gray-700 truncate mr-2">
-              {searchQ ? `"${searchQ}" — ${filtered.length} produk` : `${selectedCats.length===0?'Semua Produk':selectedCats.join(', ')} (${filtered.length})`}
+              {searchQ ? `"${searchQ}" — ${filtered.length} produk` : `${selectedCats.length === 0 ? 'Semua Produk' : selectedCats.join(', ')} (${filtered.length})`}
             </p>
-            <button onClick={()=>setShowSort(true)}
+            <button onClick={() => setShowSort(true)}
               className="flex items-center gap-1 text-[11px] font-semibold flex-shrink-0"
-              style={{color:'#1B6B3A'}}>
-              {SORT_OPTIONS.find(s=>s.id===sortBy)?.label} <ChevronDown size={12}/>
+              style={{ color: '#1B6B3A' }}>
+              {SORT_OPTIONS.find(s => s.id === sortBy)?.label} <ChevronDown size={12} />
             </button>
           </div>
 
           {/* Empty state */}
-          {filtered.length===0 && (
+          {filtered.length === 0 && (
             <div className="py-16 text-center px-8">
               <p className="text-3xl mb-3">🔍</p>
               <p className="text-[14px] font-bold text-gray-900 mb-1">Produk tidak ditemukan</p>
@@ -2059,131 +3705,275 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
           {/* Product grid */}
           <div className="grid grid-cols-2 gap-3 px-3 pb-3">
-            {filtered.map(p=>(
-              <div key={p.id} className="spotlight-border bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
-                <div onClick={()=>p.stock>0&&openDetail(p)} className="w-full text-left cursor-pointer">
-                  <div className="h-32 relative flex items-center justify-center shadow-inner" style={{background:p.image?'transparent':(p.g?`linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)`:'#F5F5F5')}}>
-                    {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover border border-black/10"/> : (p.Icon?<p.Icon size={48} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5}/>:<Package size={48} className="text-gray-400"/>)}
-                    <button onClick={e=>{e.stopPropagation();toggleLike(p.id)}}
-                      className="absolute top-2.5 end-2.5 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-sm">
-                      <Heart size={14} className={liked.has(p.id)?'fill-red-500 text-red-500':'text-gray-300'}/>
-                    </button>
-                    {p.orig && <div className="absolute top-2.5 start-2.5 px-2 py-0.5 rounded-lg text-white text-[11px] font-bold" style={{background:'#E53935'}}>DISKON</div>}
-                    {p.stock===0 && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><span className="text-white text-xs font-bold bg-black/50 px-2 py-1 rounded-lg">Stok Habis</span></div>}
-                  </div>
-                  <div className="p-3 pb-2">
-                    <p className="text-[12px] text-gray-400 mb-0.5">{p.cat} · {p.seller}</p>
-                    <p className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-1">{p.name}</p>
-                    <p className="text-[12px] text-gray-400 mb-2">{p.unit}</p>
-                    <div className="flex items-center gap-1 mb-2">
-                      <Star size={10} className="fill-yellow-400 text-yellow-400"/>
-                      <span className="text-[12px] text-gray-500">{p.rating} · {p.sold} terjual</span>
+            {filtered.map(p => {
+              const isOutOfStock = p.stock === 0
+              const isLowStock = p.stock > 0 && p.stock <= 3
+
+              return (
+                <div key={p.id} className="spotlight-border bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-xs flex flex-col justify-between">
+                  <div onClick={() => openDetail(p)} className="w-full text-left cursor-pointer">
+                    <div className="h-32 relative flex items-center justify-center shadow-inner" style={{ background: p.image ? 'transparent' : (p.g ? `linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)` : '#F5F5F5') }}>
+                      {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover border border-black/10" /> : (p.Icon ? <p.Icon size={48} className="text-white drop-shadow-sm relative z-10" strokeWidth={1.5} /> : <Package size={48} className="text-gray-400" />)}
+                      
+                      <button onClick={e => { e.stopPropagation(); toggleLike(p.id) }}
+                        className="absolute top-2.5 end-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center shadow-sm">
+                        <Heart size={14} className={liked.has(p.id) ? 'fill-red-500 text-red-500' : 'text-gray-300'} />
+                      </button>
+
+                      {p.orig && !isOutOfStock && (
+                        <div className="absolute top-2.5 start-2.5 px-2 py-0.5 rounded-lg text-white text-[10px] font-bold" style={{ background: '#E53935' }}>
+                          DISKON
+                        </div>
+                      )}
+
+                      {/* Out of Stock Overlay */}
+                      {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-2">
+                          <span className="text-white text-xs font-black bg-red-600/90 px-2.5 py-1 rounded-lg shadow-sm">
+                            Stok Habis
+                          </span>
+                          <span className="text-[10px] text-white/80 mt-1">Segera restok</span>
+                        </div>
+                      )}
+
+                      {/* Low Stock Badge */}
+                      {isLowStock && (
+                        <div className="absolute bottom-2 start-2 px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold shadow-xs">
+                          Sisa {p.stock}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-3 pb-2">
+                      <p className="text-[11px] text-gray-400 mb-0.5 truncate">{p.cat} · {p.seller}</p>
+                      <p className="text-[13px] font-bold text-gray-900 leading-snug line-clamp-2 mb-1">{p.name}</p>
+                      <p className="text-[11px] text-gray-400 mb-2">{p.unit}</p>
+                      <div className="flex items-center gap-1 mb-2">
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <span className="text-[11px] text-gray-600 font-semibold">{p.rating} · {p.sold} terjual</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="px-3 pb-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold tabular-nums" style={{color:PRIMARY}}>Rp {p.price.toLocaleString('id')}</p>
-                    {p.orig && <p className="text-[12px] text-gray-400 line-through">Rp {p.orig.toLocaleString('id')}</p>}
-                  </div>
-                  {p.stock===0 ? (
-                    <span className="text-[12px] text-gray-400">Habis</span>
-                  ) : cart[p.id] ? (
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={()=>removeFromCart(p.id)} className="w-7 h-7 rounded-full border-2 flex items-center justify-center" style={{borderColor:PRIMARY}}><Minus size={12} style={{color:PRIMARY}}/></button>
-                      <span className="text-sm font-bold text-gray-900 w-4 text-center">{cart[p.id]}</span>
-                      <button onClick={()=>addToCart(p.id)} className="w-7 h-7 rounded-full flex items-center justify-center text-white" style={{background:PRIMARY}}><Plus size={12}/></button>
+
+                  <div className="px-3 pb-3 flex items-center justify-between pt-1">
+                    <div>
+                      <p className="text-sm font-extrabold tabular-nums" style={{ color: PRIMARY }}>
+                        Rp {p.price.toLocaleString('id')}
+                      </p>
+                      {p.orig && <p className="text-[11px] text-gray-400 line-through">Rp {p.orig.toLocaleString('id')}</p>}
                     </div>
-                  ) : (
-                    <button onClick={()=>addToCart(p.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm" style={{background:PRIMARY}}><Plus size={14}/></button>
-                  )}
+
+                    {isOutOfStock ? (
+                      <span className="text-[11px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-200">
+                        Habis
+                      </span>
+                    ) : cart[p.id] ? (
+                      <div className="flex items-center gap-1.5 bg-emerald-50 rounded-full p-0.5 border border-emerald-200">
+                        <button onClick={() => updateCartQty(p.id, cart[p.id] - 1)}
+                          className="w-6 h-6 rounded-full bg-white border border-emerald-600 flex items-center justify-center shadow-xs active:scale-90">
+                          <Minus size={11} style={{ color: PRIMARY }} />
+                        </button>
+                        <span className="text-xs font-bold text-emerald-950 w-4 text-center tabular-nums">
+                          {cart[p.id]}
+                        </span>
+                        <button
+                          onClick={() => addToCart(p.id, 1)}
+                          disabled={cart[p.id] >= p.stock}
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-white shadow-xs active:scale-90 ${
+                            cart[p.id] >= p.stock ? 'bg-gray-300' : 'bg-emerald-700'
+                          }`}
+                        >
+                          <Plus size={11} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => addToCart(p.id)}
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm active:scale-90 transition"
+                        style={{ background: PRIMARY }}>
+                        <Plus size={15} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}
 
-
-
-      {/* Checkout bar */}
-      {totalCart>0 && activeTab==='belanja' && (
+      {/* Sticky Cart Summary Bar */}
+      {totalCart > 0 && activeTab === 'belanja' && (
         <div className="flex-shrink-0 px-4 py-3 border-t border-gray-100 bg-white">
-          <button onClick={()=>setScreen('checkout')}
-            className="w-full py-3.5 rounded-2xl text-white font-semibold text-sm flex items-center justify-center gap-2"
-            style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>
-            <ShoppingCart size={16}/>
-            Keranjang ({totalCart}) · <span className="tabular-nums">Rp {totalPrice.toLocaleString('id')}</span>
+          <button
+            onClick={() => setScreen('cart')}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-between px-5 shadow-lg active:scale-95 transition"
+            style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)', boxShadow: '0 4px 14px rgba(27,107,58,0.3)' }}
+          >
+            <div className="flex items-center gap-2.5">
+              <ShoppingCart size={18} />
+              <span>Lihat Keranjang ({totalCart})</span>
+            </div>
+            <span className="tabular-nums font-extrabold text-[15px]">
+              Rp {totalPrice.toLocaleString('id')}
+            </span>
           </button>
         </div>
       )}
 
-      {/* Product Detail Bottom Sheet */}
+      {/* Product Detail Bottom Sheet (with strict stock limit handling) */}
       {detail && (
-        <div className="absolute inset-0 z-30 flex flex-col justify-end" style={{background:'rgba(0,0,0,.45)'}}>
-          {/* Backdrop tap to close */}
-          <div className="flex-1" onClick={()=>setDetail(null)}/>
-          <div className="bg-white flex flex-col" style={{borderRadius:'20px 20px 0 0',maxHeight:'82%',boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
+        <div className="absolute inset-0 z-30 flex flex-col justify-end" style={{ background: 'rgba(0,0,0,.45)' }}>
+          {/* Backdrop */}
+          <div className="flex-1" onClick={() => setDetail(null)} />
+          <div className="bg-white flex flex-col rounded-t-3xl max-h-[85%] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200">
             <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
-              <div className="w-8 h-1 rounded-full bg-gray-300"/>
+              <div className="w-10 h-1 rounded-full bg-gray-300" />
             </div>
-            <div className="overflow-y-auto no-scrollbar px-5 pb-5">
-              <div className="rounded-2xl h-40 flex items-center justify-center shadow-inner mb-4 relative overflow-hidden" style={{background:detail.image?'transparent':(detail.g?`linear-gradient(135deg, ${detail.g[0]} 0%, ${detail.g[1]} 100%)`:'#F5F5F5')}}>
-                {detail.image ? <img src={detail.image} alt="" className="w-full h-full object-cover border border-black/10"/> : (detail.Icon?<detail.Icon size={64} className="text-white drop-shadow-md relative z-10" strokeWidth={1.5}/>:<Package size={64} className="text-gray-400"/>)}
-                <span className="absolute top-3 end-3 text-xs font-semibold px-2.5 py-1 rounded-xl"
-                  style={{background:'rgba(255,255,255,.9)',color:detail.stock<=2?'#E53935':PRIMARY}}>
-                  Stok: {detail.stock} {detail.unit}
+
+            <div className="overflow-y-auto no-scrollbar px-5 pb-6">
+              {/* Product hero banner */}
+              <div className="rounded-2xl h-44 flex items-center justify-center shadow-inner mb-4 relative overflow-hidden"
+                style={{ background: detail.image ? 'transparent' : (detail.g ? `linear-gradient(135deg, ${detail.g[0]} 0%, ${detail.g[1]} 100%)` : '#F5F5F5') }}>
+                {detail.image ? (
+                  <img src={detail.image} alt="" className="w-full h-full object-cover border border-black/10" />
+                ) : (
+                  detail.Icon ? <detail.Icon size={64} className="text-white drop-shadow-md relative z-10" strokeWidth={1.5} /> : <Package size={64} className="text-gray-400" />
+                )}
+                <span
+                  className={`absolute top-3 end-3 text-xs font-bold px-3 py-1 rounded-xl shadow-xs ${
+                    detail.stock === 0
+                      ? 'bg-red-600 text-white'
+                      : detail.stock <= 3
+                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                      : 'bg-white/90 text-emerald-800'
+                  }`}
+                >
+                  {detail.stock === 0 ? 'Stok Habis' : `Tersedia: ${detail.stock} ${detail.unit}`}
                 </span>
               </div>
-              <p className="text-lg font-bold text-gray-900 mb-3">{detail.name}</p>
+
+              <h2 className="text-lg font-extrabold text-gray-900 mb-2 leading-snug">{detail.name}</h2>
+
+              {/* Seller details badge */}
               <div className="flex items-center gap-3 pb-3 mb-3 border-b border-gray-100">
-                <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:'#E8F5E9'}}>
-                  <span className="text-xs font-bold" style={{color:PRIMARY}}>{detail.seller[0]}</span>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100 font-bold text-emerald-800">
+                  {detail.seller[0]}
                 </div>
-                <div className="flex-1">
-                  <p className="text-xs font-semibold text-gray-900">{detail.seller}</p>
-                  <p className="text-[12px] text-gray-400">Desa Sukamaju</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-900">{detail.seller}</p>
+                  <p className="text-[11px] text-gray-400">Desa Sukamaju · Petani Mitra Resmi ESTO</p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Star size={11} className="fill-yellow-400 text-yellow-400"/>
-                  <span className="text-xs font-medium text-gray-600">{detail.rating} ({detail.sold})</span>
+                  <Star size={12} className="fill-amber-400 text-amber-400" />
+                  <span className="text-xs font-bold text-gray-700">{detail.rating} ({detail.sold})</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed mb-4">{detail.desc}</p>
+
+              {/* Low stock alert */}
+              {detail.stock > 0 && detail.stock <= 3 && (
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 mb-3 flex items-center gap-2 text-[11px] text-amber-900 font-semibold">
+                  <AlertTriangle size={15} className="text-amber-700 flex-shrink-0" />
+                  <span>Sisa {detail.stock} unit lagi! Segera pesan sebelum kehabisan.</span>
+                </div>
+              )}
+
+              {/* Out of stock alert */}
+              {detail.stock === 0 && (
+                <div className="p-3 rounded-2xl bg-red-50 border border-red-200 mb-3 flex items-center gap-2.5 text-[12px] text-red-700 font-bold">
+                  <AlertTriangle size={18} className="text-red-600 flex-shrink-0" />
+                  <div>
+                    <p>Produk Ini Sedang Habis</p>
+                    <p className="text-[11px] font-normal text-red-600/90 mt-0.5">
+                      Penjual sedang menyiapkan panen berikutnya. Silakan cek produk sejenis lainnya.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              <p className="text-[12px] text-gray-600 leading-relaxed mb-4">{detail.desc}</p>
+
+              {/* Trust Badge */}
+              <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center gap-2.5 mb-5 text-[11px] text-emerald-900">
+                <ShieldCheck size={18} className="text-emerald-700 flex-shrink-0" />
+                <span>Jaminan Panen Segar & 100% Produk Asli Desa Tanpa Bahan Pengawet</span>
+              </div>
+
+              {/* Price & Quantity Stepper */}
               <div className="flex items-center justify-between mb-5">
                 <div>
-                  <p className="text-xl font-bold tabular-nums" style={{color:PRIMARY}}>Rp {detail.price.toLocaleString('id')}</p>
-                  <p className="text-xs text-gray-400">per {detail.unit}</p>
+                  <p className="text-2xl font-black tabular-nums" style={{ color: PRIMARY }}>
+                    Rp {detail.price.toLocaleString('id')}
+                  </p>
+                  <p className="text-[11px] text-gray-400">per {detail.unit}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <button onClick={()=>setDQty(q=>Math.max(1,q-1))}
-                    className="w-9 h-9 rounded-xl border-2 flex items-center justify-center" style={{borderColor:PRIMARY}}>
-                    <Minus size={16} style={{color:PRIMARY}}/>
+
+                {detail.stock > 0 && (
+                  <div className="flex items-center gap-2.5">
+                    <button
+                      onClick={() => setDQty(q => Math.max(1, q - 1))}
+                      disabled={detailQty <= 1}
+                      className={`w-9 h-9 rounded-xl border-2 flex items-center justify-center transition active:scale-95 ${
+                        detailQty <= 1 ? 'border-gray-200 text-gray-300' : 'border-emerald-700 text-emerald-700'
+                      }`}
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <span className="text-lg font-bold text-gray-900 w-7 text-center tabular-nums">
+                      {detailQty}
+                    </span>
+                    <button
+                      onClick={() => setDQty(q => Math.min(detail.stock, q + 1))}
+                      disabled={detailQty >= detail.stock}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center text-white transition active:scale-95 ${
+                        detailQty >= detail.stock ? 'bg-gray-300 cursor-not-allowed' : 'bg-emerald-700'
+                      }`}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* CTA Buttons */}
+              {detail.stock === 0 ? (
+                <button
+                  disabled
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                >
+                  Stok Habis
+                </button>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      addToCart(detail.id, detailQty)
+                      setDetail(null)
+                    }}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold border-2 active:scale-95 transition"
+                    style={{ borderColor: PRIMARY, color: PRIMARY }}
+                  >
+                    + Keranjang
                   </button>
-                  <span className="text-lg font-bold text-gray-900 w-6 text-center">{detailQty}</span>
-                  <button onClick={()=>setDQty(q=>q+1)}
-                    className="w-9 h-9 rounded-xl flex items-center justify-center text-white" style={{background:PRIMARY}}>
-                    <Plus size={16}/>
+                  <button
+                    onClick={() => {
+                      addToCart(detail.id, detailQty)
+                      setDetail(null)
+                      setScreen('checkout')
+                    }}
+                    className="flex-1 py-3.5 rounded-2xl text-sm font-bold text-white active:scale-95 transition shadow-md"
+                    style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)' }}
+                  >
+                    Beli Sekarang
                   </button>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={()=>{addToCart(detail.id,detailQty);setDetail(null)}}
-                  className="flex-1 py-3.5 rounded-2xl text-sm font-semibold border-2"
-                  style={{borderColor:PRIMARY,color:PRIMARY}}>
-                  + Keranjang
-                </button>
-                <button onClick={()=>{addToCart(detail.id,detailQty);setDetail(null);setScreen('checkout')}}
-                  className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-white"
-                  style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>
-                  Beli Sekarang
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
       )}
-      <BottomNav active="pasar" navigate={navigate}/>
+
+      <BottomNav active="pasar" navigate={navigate} />
     </ScreenBackground>
   )
 }
