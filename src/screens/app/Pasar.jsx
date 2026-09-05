@@ -1135,48 +1135,56 @@ function CheckoutScreen({
                 <button
                   key={d.id}
                   onClick={() => setDelivery(d.id)}
-                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-left border transition-all active:scale-[0.98] group ${
+                  className={`w-full flex items-start gap-3 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.99] group ${
                     isSelected
                       ? 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                       : 'bg-white border-gray-200/80 hover:bg-gray-50'
                   }`}
                 >
+                  {/* Left: Icon */}
                   <SkeuoIcon
                     icon={d.Icon}
                     gradient={d.g}
                     size="sm"
-                    className="w-9 h-9 rounded-xl flex-shrink-0"
+                    className="w-10 h-10 rounded-2xl flex-shrink-0 mt-0.5"
                   />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5 min-w-0 flex-nowrap">
-                      <p className="text-[12px] font-extrabold text-gray-900 leading-tight whitespace-nowrap">
+
+                  {/* Center: Information Area */}
+                  <div className="flex-1 min-w-0 pr-1">
+                    {/* Row 1: Title + Tag */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[13px] font-extrabold text-gray-900 leading-snug">
                         {d.label}
-                      </p>
+                      </span>
                       {d.badge && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-100/90 text-emerald-800 whitespace-nowrap flex-shrink-0 leading-tight">
+                        <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 leading-tight flex-shrink-0">
                           {d.badge}
                         </span>
                       )}
                     </div>
-                    <p className="text-[10.5px] text-gray-500 mt-0.5 truncate leading-normal">
+
+                    {/* Row 2: Description & ETA */}
+                    <p className="text-[11px] text-gray-500 mt-1 leading-normal line-clamp-2">
                       {d.sub}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className="text-[12px] font-black text-gray-900 whitespace-nowrap text-right">
+
+                  {/* Right: Selection & Price Column */}
+                  <div className="flex flex-col items-end justify-between flex-shrink-0 self-stretch min-h-[44px] py-0.5">
+                    <div
+                      className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                        isSelected ? 'border-emerald-700' : 'border-gray-300'
+                      }`}
+                    >
+                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-emerald-700" />}
+                    </div>
+                    <span className="text-[12.5px] font-black text-gray-900 tracking-tight leading-tight whitespace-nowrap mt-2">
                       {d.price === 0 ? (
                         <span className="text-emerald-700 font-extrabold">Gratis</span>
                       ) : (
                         `Rp ${d.price.toLocaleString('id')}`
                       )}
                     </span>
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                        isSelected ? 'border-emerald-700' : 'border-gray-300'
-                      }`}
-                    >
-                      {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-700" />}
-                    </div>
                   </div>
                 </button>
               )
