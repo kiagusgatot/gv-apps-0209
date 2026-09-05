@@ -7,6 +7,7 @@ import SectionHeader from '@/components/molecules/SectionHeader'
 import ProductCard from '@/components/molecules/ProductCard'
 import OrderCard from '@/components/molecules/OrderCard'
 import CategoryPills from '@/components/molecules/CategoryPills'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import { getProductImage } from '@/utils/productImages'
 import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Store, ArrowLeft, Minus, Plus, MapPin, CreditCard, Check, Package, Pencil,
@@ -787,7 +788,7 @@ function CheckoutScreen({
       label: 'QRIS',
       sub: 'Scan QR m-Banking / e-Wallet (BCA, GoPay, OVO, dll)',
       Icon: ScanLine,
-      g: ['#000000', '#424242'],
+      g: ['#18181B', '#3F3F46'],
     },
     {
       id: 'transfer',
@@ -849,13 +850,12 @@ function CheckoutScreen({
           </div>
 
           {activeAddress ? (
-            <div className="flex gap-3 items-start p-2.5 rounded-xl bg-gray-50/70 border border-gray-200/60">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white shadow-xs"
-                style={{ background: 'linear-gradient(135deg, #1B6B3A, #2E7D32)' }}
-              >
-                <MapPin size={16} />
-              </div>
+            <div className="flex gap-3 items-center p-2.5 rounded-xl bg-gray-50/70 border border-gray-200/60">
+              <SkeuoIcon
+                icon={MapPin}
+                gradient={['#1B5E20', '#2E7D32']}
+                size="sm"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-[13px] font-extrabold text-gray-900">{activeAddress.label}</p>
@@ -898,20 +898,18 @@ function CheckoutScreen({
           <div className="flex flex-col gap-2.5">
             {displayItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-3 pb-2.5 border-b border-gray-50 last:border-0 last:pb-0">
-                <div
-                  className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs"
-                  style={{
-                    background: item.image
-                      ? 'transparent'
-                      : `linear-gradient(135deg, ${item.g?.[0] || '#2E7D32'} 0%, ${item.g?.[1] || '#4CAF50'} 100%)`,
-                  }}
-                >
-                  {item.image ? (
-                    <img src={item.image} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <item.Icon size={20} className="text-white drop-shadow-xs" />
-                  )}
-                </div>
+                {(() => {
+                  const imgSrc = getProductImage(item.name) || item.image
+                  return (
+                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-xs border border-gray-100 bg-emerald-50/40">
+                      {imgSrc ? (
+                        <img src={imgSrc} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <SkeuoIcon icon={item.Icon || Package} gradient={item.g || ['#1B5E20', '#2E7D32']} size="sm" />
+                      )}
+                    </div>
+                  )
+                })()}
                 <div className="flex-1 min-w-0">
                   <p className="text-[12.5px] font-bold text-gray-900 leading-snug truncate">{item.name}</p>
                   <p className="text-[11px] text-gray-400">
@@ -939,23 +937,17 @@ function CheckoutScreen({
           <div className="flex flex-col gap-2">
             {DELIVERY_OPTIONS.map(d => {
               const isSelected = delivery === d.id
-              const IconComp = d.Icon
               return (
                 <button
                   key={d.id}
                   onClick={() => setDelivery(d.id)}
-                  className={`flex items-center gap-3 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] ${
+                  className={`flex items-center gap-3.5 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] group ${
                     isSelected
-                      ? 'bg-emerald-50/40 border-emerald-600 shadow-xs'
+                      ? 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                       : 'bg-white border-gray-200/80 hover:bg-gray-50'
                   }`}
                 >
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-xs"
-                    style={{ background: `linear-gradient(135deg, ${d.g[0]} 0%, ${d.g[1]} 100%)` }}
-                  >
-                    <IconComp size={18} />
-                  </div>
+                  <SkeuoIcon icon={d.Icon} gradient={d.g} size="sm" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-[12.5px] font-extrabold text-gray-900">{d.label}</p>
@@ -993,27 +985,21 @@ function CheckoutScreen({
           <div className="flex flex-col gap-2">
             {PAYMENT_OPTIONS.map(p => {
               const isSelected = payment === p.id
-              const IconComp = p.Icon
               const isInsufficient = p.id === 'gvpay' && userBalance < grandTotal
 
               return (
                 <div key={p.id} className="flex flex-col">
                   <button
                     onClick={() => setPayment(p.id)}
-                    className={`flex items-center gap-3 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] ${
+                    className={`flex items-center gap-3.5 p-3 rounded-2xl text-left border transition-all active:scale-[0.98] group ${
                       isSelected
                         ? isInsufficient
                           ? 'bg-red-50/40 border-red-400'
-                          : 'bg-emerald-50/40 border-emerald-600 shadow-xs'
+                          : 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                         : 'bg-white border-gray-200/80 hover:bg-gray-50'
                     }`}
                   >
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-xs"
-                      style={{ background: `linear-gradient(135deg, ${p.g[0]} 0%, ${p.g[1]} 100%)` }}
-                    >
-                      <IconComp size={18} />
-                    </div>
+                    <SkeuoIcon icon={p.Icon} gradient={p.g} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[12.5px] font-extrabold text-gray-900">{p.label}</p>
                       <p className={`text-[11px] mt-0.5 ${isInsufficient ? 'text-red-600 font-bold' : 'text-gray-500'}`}>
