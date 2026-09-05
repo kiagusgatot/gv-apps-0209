@@ -1132,7 +1132,7 @@ function CheckoutScreen({
                 <button
                   key={d.id}
                   onClick={() => setDelivery(d.id)}
-                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.99] group ${
+                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl text-left border transition-all active:scale-[0.99] group min-h-[64px] ${
                     isSelected
                       ? 'bg-emerald-50/40 border-emerald-600 shadow-xs ring-1 ring-emerald-600/10'
                       : 'bg-white border-gray-200/80 hover:bg-gray-50'
@@ -1147,18 +1147,18 @@ function CheckoutScreen({
                   />
 
                   {/* Middle: Title & Description */}
-                  <div className="flex-1 min-w-0 pr-1.5">
-                    <h4 className="text-[13px] font-extrabold text-gray-900 leading-snug truncate">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h4 className="text-[13px] font-extrabold text-gray-900 leading-tight line-clamp-2 break-words">
                       {d.label}
                     </h4>
-                    <p className="text-[11px] text-gray-500 mt-0.5 leading-snug line-clamp-2">
+                    <p className="text-[11px] text-gray-500 mt-1 leading-snug line-clamp-2">
                       {d.sub}
                     </p>
                   </div>
 
                   {/* Right: Dedicated Price & Radio Indicator */}
                   <div className="flex items-center gap-2.5 flex-shrink-0">
-                    <span className="text-[12.5px] font-black text-right whitespace-nowrap min-w-[58px]">
+                    <span className="text-[12.5px] font-black text-right whitespace-nowrap min-w-[62px]">
                       {d.price === 0 ? (
                         <span className="text-emerald-700 font-extrabold">Gratis</span>
                       ) : (
@@ -3943,7 +3943,7 @@ function StoreDetailScreen({
 
       {/* Floating Bottom Cart Bar */}
       {totalCart > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-4 py-3 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg max-w-md mx-auto">
+        <div className="absolute bottom-0 inset-x-0 z-40 px-4 py-3 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
           <button
             onClick={onOpenCart}
             className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-between px-5 shadow-lg active:scale-95 transition"
