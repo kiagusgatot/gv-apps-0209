@@ -2612,7 +2612,6 @@ function OrderTracking({ order, onBack, onDone }) {
   const [showCallModal, setShowCallModal] = useState(false)
   const [showChatModal, setShowChatModal] = useState(false)
   const [showItemsAccordion, setShowItemsAccordion] = useState(false)
-  const [showDeliveryDetailSheet, setShowDeliveryDetailSheet] = useState(false)
   const [showReceiptDialog, setShowReceiptDialog] = useState(false)
 
   const courier = order?.courier || DEFAULT_COURIER
@@ -2656,135 +2655,6 @@ function OrderTracking({ order, onBack, onDone }) {
 
       {/* Chat Simulation Modal */}
       {showChatModal && <CourierChatModal courier={courier} onClose={() => setShowChatModal(false)} />}
-
-      {/* Detail Proses Pengiriman Bottom Sheet Modal */}
-      {showDeliveryDetailSheet && (
-        <div className="absolute inset-0 z-50 flex flex-col justify-end animate-in fade-in duration-200">
-          <div
-            className="absolute inset-0 bg-black/45 backdrop-blur-xs"
-            onClick={() => setShowDeliveryDetailSheet(false)}
-          />
-          <div className="relative bg-white rounded-t-3xl max-h-[85%] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-200">
-            {/* Drag handle */}
-            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-gray-300" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 pt-2 pb-3 border-b border-gray-100 flex-shrink-0">
-              <div>
-                <h3 className="text-[15px] font-extrabold text-gray-900">Detail Proses Pengiriman</h3>
-                <p className="text-[11.5px] text-gray-400 mt-0.5">
-                  {orderId} · Tahap {phase + 1} dari {FULL_TRACK_PHASES.length}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowDeliveryDetailSheet(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition active:scale-95"
-              >
-                <X size={15} />
-              </button>
-            </div>
-
-            {/* Chronological Stepper */}
-            <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-0">
-              {FULL_TRACK_PHASES.map((p, i) => {
-                const isDone = i < phase
-                const isCurrent = i === phase
-                const isUpcoming = i > phase
-                const isLast = i === FULL_TRACK_PHASES.length - 1
-
-                return (
-                  <div key={p.id} className="flex gap-3 relative">
-                    {/* Connector Line */}
-                    {!isLast && (
-                      <div
-                        className="absolute left-[13px] top-7 w-0.5"
-                        style={{
-                          height: 42,
-                          background: isDone ? PRIMARY : '#E5E7EB',
-                          transition: 'background 0.5s ease',
-                        }}
-                      />
-                    )}
-
-                    {/* Step Node */}
-                    <div
-                      className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-300"
-                      style={
-                        isDone
-                          ? { background: PRIMARY }
-                          : isCurrent
-                          ? { background: '#fff', border: `2px solid ${PRIMARY}` }
-                          : { background: '#F3F4F6', border: '2px solid #E5E7EB' }
-                      }
-                    >
-                      {isDone ? (
-                        <Check size={14} className="text-white" strokeWidth={3} />
-                      ) : isCurrent ? (
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
-                      ) : (
-                        <div className="w-2 h-2 rounded-full bg-gray-300" />
-                      )}
-                    </div>
-
-                    {/* Step Details */}
-                    <div className="flex-1 pb-6">
-                      <div className="flex items-start justify-between gap-2">
-                        <p
-                          className={`text-[13px] font-bold leading-snug ${
-                            isDone
-                              ? 'text-gray-900'
-                              : isCurrent
-                              ? 'text-emerald-800 font-extrabold'
-                              : 'text-gray-400'
-                          }`}
-                        >
-                          {p.label}
-                        </p>
-                        <span className="text-[11px] text-gray-400 flex-shrink-0 font-mono">
-                          {phaseTimes[i]}
-                        </span>
-                      </div>
-                      <p
-                        className={`text-[11.5px] mt-0.5 leading-relaxed ${
-                          isDone
-                            ? 'text-gray-500'
-                            : isCurrent
-                            ? 'text-emerald-700 font-medium'
-                            : 'text-gray-300'
-                        }`}
-                      >
-                        {p.sub}
-                      </p>
-                      {isCurrent && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                          <span className="text-[11px] font-bold text-emerald-700">
-                            Sedang berlangsung
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-gray-100 flex-shrink-0 bg-gray-50/70 rounded-b-3xl">
-              <button
-                type="button"
-                onClick={() => setShowDeliveryDetailSheet(false)}
-                className="w-full py-3 rounded-2xl bg-[#1B6B3A] text-white font-bold text-[13px] shadow-sm active:scale-95 transition"
-              >
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Receipt Confirmation Dialog */}
       {showReceiptDialog && (
@@ -3135,66 +3005,93 @@ function OrderTracking({ order, onBack, onDone }) {
           </div>
         </div>
 
-        {/* ── 4. Card Proses Pengiriman (Status Terakhir & Opsi Lihat Detail Proses) ── */}
-        <div
-          onClick={() => setShowDeliveryDetailSheet(true)}
-          className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 hover:border-emerald-200/80 transition-all cursor-pointer group"
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                  Proses Pengiriman
-                </span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                  Tahap {phase + 1} dari {FULL_TRACK_PHASES.length}
-                </span>
-              </div>
-              <p className="text-[14px] font-extrabold text-gray-900 mt-1">
-                {currentPhaseObj.label}
-              </p>
-            </div>
+        {/* ── 4. Card Proses Pengiriman Lengkap (Stepper Vertikal Sesuai Referensi) ── */}
+        <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100">
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">
+            Proses Pengiriman Lengkap
+          </p>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setShowDeliveryDetailSheet(true)
-              }}
-              className="text-[11.5px] font-bold text-emerald-800 hover:text-emerald-950 flex items-center gap-1 py-1.5 px-3 rounded-xl bg-emerald-50/80 border border-emerald-200/60 transition active:scale-95 flex-shrink-0 mt-0.5"
-            >
-              <span>Lihat Detail</span>
-              <ChevronRight size={13} />
-            </button>
-          </div>
+          <div className="space-y-0">
+            {FULL_TRACK_PHASES.map((p, i) => {
+              const isDone = i < phase
+              const isCurrent = i === phase
+              const isUpcoming = i > phase
+              const isLast = i === FULL_TRACK_PHASES.length - 1
 
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-[12.5px] text-gray-600 leading-snug font-medium">
-              {currentPhaseObj.sub}
-            </p>
-            <div className="flex items-center justify-between mt-2">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono font-bold text-emerald-800">
-                  {phaseTimes[phase]}
-                </span>
-                {!isArrived ? (
-                  <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                    Sedang berlangsung
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-[10.5px] font-bold text-emerald-700">
-                    <Check size={11} strokeWidth={3} />
-                    Selesai
-                  </span>
-                )}
-              </div>
+              return (
+                <div key={p.id} className="flex gap-3.5 relative">
+                  {/* Connector Line */}
+                  {!isLast && (
+                    <div
+                      className="absolute left-[13px] top-[26px] bottom-[-2px] w-[2px]"
+                      style={{
+                        background: isDone ? PRIMARY : '#E5E7EB',
+                        transition: 'background 0.3s ease',
+                      }}
+                    />
+                  )}
 
-              <span className="text-[11px] font-semibold text-emerald-700 group-hover:text-emerald-800 flex items-center gap-0.5">
-                Rincian alur
-                <ChevronRight size={12} />
-              </span>
-            </div>
+                  {/* Step Node */}
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 transition-all duration-200"
+                    style={
+                      isDone
+                        ? { background: PRIMARY }
+                        : isCurrent
+                        ? { background: '#fff', border: `2px solid ${PRIMARY}` }
+                        : { background: '#F3F4F6' }
+                    }
+                  >
+                    {isDone ? (
+                      <Check size={14} className="text-white" strokeWidth={3} />
+                    ) : isCurrent ? (
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#1B6B3A] animate-pulse" />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-gray-300" />
+                    )}
+                  </div>
+
+                  {/* Step Details */}
+                  <div className={`flex-1 min-w-0 ${isLast ? 'pb-1' : 'pb-5'}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <p
+                        className={`text-[13.5px] leading-snug ${
+                          isDone
+                            ? 'font-bold text-gray-900'
+                            : isCurrent
+                            ? 'font-extrabold text-[#1B6B3A]'
+                            : 'font-semibold text-gray-400'
+                        }`}
+                      >
+                        {p.label}
+                      </p>
+                      <span className="text-[11px] font-mono text-gray-400 flex-shrink-0">
+                        {phaseTimes[i]}
+                      </span>
+                    </div>
+                    <p
+                      className={`text-[11.5px] mt-0.5 leading-relaxed ${
+                        isDone
+                          ? 'text-gray-500'
+                          : isCurrent
+                          ? 'text-gray-600 font-medium'
+                          : 'text-gray-300'
+                      }`}
+                    >
+                      {p.sub}
+                    </p>
+                    {isCurrent && (
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#1B6B3A] animate-pulse" />
+                        <span className="text-[11px] font-extrabold text-[#1B6B3A]">
+                          Sedang berlangsung
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
 
