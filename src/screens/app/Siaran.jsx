@@ -98,21 +98,22 @@ const JADWAL_RADIO = [
   { time:'18:00', prog:'Kajian Maghrib' },
   { time:'20:00', prog:'Malam Bersama GV Radio' },
 ]
-const OBROLAN_TV = [
-  { id:1, user:'adhika',            msg:'Selamat malam',                           bold:false },
-  { id:2, user:'Risqi Japana',      msg:'salam sehat',                             bold:false },
-  { id:3, user:'adhika',            msg:'halo mas risqi',                          bold:false },
-  { id:4, user:'Oktavian Widianto', msg:'Selamat Hari Rabu',                       bold:true  },
-  { id:5, user:'Oktavian Widianto', msg:'Selamat Hari Kamis',                      bold:true  },
-  { id:6, user:'Andreas Budi P.',   msg:'Halo Mas Okta.. garang asem enak. Hehe', bold:true  },
-  { id:7, user:'Adhika achmad',     msg:'Halo',                                    bold:false },
+const DUMMY_LIVE_MESSAGES = [
+  { id: 1, user: 'Budi Santoso', msg: 'Lagunya enak banget 🎵', color: '#1565C0' },
+  { id: 2, user: 'Ibu Sari',     msg: 'Suka sama lagu ini',    color: '#2E7D32' },
+  { id: 3, user: 'Pak Ahmad',    msg: 'Request Kangen Band dong 🙏', color: '#6A1B9A' },
+  { id: 4, user: 'Dewi',         msg: 'Suaranya merdu sekali!', color: '#C62828' },
+  { id: 5, user: 'Budi Santoso', msg: 'Semangat terus GV Radio 🔥', color: '#1565C0' },
 ]
+
+const OBROLAN_TV = [
+  ...DUMMY_LIVE_MESSAGES,
+  { id: 6, user: 'adhika',       msg: 'Selamat malam semuanya', color: '#00ACC1' },
+  { id: 7, user: 'Risqi Japana', msg: 'salam sehat',           color: '#43A047' },
+]
+
 const OBROLAN_RADIO = [
-  { id:1, user:'Budi Santoso', msg:'Lagunya enak banget 🎵',      bold:false },
-  { id:2, user:'Ibu Sari',     msg:'Suka sama lagu ini',          bold:false },
-  { id:3, user:'Pak Ahmad',    msg:'Request Kangen Band dong 🙏',  bold:true  },
-  { id:4, user:'dewi_cantik',  msg:'Mantap GV Radio!',            bold:false },
-  { id:5, user:'Budi Santoso', msg:'Setuju pak ahmad 😄',          bold:false },
+  ...DUMMY_LIVE_MESSAGES,
 ]
 
 // ── Video data — konten real dari aplikasi ─────────────────
@@ -947,7 +948,9 @@ const CHAT_COLORS = ['#E53935','#1E88E5','#43A047','#FB8C00','#8E24AA','#00ACC1'
 const getChatColor = (name) => CHAT_COLORS[name.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%CHAT_COLORS.length]
 
 function ObrolanPenonton({ initialMessages }) {
-  const [messages, setMessages] = useState(initialMessages)
+  const [messages, setMessages] = useState(
+    initialMessages && initialMessages.length > 0 ? initialMessages : DUMMY_LIVE_MESSAGES
+  )
   const [newMsg, setNewMsg] = useState('')
   const chatEndRef = useRef(null)
 
@@ -956,6 +959,12 @@ function ObrolanPenonton({ initialMessages }) {
     setMessages(prev=>[...prev,{id:Date.now(),user:'Kamu',msg:newMsg,isMe:true}])
     setNewMsg('')
   }
+
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(initialMessages)
+    }
+  }, [initialMessages])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -974,12 +983,22 @@ function ObrolanPenonton({ initialMessages }) {
         <span>320 sedang menonton</span>
       </div>
 
-      {/* Daftar Chat (Scrollable flex-1) */}
+      {/* Area atas (flex-1, overflow-y-auto): daftar pesan chat */}
       <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1 min-h-0" style={{background:'#FAFAFA'}}>
-        {messages.map(m=>(
-          <div key={m.id} className="leading-relaxed">
-            <span className="text-[11px] font-extrabold me-1.5" style={{color:m.isMe?'#1B6B3A':getChatColor(m.user)}}>{m.user}</span>
-            <span className={`text-[12px] ${m.isMe?'font-semibold':'text-gray-700'}`} style={m.isMe?{color:'#1B5E20'}:{}}>{m.msg}</span>
+        {messages.map((m, idx) => (
+          <div key={m.id || idx} className="leading-relaxed">
+            <span
+              className="text-[11px] font-extrabold me-1.5"
+              style={{ color: m.isMe ? '#1B6B3A' : (m.color || getChatColor(m.user)) }}
+            >
+              {m.user}
+            </span>
+            <span
+              className={`text-[12px] ${m.isMe ? 'font-semibold' : 'text-gray-700'}`}
+              style={m.isMe ? { color: '#1B5E20' } : {}}
+            >
+              {m.msg}
+            </span>
           </div>
         ))}
         <div className="flex items-center gap-1.5 mt-1 opacity-40">
@@ -994,22 +1013,8 @@ function ObrolanPenonton({ initialMessages }) {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Sticky Bottom Input & Quick Emoji Reaction Bar */}
+      {/* Area bawah (flex-shrink-0): baris emoji + input field */}
       <div className="flex flex-col gap-2 px-3.5 py-2.5 flex-shrink-0 bg-white border-t border-gray-100">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 flex items-center rounded-2xl px-3 py-2 bg-[#F5F5F5]">
-            <input value={newMsg} onChange={e=>setNewMsg(e.target.value)}
-              onKeyDown={e=>{ if(e.key==='Enter') handleSend() }}
-              placeholder="Tulis pesan live..." className="flex-1 text-[12px] outline-none text-gray-700 bg-transparent"/>
-          </div>
-          <button onClick={handleSend}
-            type="button"
-            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition active:scale-95"
-            style={{background:newMsg.trim()?'#1B6B3A':'#E0E0E0',boxShadow:newMsg.trim()?'0 2px 6px rgba(27,107,58,0.3)':'none'}}>
-            <Send size={14} className="text-white" style={{marginInlineStart:1}}/>
-          </button>
-        </div>
-
         {/* Baris Quick Emoji Reaction */}
         <div className="flex items-center gap-2">
           {['👏', '❤️', '😂', '🔥', '🎵'].map((emoji) => (
@@ -1022,6 +1027,27 @@ function ObrolanPenonton({ initialMessages }) {
               <span>{emoji}</span>
             </button>
           ))}
+        </div>
+
+        {/* Input Field */}
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center rounded-2xl px-3 py-2 bg-[#F5F5F5]">
+            <input
+              value={newMsg}
+              onChange={e=>setNewMsg(e.target.value)}
+              onKeyDown={e=>{ if(e.key==='Enter') handleSend() }}
+              placeholder="Tulis pesan live..."
+              className="flex-1 text-[12px] outline-none text-gray-700 bg-transparent"
+            />
+          </div>
+          <button
+            onClick={handleSend}
+            type="button"
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition active:scale-95"
+            style={{background:newMsg.trim()?'#1B6B3A':'#E0E0E0',boxShadow:newMsg.trim()?'0 2px 6px rgba(27,107,58,0.3)':'none'}}
+          >
+            <Send size={14} className="text-white" style={{marginInlineStart:1}}/>
+          </button>
         </div>
       </div>
     </div>
@@ -1522,7 +1548,6 @@ function TabLive({ navigate, showToast }) {
         >
           <Tv2 size={14} className={isTV ? 'text-white' : 'text-gray-500'} />
           <span className="text-[12px] font-bold tracking-tight">GV TV</span>
-          {isTV && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0" />}
         </button>
 
         {/* GV Radio Chip */}
@@ -1660,8 +1685,11 @@ function TabLive({ navigate, showToast }) {
         )}
 
         {innerTab === 'obrolan' && (
-          <div className="flex-1 overflow-hidden flex flex-col px-4 pt-2 pb-20">
-            <div className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm">
+          <div
+            className="flex flex-col flex-1 px-4 pt-2 pb-20"
+            style={{ minHeight: 'calc(100vh - 420px)' }}
+          >
+            <div className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0">
               <ObrolanPenonton initialMessages={obrolan} />
             </div>
           </div>
