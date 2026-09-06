@@ -1246,7 +1246,7 @@ function TabSemua({ onGVPlus, navigate, showToast, userProfile }) {
   const untukKamu = isSeller ? UNTUK_KAMU.penjual : isCreator ? UNTUK_KAMU.kreator : UNTUK_KAMU.warga
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
 
       {/* 1. Live Sekarang */}
       <div className="flex gap-3 px-4 mt-4">
@@ -1532,7 +1532,7 @@ function TabLive({ navigate, showToast }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Sub-channel Switcher: GV TV vs GV Radio (Compact Chips) */}
       <div className="px-4 pt-2.5 pb-2 flex gap-2 w-full">
         {/* GV TV Chip */}
@@ -1598,9 +1598,9 @@ function TabLive({ navigate, showToast }) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto flex flex-col bg-[#FAFBF9]">
+      <div className="flex-1 flex flex-col min-h-0 bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-20">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-4">
             <div className="mt-4 flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <Calendar size={13} className="text-brand" />
@@ -1685,18 +1685,15 @@ function TabLive({ navigate, showToast }) {
         )}
 
         {innerTab === 'obrolan' && (
-          <div
-            className="flex flex-col flex-1 px-4 pt-1 pb-3 min-h-0"
-            style={{ height: 'calc(100vh - 530px)', maxHeight: '420px' }}
-          >
-            <div className="flex-1 flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0">
+          <div className="flex-1 flex flex-col px-4 pt-1 pb-4 min-h-0">
+            <div className="flex-1 flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0 overflow-hidden">
               <ObrolanPenonton initialMessages={obrolan} />
             </div>
           </div>
         )}
 
         {innerTab === 'salam' && (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-20">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-4">
             <KirimSalam channel={data.ch} />
           </div>
         )}
@@ -1733,7 +1730,7 @@ function TabKreator({ onGVPlus, navigate, showToast, userProfile }) {
   const spotlightCreator = KREATOR[0]
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
       {/* Category Filter Chips */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -2113,7 +2110,7 @@ function VideoDetail({ video, onBack, onGVPlus }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
         {/* 16:9 Player Canvas */}
         <div
           className="relative w-full aspect-video bg-black overflow-hidden flex items-center justify-center shadow-md"
@@ -2367,7 +2364,7 @@ function TabVideo({ onGVPlus, userProfile }) {
   })
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
       {/* Mode Switcher: Semua | GV+ Eksklusif */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
@@ -2657,7 +2654,7 @@ function PodcastShowDetail({ show, onBack, onPlayEpisode }) {
       </div>
 
       {/* Episode list */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-24 px-4 pt-4">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-4 px-4 pt-4">
         <SectionHeader
           title={`Daftar Episode (${eps.length})`}
           subtitle="Urut berdasarkan rilis terbaru"
@@ -2773,7 +2770,7 @@ function TabPodcast({ onPlayEpisode, onGVPlus }) {
   const featuredShow = SHOWS[0]
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-24 bg-[#FAFBF9]">
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
       {/* Mode Switcher: Semua | GV+ Eksklusif */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
@@ -3091,7 +3088,7 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto flex flex-col relative">
+      <div className="flex-1 overflow-hidden flex flex-col relative">
         {tab==='live'    && <TabLive navigate={navigate} showToast={showToast}/>}
         {tab==='kreator' && <TabKreator onGVPlus={setPaywall} navigate={navigate} showToast={showToast} userProfile={userProfile}/>}
         {tab==='video'   && <TabVideo   onGVPlus={setPaywall} userProfile={userProfile}/>}
@@ -3284,7 +3281,7 @@ function ThreadDetail({ post, creator, isMember, onBack, onMemberRequire }) {
         </div>
 
         {/* Comments List */}
-        <div className="px-4 pb-24 space-y-2.5">
+        <div className="px-4 pb-4 space-y-2.5">
           {comments.map((c)=>(
             <div key={c.id} className="bg-white rounded-2xl p-3.5 border border-gray-100 shadow-xs flex items-start gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-emerald-100 shadow-xs">
@@ -3545,7 +3542,7 @@ function VideoPlayerView({ content, creator, isMember, isFollowed, onBack, onMem
         </div>
 
         {/* Comments Section */}
-        <div className="px-4 pt-4 pb-20">
+        <div className="px-4 pt-4 pb-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <p className="text-[13.5px] font-extrabold text-gray-900">Komentar</p>
@@ -3676,7 +3673,7 @@ function CreatorProfile({ creator, onBack, onGVPlus, navigate, showToast }) {
   return (
     <div className="flex-1 overflow-hidden flex flex-col bg-gray-50 animate-fade-in">
       {/* Scrollable container */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-16">
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-4">
 
         {/* 1. Cinematic Profile Header Banner */}
         <div className="relative h-36 w-full overflow-hidden flex-shrink-0"
