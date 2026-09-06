@@ -1459,6 +1459,7 @@ function TabLive({ navigate, showToast }) {
   const [radioPlaying, setRadioPlaying] = useState(false)
   const [reminderSet, setReminderSet]   = useState({})
   const liveItemRef                     = useRef(null)
+  const scheduleContainerRef            = useRef(null)
   const isTV = sub === 'tv'
   const data   = isTV ? GV_TV : GV_RADIO
   const jadwal = isTV ? JADWAL_TV : JADWAL_RADIO
@@ -1470,11 +1471,54 @@ function TabLive({ navigate, showToast }) {
     { id: 'salam', label: 'Kirim Salam', Icon: Send }
   ]
 
+  // Auto-scroll ke jadwal yang sedang tayang (LIVE) dengan posisi yang nyaman
   useEffect(() => {
-    if (innerTab === 'jadwal' && liveItemRef.current) {
-      liveItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (innerTab !== 'jadwal') return
+
+    // Cari apakah ada jadwal dengan status LIVE/sedang tayang
+    const hasLiveItem = jadwal.some(j => j.live)
+    if (!hasLiveItem) {
+      // Jika tidak ada yang sedang tayang, tampilkan jadwal dari posisi awal (top) tanpa scroll
+      if (scheduleContainerRef.current) {
+        scheduleContainerRef.current.scrollTop = 0
+      }
+      return
     }
-  }, [innerTab, sub])
+
+    // Scroll spesifik pada container jadwal saja (mencegah header terpotong atau loncatan/jerking)
+    const performScroll = () => {
+      const container = scheduleContainerRef.current
+      const liveEl = liveItemRef.current
+      if (!container || !liveEl) return
+
+      const containerRect = container.getBoundingClientRect()
+      const liveRect = liveEl.getBoundingClientRect()
+
+      if (containerRect.height === 0) return
+
+      // Hitung posisi vertikal item di dalam container scroll
+      const liveOffsetInContent = (liveRect.top - containerRect.top) + container.scrollTop
+      const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
+
+      // Posisikan card live secara nyaman di tengah viewport container agar jadi fokus utama
+      const targetScroll = Math.max(0, Math.min(
+        liveOffsetInContent - (container.clientHeight / 2) + (liveEl.clientHeight / 2),
+        maxScroll
+      ))
+
+      container.scrollTo({
+        top: targetScroll,
+        behavior: 'smooth',
+      })
+    }
+
+    // Jalankan setelah render stabil
+    const timerId = setTimeout(performScroll, 80)
+
+    return () => {
+      clearTimeout(timerId)
+    }
+  }, [innerTab, sub, jadwal])
 
   const toggleReminder = (time, prog) => {
     setReminderSet(prev => {
@@ -1555,7 +1599,7 @@ function TabLive({ navigate, showToast }) {
       {/* Content Area */}
       <div className="flex-1 flex flex-col min-h-0 bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-4">
+          <div ref={scheduleContainerRef} className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-4">
             {/* Header Tanggal */}
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
