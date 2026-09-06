@@ -1458,6 +1458,7 @@ function TabLive({ navigate, showToast }) {
   const [innerTab, setInnerTab]         = useState('jadwal')
   const [radioPlaying, setRadioPlaying] = useState(false)
   const [reminderSet, setReminderSet]   = useState({})
+  const liveItemRef                     = useRef(null)
   const isTV = sub === 'tv'
   const data   = isTV ? GV_TV : GV_RADIO
   const jadwal = isTV ? JADWAL_TV : JADWAL_RADIO
@@ -1468,6 +1469,12 @@ function TabLive({ navigate, showToast }) {
     { id: 'obrolan', label: 'Obrolan Live', Icon: MessageCircle },
     { id: 'salam', label: 'Kirim Salam', Icon: Send }
   ]
+
+  useEffect(() => {
+    if (innerTab === 'jadwal' && liveItemRef.current) {
+      liveItemRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [innerTab, sub])
 
   const toggleReminder = (time, prog) => {
     setReminderSet(prev => {
@@ -1549,36 +1556,6 @@ function TabLive({ navigate, showToast }) {
       <div className="flex-1 flex flex-col min-h-0 bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-4">
-            {/* Pinned Card "Sedang Tayang" */}
-            <div
-              className="rounded-xl p-3 mb-4 flex flex-col gap-1.5"
-              style={{
-                background: '#F1F8E9',
-                borderLeft: '3px solid #2E7D32',
-              }}
-            >
-              {/* Baris atas */}
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-red-600 flex items-center gap-1">
-                  <span>🔴</span> SEDANG TAYANG
-                </span>
-                <span className="text-[11px] text-surface-500">
-                  sampai {isTV ? '10:00 WIB' : '18:00 WIB'}
-                </span>
-              </div>
-
-              {/* Baris tengah */}
-              <p className="font-bold text-[14px] text-surface-900 leading-tight">
-                {isTV ? 'Berita Desa Pagi' : 'Campursari Sore'}
-              </p>
-
-              {/* Baris bawah */}
-              <div className="flex items-center gap-1 text-[12px] text-surface-500">
-                {isTV ? <Tv size={12} /> : <Radio size={12} />}
-                <span>{isTV ? 'GV TV · 09:00 – 10:00 WIB' : 'GV Radio · 15:00 – 18:00 WIB'}</span>
-              </div>
-            </div>
-
             {/* Header Tanggal */}
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
@@ -1591,16 +1568,16 @@ function TabLive({ navigate, showToast }) {
             </div>
 
             <div className="flex flex-col space-y-2">
+              <p className="text-[11px] text-surface-400 px-1 mb-2">
+                ↓ Gulir untuk melihat jadwal lengkap hari ini
+              </p>
               {jadwal.map((j) => {
                 if (j.live) {
                   return (
                     <div
                       key={j.time}
-                      className="rounded-2xl p-3.5 border transition-all shadow-sm relative overflow-hidden"
-                      style={{
-                        background: isTV ? 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)' : 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
-                        borderColor: isTV ? 'rgba(34, 197, 94, 0.35)' : 'rgba(168, 85, 247, 0.35)',
-                      }}
+                      ref={liveItemRef}
+                      className="bg-green-50 border-l-2 border-green-600 rounded-2xl p-3.5 transition-all shadow-sm relative overflow-hidden"
                     >
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <div className="flex items-center gap-2">
@@ -1608,7 +1585,7 @@ function TabLive({ navigate, showToast }) {
                           <span className="text-[11px] font-bold text-gray-600">Sedang Tayang</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <span className="text-[12px] font-extrabold" style={{ color: accent }}>{j.time} WIB</span>
+                          <span className="text-[12px] font-bold text-brand">{j.time} WIB</span>
                           <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md ml-1">LIVE</span>
                         </div>
                       </div>
