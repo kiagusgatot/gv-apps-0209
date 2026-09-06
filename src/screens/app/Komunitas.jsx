@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
-import NavTabs from '@/components/molecules/NavTabs'
 import SearchBar from '@/components/molecules/SearchBar'
 import { ChevronRight, Search, Sparkles, Wheat, ShoppingBag, HeartPulse,
   GraduationCap, Users, Palette, ArrowLeft,
@@ -1577,17 +1576,32 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
           placeholder="Cari komunitas atau diskusi..."
           onClick={() => setShowSearch(true)}
         />
-        <NavTabs
-          variant="underline-dark"
-          tabs={[
-            { id: 'post', label: 'Post' },
-            { id: 'mine', label: 'Komunitasku' },
-            { id: 'explore', label: 'Jelajahi' },
-          ]}
-          activeTab={tab}
-          onChange={setTab}
-        />
       </ScreenHeader>
+
+      {/* Tab Navigasi Konten */}
+      <div className="bg-white border-b border-[#E5E7EB] px-4 flex select-none flex-shrink-0">
+        {[
+          { id: 'post', label: 'Post' },
+          { id: 'mine', label: 'Komunitasku' },
+          { id: 'explore', label: 'Jelajahi' },
+        ].map((t) => {
+          const isActive = tab === t.id
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex-1 py-3 text-[13px] text-center transition-colors flex items-center justify-center ${
+                isActive
+                  ? 'text-[#1B5E20] border-b-2 border-[#1B5E20] font-bold'
+                  : 'text-[#6B7280] font-medium border-b-2 border-transparent'
+              }`}
+            >
+              <span>{t.label}</span>
+            </button>
+          )
+        })}
+      </div>
 
       {tab==='post' && <PostTab joined={joined} onOpenCommunity={handleOpenCommunity}/>}
       {tab==='mine' && <KomunitaskuTab joined={joined} managedIds={managedIds} onOpenCommunity={handleOpenCommunity} onToggleJoin={handleToggleJoin}/>}
