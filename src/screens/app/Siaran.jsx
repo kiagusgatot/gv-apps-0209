@@ -1014,7 +1014,7 @@ function ObrolanPenonton({ initialMessages }) {
       </div>
 
       {/* Area bawah (flex-shrink-0): baris emoji + input field */}
-      <div className="flex flex-col gap-2 px-3.5 py-2.5 flex-shrink-0 bg-white border-t border-gray-100">
+      <div className="flex-shrink-0 border-t border-surface-100 px-3.5 py-2.5 bg-white flex flex-col gap-2">
         {/* Baris Quick Emoji Reaction */}
         <div className="flex items-center gap-2">
           {['👏', '❤️', '😂', '🔥', '🎵'].map((emoji) => (
@@ -1532,7 +1532,7 @@ function TabLive({ navigate, showToast }) {
   }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col">
+    <div className="flex-1 overflow-y-auto flex flex-col">
       {/* Sub-channel Switcher: GV TV vs GV Radio (Compact Chips) */}
       <div className="px-4 pt-2.5 pb-2 flex gap-2 w-full">
         {/* GV TV Chip */}
@@ -1598,7 +1598,7 @@ function TabLive({ navigate, showToast }) {
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-[#FAFBF9]">
+      <div className="flex-1 overflow-y-auto flex flex-col bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-20">
             <div className="mt-4 flex items-center justify-between mb-2.5">
@@ -1686,10 +1686,10 @@ function TabLive({ navigate, showToast }) {
 
         {innerTab === 'obrolan' && (
           <div
-            className="flex flex-col flex-1 px-4 pt-2 pb-20"
-            style={{ minHeight: 'calc(100vh - 420px)' }}
+            className="flex flex-col flex-1 px-4 pt-1 pb-3 min-h-0"
+            style={{ height: 'calc(100vh - 530px)', maxHeight: '420px' }}
           >
-            <div className="flex-1 overflow-hidden flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0">
+            <div className="flex-1 flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0">
               <ObrolanPenonton initialMessages={obrolan} />
             </div>
           </div>
@@ -3091,7 +3091,7 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden flex flex-col relative">
+      <div className="flex-1 overflow-y-auto flex flex-col relative">
         {tab==='live'    && <TabLive navigate={navigate} showToast={showToast}/>}
         {tab==='kreator' && <TabKreator onGVPlus={setPaywall} navigate={navigate} showToast={showToast} userProfile={userProfile}/>}
         {tab==='video'   && <TabVideo   onGVPlus={setPaywall} userProfile={userProfile}/>}
