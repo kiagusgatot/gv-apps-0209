@@ -4,7 +4,7 @@ import { Bell, Bot, Sparkles } from 'lucide-react'
 /**
  * AppHeader Organism
  * Sticky top header for the mobile app screens with persona badge,
- * dynamic time greeting, Tanya GV shortcut, and notification bell.
+ * dynamic time greeting, Tanya AIDA shortcut, and notification bell.
  */
 export default function AppHeader({
   userName = 'Warga GV',
@@ -59,7 +59,7 @@ export default function AppHeader({
           <button
             type="button"
             onClick={onOpenTanyaGV}
-            aria-label="Tanya GV — Asisten percakapan desa"
+            aria-label="Tanya AIDA — Asisten percakapan desa"
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-[0.95]"
             style={{
               background: 'rgba(255, 255, 255, 0.16)',
@@ -71,7 +71,7 @@ export default function AppHeader({
           >
             <Bot size={14} className="text-white drop-shadow-sm" />
             <span className="text-white text-[11.5px] font-bold tracking-tight">
-              Tanya GV
+              Tanya AIDA
             </span>
           </button>
         )}

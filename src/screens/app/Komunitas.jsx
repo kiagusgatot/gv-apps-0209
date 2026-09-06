@@ -1262,7 +1262,7 @@ function CommunityPage({ community, isJoined: initJoined, isAdmin, isPenjual, es
               <p className="text-[11px] text-surface-400 mt-3 px-1 leading-relaxed">
                 💡 <span className="font-medium">GV Moderator</span> adalah AI otomatis yang
                 memantau konten komunitas. Berbeda dengan{' '}
-                <span className="font-medium">Tanya GV</span> yang merupakan asisten percakapan
+                <span className="font-medium">Tanya AIDA</span> yang merupakan asisten percakapan
                 di Beranda.
               </p>
             </div>

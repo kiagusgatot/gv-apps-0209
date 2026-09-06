@@ -152,7 +152,7 @@ export default function BerandaBentoGrid({
       {/* ══════════════════════════════════════════════════════════
           2. ASYMMETRIC BENTO DUO:
              Left (Col 1): Sedang Tayang Live Mini-Player
-             Right (Col 1): Urgency / Action Alert / Tanya GV
+             Right (Col 1): Urgency / Action Alert / Tanya AIDA
       ══════════════════════════════════════════════════════════ */}
       {/* Mini Live Player Bento (Col 1: Card GV TV) */}
       <BentoCard
@@ -197,9 +197,9 @@ export default function BerandaBentoGrid({
         </div>
       </BentoCard>
 
-      {/* Dynamic Context Bento (Col 1: Card Tanya GV & Quick Action) */}
+      {/* Dynamic Context Bento (Col 1: Card Tanya AIDA & Quick Action) */}
       <div className="col-span-1 flex flex-col gap-2.5 h-full justify-between" style={{ minHeight: 168 }}>
-        {/* Tanya GV AI Assistant Card */}
+        {/* Tanya AIDA Assistant Card */}
         <BentoCard
           colSpan={1}
           variant="elevated"
@@ -212,7 +212,7 @@ export default function BerandaBentoGrid({
           <div className="flex items-center justify-between">
             <span className="text-brand text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
               <Sparkles size={11} className="text-brand" />
-              <span>Tanya GV</span>
+              <span>Tanya AIDA</span>
             </span>
             <div className="w-5 h-5 rounded-md bg-brand/10 flex items-center justify-center text-brand group-hover:scale-110 transition-transform">
               <Bot size={13} />
@@ -220,7 +220,7 @@ export default function BerandaBentoGrid({
           </div>
           <div className="mt-1">
             <p className="text-surface-900 text-[12px] font-bold leading-tight">
-              Tanya GV AI
+              Tanya AIDA
             </p>
             <p className="text-surface-500 text-[10px] mt-0.5">Asisten percakapan warga GV →</p>
           </div>

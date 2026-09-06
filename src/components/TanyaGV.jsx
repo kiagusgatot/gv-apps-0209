@@ -199,7 +199,7 @@ export default function TanyaGV({
             className="font-bold text-[11.5px]"
             style={{ color: open ? '#fff' : '#1B6B3A' }}
           >
-            Tanya GV
+            Tanya AIDA
           </span>
         </button>
       )}
@@ -242,7 +242,7 @@ export default function TanyaGV({
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <p className="font-extrabold text-white text-[14.5px] tracking-tight">Tanya GV</p>
+                    <p className="font-extrabold text-white text-[14.5px] tracking-tight">Tanya AIDA</p>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   </div>
                   <p className="text-[10.5px] text-emerald-100/75 font-medium">
@@ -400,7 +400,7 @@ export default function TanyaGV({
                       </div>
                       <div className="px-3.5 py-2.5 rounded-2xl bg-white border border-gray-200/80 flex items-center gap-2 shadow-xs rounded-tl-xs">
                         <span className="text-[11.5px] font-medium text-gray-500">
-                          Tanya GV sedang mengetik...
+                          AIDA sedang mengetik...
                         </span>
                         <div className="flex items-center gap-1">
                           {[0, 1, 2].map((dot) => (

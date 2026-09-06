@@ -1384,7 +1384,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
     {
       section: 'Bantuan & Informasi',
       items: [
-        { label: 'Tanya GV (AI Desa)', sub: 'Bantuan instan dari asisten cerdas', to: 'tanya-gv', Icon: Sparkles, g: ['#1B5E20', '#2E7D32'] },
+        { label: 'Tanya AIDA', sub: 'Bantuan instan dari asisten cerdas', to: 'tanya-gv', Icon: Sparkles, g: ['#1B5E20', '#2E7D32'] },
         { label: 'Pusat Bantuan & FAQ', sub: 'Panduan penggunaan & kendala aplikasi', to: 'bantuan', Icon: HelpCircle, g: ['#1565C0', '#1E88E5'] },
       ]
     },
@@ -1415,7 +1415,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
               }}
             >
               <Sparkles size={13} className="text-amber-300" />
-              <span className="text-[11.5px] font-bold text-white">Tanya GV</span>
+              <span className="text-[11.5px] font-bold text-white">Tanya AIDA</span>
             </button>
 
             <button
