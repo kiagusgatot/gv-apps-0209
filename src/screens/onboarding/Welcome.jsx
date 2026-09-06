@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   ChevronLeft, ArrowRight, Tv2, Radio, Play, Headphones, MessageCircle,
-  Store, Clapperboard, Wheat, ShoppingCart, CreditCard, Star, Zap
+  Store, Clapperboard, Wheat, ShoppingCart, CreditCard, Star, Zap, Users, Sparkles
 } from 'lucide-react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
@@ -24,10 +24,10 @@ const SLIDES = [
     subtitle:
       'Diskusi warga, beli & jual produk lokal, ikuti kreator desa, dan bangun komunitas bersama anggota GV.',
     features: [
-      { Icon: MessageCircle, label: 'Diskusi Warga', g: ['#0D47A1', '#1976D2'] },
-      { Icon: Store, label: 'Jual Beli', g: ['#E65100', '#F57C00'] },
-      { Icon: Clapperboard, label: 'Kreator Lokal', g: ['#4A148C', '#7B1FA2'] },
-      { Icon: Wheat, label: 'Kelompok Tani', g: ['#1B5E20', '#2E7D32'] },
+      { Icon: MessageCircle, label: 'Diskusi Warga',   g: ['#0D47A1', '#1976D2'] },
+      { Icon: Users,         label: '6 Komunitas Resmi', g: ['#1B5E20', '#2E7D32'] },
+      { Icon: Clapperboard,  label: 'Kreator Lokal',   g: ['#4A148C', '#7B1FA2'] },
+      { Icon: Sparkles,      label: 'Konten Terkurasi', g: ['#E65100', '#F57C00'] },
     ],
   },
   {

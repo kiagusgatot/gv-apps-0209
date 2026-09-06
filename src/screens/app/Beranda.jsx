@@ -308,10 +308,12 @@ const SEARCHABLE_MEDIA = [
 ]
 
 const SEARCHABLE_COMMUNITIES = [
-  { id: 'c1', name: 'Komunitas Tani Maju', members: '12.400 anggota', desc: 'Wadah petani berbagi tips bibit, pupuk, dan harga gabah' },
-  { id: 'c2', name: 'Komunitas UMKM Desa', members: '8.900 anggota', desc: 'Sinergi pengrajin dan pelaku usaha lokal Bogor' },
-  { id: 'c3', name: 'Komunitas Pemuda Kreatif', members: '4.300 anggota', desc: 'Pemuda penggerak digitalisasi & konten kreatif desa' },
-  { id: 'c4', name: 'Komunitas Sehat & Posyandu', members: '2.100 anggota', desc: 'Edukasi gizi, sanitasi, dan kesehatan keluarga desa' },
+  { id:'c1', name:'SINARTANI',     members:'—', desc:'Pertanian, komoditas, dan agribisnis desa' },
+  { id:'c2', name:'NEXGENT',       members:'—', desc:'Inovasi, teknologi, dan generasi muda' },
+  { id:'c3', name:'HKTI',          members:'—', desc:'Himpunan Kerukunan Tani Indonesia' },
+  { id:'c4', name:'Active Campus', members:'—', desc:'Beasiswa, kampus, dan pengembangan mahasiswa' },
+  { id:'c5', name:'RT Online',     members:'—', desc:'Digitalisasi lingkungan RT/RW dan info desa' },
+  { id:'c6', name:'Dekopin',       members:'—', desc:'Koperasi, UMKM, dan ekonomi kerakyatan' },
 ]
 
 const SEARCHABLE_SERVICES = [
