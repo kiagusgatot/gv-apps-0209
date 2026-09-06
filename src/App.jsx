@@ -34,7 +34,7 @@ const DUMMY_USERS = [
   {
     id:'warga_baru', label:'Warga Baru', color:'#607D8B',
     desc:'Hari ke-1 · belum ada transaksi',
-    name:'Sari Dewi', desa:'Desa Sukamaju', preferences:['Info Desa','Bayar Tagihan'],
+    name:'Sari Dewi', desa:'Desa Sukamaju', komunitas:'', preferences:['Info Desa','Bayar Tagihan'],
     capabilities:['Member'], balance:0, points:0,
     hasWatchHistory:false, urgentOrders:0, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
@@ -46,7 +46,7 @@ const DUMMY_USERS = [
   {
     id:'warga_aktif', label:'Warga Aktif', color:'#1565C0',
     desc:'Hari ke-14 · ada pesanan aktif',
-    name:'Budi Santoso', desa:'Desa Cikaret', preferences:['Belanja','Bayar Tagihan','Komunitas'],
+    name:'Budi Santoso', desa:'Desa Cikaret', komunitas:'SINARTANI', preferences:['Belanja','Bayar Tagihan','Komunitas'],
     capabilities:['Member'], balance:125000, points:450,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:true,
     pendingContent:0, draftsPending:0,
@@ -58,7 +58,7 @@ const DUMMY_USERS = [
   {
     id:'penjual', label:'Penjual Aktif', color:'#1B6B3A',
     desc:'Hari ke-30 · 3 pesanan pending',
-    name:'Sari Dewi', desa:'Desa Sukamaju', preferences:['Jual Produk','Komunitas'],
+    name:'Sari Dewi', desa:'Desa Sukamaju', komunitas:'Dekopin', preferences:['Jual Produk','Komunitas','Belanja'],
     capabilities:['Penjual'], balance:248500, points:1240,
     hasWatchHistory:true, urgentOrders:3, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
@@ -71,7 +71,7 @@ const DUMMY_USERS = [
   {
     id:'kreator', label:'Kreator Konten', color:'#BF360C',
     desc:'Hari ke-21 · 1 video pending review',
-    name:'Rizky Fauzan', desa:'Desa Nagrak', preferences:['Media','Komunitas'],
+    name:'Rizky Fauzan', desa:'Desa Nagrak', komunitas:'NEXGENT', preferences:['Siaran','Komunitas'],
     capabilities:['Kreator'], balance:180000, points:2100,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:false,
     pendingContent:1, draftsPending:0,
@@ -85,7 +85,7 @@ const DUMMY_USERS = [
   {
     id:'admin_komunitas', label:'Admin Komunitas', color:'#6A1B9A',
     desc:'Mengelola 2 komunitas · 18rb+ anggota',
-    name:'Wawan Setiawan', desa:'Desa Sukamakmur', preferences:['Komunitas','Media'],
+    name:'Wawan Setiawan', desa:'Desa Sukamakmur', komunitas:'SINARTANI', preferences:['Komunitas','Media'],
     capabilities:['Admin Komunitas'], balance:95000, points:3400,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
@@ -99,7 +99,7 @@ const DUMMY_USERS = [
   {
     id:'super_admin', label:'Super Admin', color:'#B71C1C',
     desc:'Semua role aktif · Akses penuh',
-    name:'Admin GV', desa:'Desa Nagrak', preferences:['Semua'],
+    name:'Admin GV', desa:'Desa Nagrak', komunitas:'SINARTANI', preferences:['Semua'],
     capabilities:['Penjual','Kreator','Admin Komunitas','Super Admin'],
     gvPlusActive:true,
     balance:750000, points:5800,
@@ -112,7 +112,7 @@ const DUMMY_USERS = [
     hasJoinedCommunity:true,
     followedCreators:['k1','k2','k3'],
     memberships:[{id:'k1',name:'Pak Tani Bogor',avatar:'🌾',color:'#2E7D32',price:35000,since:'Mar 2026'}],
-    managedCommunityIds:[1,2,3,4],
+    managedCommunityIds:[1, 2, 3, 4],
   },
 ]
 

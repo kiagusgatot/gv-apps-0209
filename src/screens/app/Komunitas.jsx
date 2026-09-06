@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import NavTabs from '@/components/molecules/NavTabs'
@@ -1487,12 +1487,27 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
   const estoProducts    = ESTO_PRODUCTS[userProfile?.id] || []
   const managedIds      = userProfile?.managedCommunityIds ?? []
 
+  const hasJoined       = userProfile ? userProfile.hasJoinedCommunity !== false : true
+
   const [tab, setTab]           = useState('post')
   const [joined, setJoined]     = useState(
+    !hasJoined     ? [] :
     isAdminPersona ? [...new Set([...JOINED_IDS_INIT,...managedIds])] :
     isPenjual      ? [...new Set([...JOINED_IDS_INIT, 7])] :
     JOINED_IDS_INIT
   )
+
+  useEffect(() => {
+    if (userProfile?.hasJoinedCommunity === false) {
+      setJoined([])
+    } else {
+      setJoined(
+        isAdminPersona ? [...new Set([...JOINED_IDS_INIT, ...managedIds])] :
+        isPenjual      ? [...new Set([...JOINED_IDS_INIT, 7])] :
+        JOINED_IDS_INIT
+      )
+    }
+  }, [userProfile?.id, userProfile?.hasJoinedCommunity])
   const [allCommunities, setAllCommunities] = useState(ALL_COMMUNITIES)
   const [selectedCommunity, setCommunity]   = useState(initialCommunityId ? (ALL_COMMUNITIES.find(c=>c.id===initialCommunityId)||null) : null)
   const [openThread, setOpenThread]         = useState(null)
