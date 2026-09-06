@@ -867,13 +867,6 @@ function MiniPlayer({ episode, onExpand, onStop }) {
   )
 }
 
-// ── Data dummy salam terpilih ──────────────────────────────
-const SALAM_LIST = [
-  { nama: 'Budi Santoso', salam: 'Salam buat istri tercinta di Desa Nagrak, semoga selalu sehat dan bahagia ya!', status: 'Ditayangkan' },
-  { nama: 'Ibu Sari',     salam: 'Halo Pak Dadang di Cibinong, request lagu Kangen Band dong kak!', status: 'Ditayangkan' },
-  { nama: 'Agus Petani',  salam: 'Salam buat rekan-rekan tani di Desa Sukamaju, panen kali ini semoga berlimpah.', status: 'Menunggu' },
-]
-
 // ── Kirim Salam ────────────────────────────────────────────
 function KirimSalam({ channel }) {
   const [text, setText] = useState('')
@@ -907,37 +900,6 @@ function KirimSalam({ channel }) {
             </button>
           </>
         )}
-      </div>
-
-      {/* Separator */}
-      <p className="text-[11px] text-gray-400 text-center my-4 font-medium select-none">
-        — Salam yang sedang ditayangkan —
-      </p>
-
-      {/* 3 Card Salam Terpilih */}
-      <div className="space-y-2">
-        {SALAM_LIST.map((item, idx) => (
-          <div
-            key={idx}
-            className="bg-white rounded-xl shadow-sm p-3 border border-gray-100 flex flex-col gap-1"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold text-[13px] text-gray-900 truncate">{item.nama}</span>
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                  item.status === 'Ditayangkan'
-                    ? 'bg-green-50 text-green-700 border border-green-200/50'
-                    : 'bg-amber-50 text-amber-700 border border-amber-200/50'
-                }`}
-              >
-                {item.status}
-              </span>
-            </div>
-            <p className="text-[12px] text-surface-600 line-clamp-2 leading-relaxed">
-              {item.salam}
-            </p>
-          </div>
-        ))}
       </div>
     </div>
   )
