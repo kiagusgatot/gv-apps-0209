@@ -1438,7 +1438,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
         }
       />
 
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
         {/* ── PERUBAHAN 1: Hero Card Identitas User ── */}
         <div
           className="mx-4 mt-3 rounded-2xl p-4 text-white shadow-md relative overflow-hidden"
@@ -1801,7 +1801,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
             </button>
           </div>
 
-          <p className="text-center text-[11px] text-surface-400 pt-2 pb-2">
+          <p className="text-center text-[11px] text-surface-400 pt-2 pb-6">
             G-Village v0.1.0 · Ekosistem Desa Digital
           </p>
         </div>
