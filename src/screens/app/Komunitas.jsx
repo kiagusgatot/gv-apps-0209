@@ -81,10 +81,8 @@ const THREADS_INIT = {
   6: [
     { id:'jb1', type:'jual_beli', product:{ id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan', stock:48, toko:'Toko Bu Sari' }, caption:'Beras pandan wangi dari sawah organik desa Sukamakmur. Tanpa pestisida, langsung dari petani binaan koperasi Dekopin.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'30 mnt', replies:8, likes:52, isPinned:true },
     { id:'jb2', type:'jual_beli', product:{ id:'ep6', name:'Keripik Singkong Pedas 200g', price:15000, Icon:Package, g:['#E65100','#F57C00'], category:'Camilan', stock:80, toko:'Warung Pak Hendra' }, caption:'Keripik singkong pedas level 3, produksi UMKM koperasi desa. Cocok untuk oleh-oleh.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'2 jam', replies:4, likes:28, isPinned:false },
-    { id:'t12', type:'thread', title:'Sosialisasi Program Kemitraan Koperasi Desa bersama Dekopin', body:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi UMKM dan koperasi unit desa.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'4 jam', replies:8, likes:93, isPinned:false },
-  ],
-  7: [
     { id:'jb3', type:'jual_beli', product:{ id:'ep2', name:'Sayur Bayam Organik Segar 250g', price:5000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Sayuran', stock:120, toko:'Toko Bu Sari' }, caption:'Bayam organik dipanen pagi ini, segar langsung dari kebun. Stok terbatas per hari.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 jam', replies:2, likes:15, isPinned:false },
+    { id:'t12', type:'thread', title:'Sosialisasi Program Kemitraan Koperasi Desa bersama Dekopin', body:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi UMKM dan koperasi unit desa.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'4 jam', replies:8, likes:93, isPinned:false },
   ],
 }
 
@@ -1424,8 +1422,8 @@ function JelajahiTab({ joined, onOpenCommunity, onToggleJoin }) {
 // ── Search Screen ───────────────────────────────────────────
 function SearchScreen({ onClose, navigate }) {
   const [q, setQ] = useState('')
-  const RECENTS = ['SINARTANI', 'Diskusi Warga', 'Laporan Keamanan']
-  const POPULAR = ['Pasar Desa', 'Bantuan Sosial', 'Tips Bertani']
+  const RECENTS = ['SINARTANI', 'NEXGENT', 'Dekopin']
+  const POPULAR = ['SINARTANI', 'Dekopin', 'HKTI', 'Pasar Desa', 'Tips Bertani']
   return (
     <div className="absolute inset-0 z-50 flex flex-col bg-white animate-fade-in">
       <div className="flex-shrink-0 relative overflow-hidden"
@@ -1493,7 +1491,7 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
   const [joined, setJoined]     = useState(
     !hasJoined     ? [] :
     isAdminPersona ? [...new Set([...JOINED_IDS_INIT,...managedIds])] :
-    isPenjual      ? [...new Set([...JOINED_IDS_INIT, 7])] :
+    isPenjual      ? [...new Set([...JOINED_IDS_INIT, 6])] :
     JOINED_IDS_INIT
   )
 
@@ -1503,7 +1501,7 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
     } else {
       setJoined(
         isAdminPersona ? [...new Set([...JOINED_IDS_INIT, ...managedIds])] :
-        isPenjual      ? [...new Set([...JOINED_IDS_INIT, 7])] :
+        isPenjual      ? [...new Set([...JOINED_IDS_INIT, 6])] :
         JOINED_IDS_INIT
       )
     }

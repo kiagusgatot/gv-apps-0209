@@ -31,7 +31,7 @@ const RESPONSES = {
   'Tips pupuk kompos organik sendiri': {
     text: 'Cara praktis membuat pupuk kompos dari limbah tani:\n\n• **Bahan**: Jerami kering, kotoran ternak, sisa daun hijau, dan EM4.\n• **Proses**: Susun berlapis, siram lembab (60%), aduk tiap 5–7 hari.\n• Dalam 3–4 minggu, kompos matang berbau tanah dan siap dipupukkan.',
     action: 'komunitas',
-    actionLabel: 'Diskusi di Komunitas Tani',
+    actionLabel: 'Diskusi di SINARTANI',
   },
   'Cara buka toko di Pasar ESTO?': {
     text: 'Mulai jualan hasil bumi atau kerajinan di Pasar ESTO:\n\n1. Masuk ke menu **Profil Saya**.\n2. Ketuk **"Aktivasi Penjual"** (pendaftaran gratis).\n3. Lengkapi nama tokomu dan nomor rekening.\n4. Unggah foto produk panen dan langsung siap terima pesanan warga!',

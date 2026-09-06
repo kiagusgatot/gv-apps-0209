@@ -68,17 +68,17 @@ const SC_ADMIN = [
 
 // ── Thread data per persona ─────────────────────────────────
 const T_WARGA_AKTIF = [
-  { id: 'w1', Icon: Wheat, bg: '#E8F5E9', ic: '#2E7D32', community: 'Komunitas Tani', text: 'Harga gabah naik Rp 200/kg minggu ini — ada yang ngerasain?', replies: 24, likes: 87, time: '5 mnt' },
-  { id: 'w2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Komunitas UMKM', text: 'Tips foto produk pakai HP dengan hasil yang terlihat profesional', replies: 18, likes: 62, time: '12 mnt' },
-  { id: 'w3', Icon: HeartPulse, bg: '#FFEBEE', ic: '#C62828', community: 'Komunitas Sehat', text: 'Jadwal Posyandu Agustus sudah diunggah di komunitas', replies: 7, likes: 31, time: '1 jam' },
+  { id: 'w1', Icon: Wheat, bg: '#E8F5E9', ic: '#2E7D32', community: 'SINARTANI', text: 'Harga gabah naik Rp 200/kg minggu ini — ada yang ngerasain?', replies: 24, likes: 87, time: '5 mnt' },
+  { id: 'w2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Dekopin', text: 'Tips foto produk pakai HP dengan hasil yang terlihat profesional', replies: 18, likes: 62, time: '12 mnt' },
+  { id: 'w3', Icon: HeartPulse, bg: '#FFEBEE', ic: '#C62828', community: 'RT Online', text: 'Jadwal Posyandu Agustus sudah diunggah di komunitas', replies: 7, likes: 31, time: '1 jam' },
 ]
 const T_PENJUAL = [
-  { id: 'p1', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Komunitas UMKM', text: 'Ada yang tahu harga cabai di pasar Bogor minggu ini? Mau nambah stok', replies: 14, likes: 39, time: '8 mnt' },
-  { id: 'p2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Komunitas UMKM', text: 'Cara bikin label produk yang menarik dan lolos SNI', replies: 21, likes: 55, time: '25 mnt' },
+  { id: 'p1', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Dekopin', text: 'Ada yang tahu harga cabai di pasar Bogor minggu ini? Mau nambah stok', replies: 14, likes: 39, time: '8 mnt' },
+  { id: 'p2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Dekopin', text: 'Cara bikin label produk yang menarik dan lolos SNI', replies: 21, likes: 55, time: '25 mnt' },
 ]
 const T_KREATOR = [
-  { id: 'k1', Icon: GraduationCap, bg: '#E3F2FD', ic: '#1565C0', community: 'Komunitas Pemuda', text: 'Konten tentang panen perdana tembus 10rb views — sharing strategi', replies: 33, likes: 124, time: '3 mnt' },
-  { id: 'k2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Komunitas UMKM', text: 'Cari kreator kolaborasi review produk lokal Bogor — DM terbuka', replies: 12, likes: 47, time: '18 mnt' },
+  { id: 'k1', Icon: GraduationCap, bg: '#E3F2FD', ic: '#1565C0', community: 'NEXGENT', text: 'Konten tentang panen perdana tembus 10rb views — sharing strategi', replies: 33, likes: 124, time: '3 mnt' },
+  { id: 'k2', Icon: ShoppingBag, bg: '#FFF3E0', ic: '#E65100', community: 'Dekopin', text: 'Cari kreator kolaborasi review produk lokal Bogor — DM terbuka', replies: 12, likes: 47, time: '18 mnt' },
 ]
 
 // ── Notif data per persona ──────────────────────────────────
@@ -99,7 +99,7 @@ const NOTIF_WARGA = [
   {
     id: 'nw2',
     Icon: MessageCircle,
-    title: 'Diskusi Baru di Komunitas Tani',
+    title: 'Diskusi Baru di SINARTANI',
     sub: 'Pak Tani Bogor: "Harga gabah naik Rp 200/kg minggu ini — ada yang ngerasain dampak panen?"',
     time: '2 jam',
     group: 'Hari Ini',
@@ -265,7 +265,7 @@ const NOTIF_ADMIN = [
     id: 'na1',
     Icon: AlertTriangle,
     title: '3 Laporan Warga Memerlukan Penanganan',
-    sub: 'Laporan saluran irigasi tersumbat di Komunitas Tani · 2, fasilitas umum · 1.',
+    sub: 'Laporan saluran irigasi tersumbat di SINARTANI · 2, fasilitas umum · 1.',
     time: '15 mnt',
     group: 'Hari Ini',
     category: 'desa',
@@ -277,7 +277,7 @@ const NOTIF_ADMIN = [
   {
     id: 'na2',
     Icon: Users,
-    title: 'Milestone: Komunitas Tani Tembus 12.400 Warga',
+    title: 'Milestone: SINARTANI Tembus 12.400 Warga',
     sub: 'Partisipasi warga desa terus meningkat secara aktif minggu ini.',
     time: '3 jam',
     group: 'Hari Ini',
@@ -508,14 +508,14 @@ function NotifScreen({ notifs, onClose, navigate }) {
 function SearchScreen({ onClose, navigate }) {
   const [q, setQ] = useState('')
   const [activeTab, setActiveTab] = useState('semua')
-  const [recents, setRecents] = useState(['Beras Pandan Wangi', 'Komunitas Tani', 'Top Up GV Pay', 'Pupuk Kompos'])
+  const [recents, setRecents] = useState(['Beras Pandan Wangi', 'SINARTANI', 'Top Up GV Pay', 'Pupuk Kompos'])
 
   const POPULAR = [
     { label: 'Beras Organik', hot: true },
     { label: 'GV TV Live', hot: true },
     { label: 'Pupuk NPK Cair', hot: true },
     { label: 'Bayar Listrik PLN', hot: true },
-    { label: 'Komunitas Tani', hot: false },
+    { label: 'SINARTANI', hot: false },
     { label: 'Kopi Robusta Segar', hot: false },
   ]
 

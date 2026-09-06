@@ -151,7 +151,7 @@ export default function App() {
     : screen === 'bayar-pendidikan' ? { initialScreen: 'pendidikan' }
     : screen === 'profile-poin'  ? { showPoin: true }
     : screen === 'profile-iklan' ? { initialScreen: 'iklan-baris' }
-    : screen === 'komunitas-jualbeli' ? { initialCommunityId: 7 }
+    : screen === 'komunitas-jualbeli' ? { initialCommunityId: 6 }
     : {}
   const Screen = { welcome:Welcome, register:Register, otp:OTP, desa:SelectDesa,
     'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas }[screen] || Welcome
