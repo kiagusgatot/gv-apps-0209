@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import SearchBar from '@/components/molecules/SearchBar'
@@ -866,6 +866,13 @@ function MiniPlayer({ episode, onExpand, onStop }) {
   )
 }
 
+// ── Data dummy salam terpilih ──────────────────────────────
+const SALAM_LIST = [
+  { nama: 'Budi Santoso', salam: 'Salam buat istri tercinta di Desa Nagrak, semoga selalu sehat dan bahagia ya!', status: 'Ditayangkan' },
+  { nama: 'Ibu Sari',     salam: 'Halo Pak Dadang di Cibinong, request lagu Kangen Band dong kak!', status: 'Ditayangkan' },
+  { nama: 'Agus Petani',  salam: 'Salam buat rekan-rekan tani di Desa Sukamaju, panen kali ini semoga berlimpah.', status: 'Menunggu' },
+]
+
 // ── Kirim Salam ────────────────────────────────────────────
 function KirimSalam({ channel }) {
   const [text, setText] = useState('')
@@ -876,27 +883,61 @@ function KirimSalam({ channel }) {
     setTimeout(()=>setSent(false),3000)
   }
   return (
-    <div className="px-4 pt-4 pb-4">
-      <p className="text-[12px] text-gray-400 mb-1">Salam pilihan ditampilkan di siaran {channel}</p>
-      <p className="text-[12px] font-semibold mb-3" style={{color:'#1B6B3A'}}>Dikirim sebagai Member Global Village</p>
-      {sent?(
-        <div className="rounded-2xl px-4 py-3 flex items-center gap-2.5" style={{background:'#E8F5E9',border:'1.5px solid #A5D6A7'}}>
-          <CheckCircle size={16} style={{color:'#1B6B3A'}}/>
-          <span className="text-[12px] font-semibold" style={{color:'#1B5E20'}}>Salam berhasil dikirim!</span>
-        </div>
-      ):(
-        <>
-          <textarea value={text} onChange={e=>setText(e.target.value)} rows={3}
-            placeholder="Tulis salam untuk keluarga & sahabat..."
-            className="w-full rounded-2xl px-4 py-3 text-[12px] text-gray-700 resize-none outline-none"
-            style={{border:'1.5px solid #E0E0E0',minHeight:80,background:'#FAFAFA'}}/>
-          <button onClick={handleSend} disabled={!text.trim()}
-            className="w-full mt-2.5 py-3 rounded-2xl text-[13px] font-bold transition active:scale-[0.96]"
-            style={text.trim()?{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',color:'#fff',boxShadow:'0 2px 8px rgba(27,107,58,0.3)'}:{background:'#F0F0F0',color:'#BDBDBD'}}>
-            Kirim
-          </button>
-        </>
-      )}
+    <div className="flex flex-col">
+      {/* Form Card */}
+      <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm px-4 pt-4 pb-4">
+        <p className="text-[12px] text-gray-400 mb-1">Salam pilihan ditampilkan di siaran {channel}</p>
+        <p className="text-[12px] font-semibold mb-3" style={{color:'#1B6B3A'}}>Dikirim sebagai Member Global Village</p>
+        {sent?(
+          <div className="rounded-2xl px-4 py-3 flex items-center gap-2.5" style={{background:'#E8F5E9',border:'1.5px solid #A5D6A7'}}>
+            <CheckCircle size={16} style={{color:'#1B6B3A'}}/>
+            <span className="text-[12px] font-semibold" style={{color:'#1B5E20'}}>Salam berhasil dikirim!</span>
+          </div>
+        ):(
+          <>
+            <textarea value={text} onChange={e=>setText(e.target.value)} rows={3}
+              placeholder="Tulis salam untuk keluarga & sahabat..."
+              className="w-full rounded-2xl px-4 py-3 text-[12px] text-gray-700 resize-none outline-none"
+              style={{border:'1.5px solid #E0E0E0',minHeight:80,background:'#FAFAFA'}}/>
+            <button onClick={handleSend} disabled={!text.trim()}
+              className="w-full mt-2.5 py-3 rounded-2xl text-[13px] font-bold transition active:scale-[0.96]"
+              style={text.trim()?{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',color:'#fff',boxShadow:'0 2px 8px rgba(27,107,58,0.3)'}:{background:'#F0F0F0',color:'#BDBDBD'}}>
+              Kirim
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Separator */}
+      <p className="text-[11px] text-gray-400 text-center my-4 font-medium select-none">
+        — Salam yang sedang ditayangkan —
+      </p>
+
+      {/* 3 Card Salam Terpilih */}
+      <div className="space-y-2">
+        {SALAM_LIST.map((item, idx) => (
+          <div
+            key={idx}
+            className="bg-white rounded-xl shadow-sm p-3 border border-gray-100 flex flex-col gap-1"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold text-[13px] text-gray-900 truncate">{item.nama}</span>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                  item.status === 'Ditayangkan'
+                    ? 'bg-green-50 text-green-700 border border-green-200/50'
+                    : 'bg-amber-50 text-amber-700 border border-amber-200/50'
+                }`}
+              >
+                {item.status}
+              </span>
+            </div>
+            <p className="text-[12px] text-surface-600 line-clamp-2 leading-relaxed">
+              {item.salam}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -908,18 +949,33 @@ const getChatColor = (name) => CHAT_COLORS[name.split('').reduce((a,c)=>a+c.char
 function ObrolanPenonton({ initialMessages }) {
   const [messages, setMessages] = useState(initialMessages)
   const [newMsg, setNewMsg] = useState('')
+  const chatEndRef = useRef(null)
+
   const handleSend = () => {
     if (!newMsg.trim()) return
     setMessages(prev=>[...prev,{id:Date.now(),user:'Kamu',msg:newMsg,isMe:true}])
     setNewMsg('')
   }
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages.length])
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       <div className="flex items-center gap-2 px-4 py-2.5 flex-shrink-0" style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
         <span className="w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{background:'#E53935'}}/>
         <span className="text-[12px] font-bold text-gray-900">Obrolan Penonton</span>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1" style={{background:'#FAFAFA'}}>
+
+      {/* Info Bar Penonton Aktif */}
+      <div className="flex items-center gap-1.5 bg-surface-50 border-b border-surface-100 py-1.5 px-3 text-[11px] text-surface-500 flex-shrink-0">
+        <Users size={12} className="text-surface-400" />
+        <span>320 sedang menonton</span>
+      </div>
+
+      {/* Daftar Chat (Scrollable flex-1) */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-1 min-h-0" style={{background:'#FAFAFA'}}>
         {messages.map(m=>(
           <div key={m.id} className="leading-relaxed">
             <span className="text-[11px] font-extrabold me-1.5" style={{color:m.isMe?'#1B6B3A':getChatColor(m.user)}}>{m.user}</span>
@@ -935,18 +991,38 @@ function ObrolanPenonton({ initialMessages }) {
           </div>
           <span className="text-[12px] text-gray-400">beberapa orang sedang mengetik…</span>
         </div>
+        <div ref={chatEndRef} />
       </div>
-      <div className="flex items-center gap-2 px-4 py-3 flex-shrink-0" style={{background:'#fff',borderTop:'1px solid #F0F0F0'}}>
-        <div className="flex-1 flex items-center rounded-2xl px-3 py-2" style={{background:'#F5F5F5'}}>
-          <input value={newMsg} onChange={e=>setNewMsg(e.target.value)}
-            onKeyDown={e=>{ if(e.key==='Enter') handleSend() }}
-            placeholder="Tulis pesan live..." className="flex-1 text-[12px] outline-none text-gray-700 bg-transparent"/>
+
+      {/* Sticky Bottom Input & Quick Emoji Reaction Bar */}
+      <div className="flex flex-col gap-2 px-3.5 py-2.5 flex-shrink-0 bg-white border-t border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center rounded-2xl px-3 py-2 bg-[#F5F5F5]">
+            <input value={newMsg} onChange={e=>setNewMsg(e.target.value)}
+              onKeyDown={e=>{ if(e.key==='Enter') handleSend() }}
+              placeholder="Tulis pesan live..." className="flex-1 text-[12px] outline-none text-gray-700 bg-transparent"/>
+          </div>
+          <button onClick={handleSend}
+            type="button"
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition active:scale-95"
+            style={{background:newMsg.trim()?'#1B6B3A':'#E0E0E0',boxShadow:newMsg.trim()?'0 2px 6px rgba(27,107,58,0.3)':'none'}}>
+            <Send size={14} className="text-white" style={{marginInlineStart:1}}/>
+          </button>
         </div>
-        <button onClick={handleSend}
-          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition"
-          style={{background:newMsg.trim()?'#1B6B3A':'#E0E0E0',boxShadow:newMsg.trim()?'0 2px 6px rgba(27,107,58,0.3)':'none'}}>
-          <Send size={14} className="text-white" style={{marginInlineStart:1}}/>
-        </button>
+
+        {/* Baris Quick Emoji Reaction */}
+        <div className="flex items-center gap-2">
+          {['👏', '❤️', '😂', '🔥', '🎵'].map((emoji) => (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => setNewMsg(prev => prev + emoji)}
+              className="w-8 h-8 rounded-full bg-surface-100 hover:bg-surface-200 active:scale-90 flex items-center justify-center text-base transition-all"
+            >
+              <span>{emoji}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -1593,9 +1669,7 @@ function TabLive({ navigate, showToast }) {
 
         {innerTab === 'salam' && (
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-20">
-            <div className="rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm">
-              <KirimSalam channel={data.ch} />
-            </div>
+            <KirimSalam channel={data.ch} />
           </div>
         )}
       </div>
