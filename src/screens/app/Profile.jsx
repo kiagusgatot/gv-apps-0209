@@ -5,7 +5,7 @@ import { ChevronRight, Award, HelpCircle, LogOut, Shield, Bell,
   ChevronUp, Globe, Trash2, Camera, Star, Gift, Zap, Package,
   ToggleLeft, ToggleRight, ArrowLeft, Check, Plus, Edit3,
   Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone,
-  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2 } from 'lucide-react'
+  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2, Wallet } from 'lucide-react'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import NavTabs from '@/components/molecules/NavTabs'
@@ -19,6 +19,15 @@ import { OrderDetailSheet, CancelOrderModal, RatingSheet, OrderTracking } from '
 
 const PRIMARY = '#1B6B3A'
 const S = { card: '0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)' }
+
+const COMMUNITY_THEMES = {
+  sinartani:     { label: 'SINARTANI',     color: '#2D7A27', gradient: ['#1B5E20','#2D7A27'] },
+  nexgent:       { label: 'NEXGENT',       color: '#1A3A8A', gradient: ['#0D47A1','#1A3A8A'] },
+  hkti:          { label: 'HKTI',          color: '#1F5C1A', gradient: ['#145214','#1F5C1A'] },
+  active_campus: { label: 'Active Campus', color: '#C0392B', gradient: ['#922B21','#C0392B'] },
+  rt_online:     { label: 'RT Online',     color: '#5D6D7E', gradient: ['#455A64','#5D6D7E'] },
+  dekopin:       { label: 'Dekopin',       color: '#922B21', gradient: ['#641010','#922B21'] },
+}
 
 // ── Sub-screen wrapper ──────────────────────────────────────
 function SubScreen({ title, onBack, children, actions, navigate }) {
@@ -1327,9 +1336,15 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   }
 
   // ── Main screen ──
+  const userKomunitas = userData?.komunitas || userProfile?.komunitas || ''
+  const komunitasKey = userKomunitas.toLowerCase().replace(/\s+/g, '_')
+  const communityTheme = COMMUNITY_THEMES[komunitasKey] || COMMUNITY_THEMES[userKomunitas.toLowerCase()] || null
+  const heroGradient = communityTheme?.gradient || ['#1B5E20', '#2E7D32']
+  const isGVPlus = userProfile?.isGVPlus || userProfile?.capabilities?.includes('GV+') || localStorage.getItem('isGVPlus') === 'true'
+
   const MENU_SECTIONS = [
     {
-      section: 'Fitur & Bisnis Desa',
+      section: 'BISNIS DESA',
       items: [
         { 
           label: 'Toko Saya',  
@@ -1361,20 +1376,10 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
           Icon: Megaphone,
           g: ['#0D47A1', '#1976D2'],
         },
-        { 
-          label: 'GV+ Premium',              
-          sub: 'Siaran & video eksklusif tanpa iklan',            
-          to: 'gvplus',
-          badge: 'GV+',
-          badgeColor: '#fff',
-          badgeBg: 'linear-gradient(90deg, #F57F17, #F9A825)',
-          Icon: Crown,
-          g: ['#F57F17', '#FBC02D'],
-        },
       ]
     },
     {
-      section: 'Akun & Preferensi',
+      section: 'PENGATURAN',
       items: [
         { label: 'Edit Profil', sub: 'Ubah foto profil, nama, dan info desa', to: 'edit-profil', Icon: Edit3, g: ['#00695C', '#00897B'] },
         { label: 'Notifikasi', sub: 'Atur jenis notifikasi & pemberitahuan', to: 'notifikasi', Icon: Bell, g: ['#C62828', '#E53935'] },
@@ -1382,9 +1387,8 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
       ]
     },
     {
-      section: 'Bantuan & Informasi',
+      section: 'BANTUAN',
       items: [
-        { label: 'Tanya AIDA', sub: 'Bantuan instan dari asisten cerdas', to: 'tanya-gv', Icon: Sparkles, g: ['#1B5E20', '#2E7D32'] },
         { label: 'Pusat Bantuan & FAQ', sub: 'Panduan penggunaan & kendala aplikasi', to: 'bantuan', Icon: HelpCircle, g: ['#1565C0', '#1E88E5'] },
       ]
     },
@@ -1432,108 +1436,127 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
             </button>
           </>
         }
-      >
-        {/* User Profile Card inside header */}
-        <div className="flex items-center gap-3.5 pt-0.5 pb-1">
-          <div className="relative flex-shrink-0">
-            <div
-              className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center"
-              style={{
-                background: 'rgba(255, 255, 255, 0.18)',
-                border: '1.5px solid rgba(255, 255, 255, 0.3)',
-              }}
-            >
-              {localPhoto ? (
-                <img src={localPhoto} alt={name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xl font-black text-white">{name.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setScreen('edit-profil')}
-              className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center transition active:scale-90 shadow-sm"
-              style={{
-                background: '#16a34a',
-                border: '1.5px solid #0C3E1E',
-              }}
-            >
-              <Camera size={10} className="text-white" />
-            </button>
-          </div>
+      />
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-[16px] font-extrabold text-white truncate tracking-tight">
-                {name}
-              </h2>
+      <div className="flex-1 overflow-y-auto no-scrollbar pb-24">
+        {/* ── PERUBAHAN 1: Hero Card Identitas User ── */}
+        <div
+          className="mx-4 mt-3 rounded-2xl p-4 text-white shadow-md relative overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})`,
+          }}
+        >
+          {/* Baris atas */}
+          <div className="flex items-center gap-3.5">
+            {/* Avatar lingkaran */}
+            <div className="relative flex-shrink-0">
+              <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-white/20 border border-white/30 backdrop-blur-sm">
+                {localPhoto ? (
+                  <img src={localPhoto} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xl font-extrabold text-white">{name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
               <button
                 type="button"
                 onClick={() => setScreen('edit-profil')}
-                className="text-white/60 hover:text-white transition p-0.5"
+                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center transition active:scale-90 shadow-sm bg-emerald-600 border border-white"
+                title="Ubah foto"
               >
-                <Edit3 size={13} />
+                <Camera size={10} className="text-white" />
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5 mt-0.5 text-emerald-200/80 text-[11px]">
-              <MapPin size={11} className="text-emerald-400 flex-shrink-0" />
-              <span className="truncate">{desa}</span>
-            </div>
+            {/* Nama, Desa, Tombol Edit */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <h2 className="text-[16px] font-bold text-white truncate tracking-tight">
+                  {name}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setScreen('edit-profil')}
+                  className="text-white/80 hover:text-white transition p-1"
+                  title="Edit Profil"
+                >
+                  <Edit3 size={14} />
+                </button>
+              </div>
 
-            <div className="flex flex-wrap gap-1.5 mt-1.5">
-              <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
-                {userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : 'Warga GV')}
-              </span>
-              <span className="text-[9.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 flex items-center gap-1">
-                <CheckCircle size={9.5} /> Terverifikasi
-              </span>
-            </div>
-          </div>
-        </div>
-      </ScreenHeader>
-
-      <div className="flex-1 overflow-y-auto no-scrollbar pt-3.5">
-        {/* ── GV Poin Card (Harmonious with canvas) ── */}
-        <div className="px-4 mb-3.5">
-          <div
-            className="rounded-2xl p-4 bg-white border border-surface-200/80 flex items-center justify-between transition-shadow hover:shadow-brand-sm"
-            style={{
-              boxShadow: '0 2px 10px rgba(27, 107, 58, 0.05)',
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <SkeuoIcon icon={Award} gradient={['#F57F17', '#FBC02D']} size="md" />
-              <div>
-                <span className="text-[10.5px] font-bold uppercase tracking-wider text-surface-400">
-                  Saldo GV Poin
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <p className="text-[19px] font-extrabold text-surface-900 tabular-nums leading-none">
-                    {points.toLocaleString('id')}
-                  </p>
-                  <span className="text-[11px] font-medium text-surface-500">
-                    ≈ Rp {(points * 10).toLocaleString('id')}
-                  </span>
-                </div>
+              <div className="flex items-center gap-1.5 mt-0.5 text-white/70 text-[12px]">
+                <MapPin size={12} className="text-white/70 flex-shrink-0" />
+                <span className="truncate">{desa}</span>
               </div>
             </div>
+          </div>
 
+          {/* Baris bawah: badge-badge */}
+          <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-white/15">
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
+              {userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : 'Warga Aktif')}
+            </span>
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1">
+              <CheckCircle size={11} className="text-emerald-300" /> Terverifikasi
+            </span>
+            {userKomunitas && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
+                {communityTheme?.label || userKomunitas}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* ── PERUBAHAN 2: Dua Kartu Mini Sejajar (GV Poin & GV Pay) ── */}
+        <div className="grid grid-cols-2 gap-3 px-4 mt-3">
+          {/* Kartu kiri — GV Poin */}
+          <div
+            className="rounded-2xl p-3.5 border border-amber-200/60 shadow-xs flex flex-col justify-between"
+            style={{ background: '#FFF8E1' }}
+          >
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Star size={14} className="text-amber-500 fill-amber-400" />
+                <span className="text-[11px] font-semibold text-surface-500">GV Poin</span>
+              </div>
+              <p className="text-[18px] font-bold text-surface-900 tabular-nums">
+                {points.toLocaleString('id')}
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => setScreen('poin')}
-              className="px-4 py-2 rounded-xl text-[12px] font-bold text-white transition active:scale-95 shadow-sm"
-              style={{
-                background: 'linear-gradient(135deg, #16a34a, #15803d)',
-              }}
+              className="text-left text-[11px] font-bold text-brand hover:underline mt-2 inline-flex items-center gap-0.5"
             >
-              Tukar Poin
+              Tukar Poin →
+            </button>
+          </div>
+
+          {/* Kartu kanan — GV Pay */}
+          <div
+            className="rounded-2xl p-3.5 border border-emerald-200/60 shadow-xs flex flex-col justify-between"
+            style={{ background: '#E8F5E9' }}
+          >
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Wallet size={14} className="text-emerald-600" />
+                <span className="text-[11px] font-semibold text-surface-500">GV Pay</span>
+              </div>
+              <p className="text-[18px] font-bold text-surface-900 tabular-nums">
+                Rp {(userProfile?.balance ?? 125000).toLocaleString('id')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => (navigate ? navigate('bayar-topup') : null)}
+              className="text-left text-[11px] font-bold text-brand hover:underline mt-2 inline-flex items-center gap-0.5"
+            >
+              Top Up →
             </button>
           </div>
         </div>
 
-        {/* ── Pesanan Saya Section Card (E-Commerce Style) ── */}
-        <div className="px-4 mb-3.5">
+        {/* ── PERUBAHAN 3: Card Pesanan Saya ── */}
+        <div className="mx-4 mt-3">
           <div
             className="rounded-2xl p-4 bg-white border border-surface-200/80 transition-shadow hover:shadow-brand-sm"
             style={{
@@ -1683,8 +1706,42 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
           </div>
         </div>
 
-        {/* ── Categorized Menu Sections ── */}
-        <div className="space-y-4 px-4 pb-24">
+        {/* ── PERUBAHAN 4: Banner GV+ Premium ── */}
+        <div
+          onClick={() => setScreen('gvplus')}
+          className="mx-4 mt-3 p-4 rounded-2xl cursor-pointer transition active:scale-[0.99] flex items-center justify-between gap-3 shadow-sm relative overflow-hidden"
+          style={{
+            background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)',
+          }}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 border border-white/20 backdrop-blur-sm">
+              <Crown size={20} className="text-white fill-white/20" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-bold text-white text-[14px] leading-snug">GV+ Premium</p>
+              <p className="text-white/75 text-[11px] mt-0.5 truncate">
+                {isGVPlus ? 'Aktif hingga 31 Des 2026' : 'Siaran & video eksklusif tanpa iklan'}
+              </p>
+            </div>
+          </div>
+
+          {!isGVPlus && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setScreen('gvplus')
+              }}
+              className="bg-white/20 hover:bg-white/30 text-white font-bold text-[11px] px-3 py-1 rounded-lg flex-shrink-0 transition active:scale-95 border border-white/20 backdrop-blur-sm"
+            >
+              Aktifkan
+            </button>
+          )}
+        </div>
+
+        {/* ── PERUBAHAN 5 & 6: Restrukturisasi Section Menu ── */}
+        <div className="space-y-4 px-4 mt-4">
           {MENU_SECTIONS.map(({ section, items }) => (
             <div key={section}>
               <p className="text-[11.5px] font-extrabold uppercase tracking-wider text-surface-400 px-1 mb-2">
@@ -1727,25 +1784,19 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
                     </div>
                     <ChevronRight size={15} className="text-surface-300 flex-shrink-0" />
                   </button>
-
                 ))}
               </div>
             </div>
           ))}
 
-          {/* Logout Section */}
-          <div className="pt-2">
+          {/* Tombol Keluar dari Akun */}
+          <div className="pt-2 text-center">
             <button
               type="button"
               onClick={() => navigate('welcome')}
-              className="w-full py-3.5 rounded-2xl text-[13px] font-bold flex items-center justify-center gap-2 transition active:scale-95"
-              style={{
-                background: '#FEF2F2',
-                color: '#DC2626',
-                border: '1px solid #FEE2E2',
-              }}
+              className="w-full py-3 rounded-2xl text-[13px] font-medium text-red-600 bg-red-50 hover:bg-red-100/70 border border-red-100 flex items-center justify-center gap-2 transition active:scale-95"
             >
-              <LogOut size={16} />
+              <LogOut size={15} />
               <span>Keluar dari Akun</span>
             </button>
           </div>
