@@ -1447,9 +1447,6 @@ function TabLive({ navigate, showToast }) {
           <Tv2 size={14} className={isTV ? 'text-white' : 'text-gray-500'} />
           <span className="text-[12px] font-bold tracking-tight">GV TV</span>
           {isTV && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0" />}
-          <span className={`text-[10.5px] font-medium truncate ${isTV ? 'text-emerald-100/90' : 'text-gray-400'}`}>
-            1.2rb penonton
-          </span>
         </button>
 
         {/* GV Radio Chip */}
@@ -1465,10 +1462,6 @@ function TabLive({ navigate, showToast }) {
         >
           <Radio size={14} className={!isTV ? 'text-white' : 'text-gray-500'} />
           <span className="text-[12px] font-bold tracking-tight">GV Radio</span>
-          {!isTV && <span className="w-1.5 h-1.5 rounded-full bg-purple-300 animate-pulse flex-shrink-0" />}
-          <span className={`text-[10.5px] font-medium truncate ${!isTV ? 'text-purple-100/90' : 'text-gray-400'}`}>
-            320 pendengar
-          </span>
         </button>
       </div>
 
