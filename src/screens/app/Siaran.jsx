@@ -972,15 +972,15 @@ function ObrolanPenonton({ initialMessages }) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex items-center gap-2 px-4 py-2.5 flex-shrink-0" style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
-        <span className="w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{background:'#E53935'}}/>
-        <span className="text-[12px] font-bold text-gray-900">Obrolan Penonton</span>
-      </div>
-
-      {/* Info Bar Penonton Aktif */}
-      <div className="flex items-center gap-1.5 bg-surface-50 border-b border-surface-100 py-1.5 px-3 text-[11px] text-surface-500 flex-shrink-0">
-        <Users size={12} className="text-surface-400" />
-        <span>320 sedang menonton</span>
+      <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 border-b border-surface-100" style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full animate-pulse flex-shrink-0" style={{background:'#E53935'}}/>
+          <span className="text-[12px] font-bold text-gray-900">Obrolan Penonton</span>
+        </div>
+        <div className="flex items-center gap-1 text-[12px] text-surface-500">
+          <Users size={13} className="text-surface-400" />
+          <span>320</span>
+        </div>
       </div>
 
       {/* Area atas (flex-1, overflow-y-auto): daftar pesan chat */}
@@ -1013,22 +1013,8 @@ function ObrolanPenonton({ initialMessages }) {
         <div ref={chatEndRef} />
       </div>
 
-      {/* Area bawah (flex-shrink-0): baris emoji + input field */}
-      <div className="flex-shrink-0 border-t border-surface-100 px-3.5 py-2.5 bg-white flex flex-col gap-2">
-        {/* Baris Quick Emoji Reaction */}
-        <div className="flex items-center gap-2">
-          {['👏', '❤️', '😂', '🔥', '🎵'].map((emoji) => (
-            <button
-              key={emoji}
-              type="button"
-              onClick={() => setNewMsg(prev => prev + emoji)}
-              className="w-8 h-8 rounded-full bg-surface-100 hover:bg-surface-200 active:scale-90 flex items-center justify-center text-base transition-all"
-            >
-              <span>{emoji}</span>
-            </button>
-          ))}
-        </div>
-
+      {/* Area bawah (flex-shrink-0): input field */}
+      <div className="flex-shrink-0 border-t border-surface-100 px-3.5 py-2.5 bg-white">
         {/* Input Field */}
         <div className="flex items-center gap-2">
           <div className="flex-1 flex items-center rounded-2xl px-3 py-2 bg-[#F5F5F5]">
