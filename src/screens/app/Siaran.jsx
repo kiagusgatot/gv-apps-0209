@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
-import NavTabs from '@/components/molecules/NavTabs'
 import SearchBar from '@/components/molecules/SearchBar'
 import GlassCard from '@/components/atoms/GlassCard'
 import AppButton from '@/components/atoms/AppButton'
@@ -1432,43 +1431,45 @@ function TabLive({ navigate, showToast }) {
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
-      {/* Sub-channel Switcher: GV TV vs GV Radio */}
-      <div className="px-4 pt-3 pb-2.5 flex gap-2.5 w-full">
-        {[
-          ['tv', 'GV TV', Tv2, '1.2rb Penonton', ['#0C3E1E', '#1B6B3A']],
-          ['radio', 'GV Radio', Radio, '320 Pendengar', ['#3B0D5B', '#6A1B9A']]
-        ].map(([id, label, Icon, subLabel, grad]) => {
-          const active = sub === id
-          return (
-            <button
-              key={id}
-              onClick={() => { setSub(id); setInnerTab('jadwal') }}
-              className={`flex-1 min-w-0 py-2.5 px-3 rounded-2xl transition-all duration-200 flex items-center gap-2.5 active:scale-[0.97] text-left ${
-                active ? 'shadow-md ring-1 ring-white/20' : 'bg-white hover:bg-gray-50 border border-gray-100 shadow-sm'
-              }`}
-              style={active ? { background: `linear-gradient(135deg, ${grad[0]}, ${grad[1]})`, color: '#fff' } : {}}
-            >
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform ${
-                  active ? 'bg-white/20 text-white shadow-inner' : 'bg-gray-100 text-gray-500'
-                }`}
-              >
-                <Icon size={18} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className={`text-[13px] font-extrabold leading-tight truncate ${active ? 'text-white' : 'text-gray-900'}`}>
-                    {label}
-                  </p>
-                  {active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0" />}
-                </div>
-                <p className={`text-[10.5px] font-medium leading-tight truncate mt-0.5 ${active ? 'text-white/80' : 'text-gray-400'}`}>
-                  {subLabel}
-                </p>
-              </div>
-            </button>
-          )
-        })}
+      {/* Sub-channel Switcher: GV TV vs GV Radio (Compact Chips) */}
+      <div className="px-4 pt-2.5 pb-2 flex gap-2 w-full">
+        {/* GV TV Chip */}
+        <button
+          type="button"
+          onClick={() => { setSub('tv'); setInnerTab('jadwal') }}
+          className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+            isTV
+              ? 'text-white shadow-sm ring-1 ring-white/20'
+              : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
+          }`}
+          style={isTV ? { background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A)' } : {}}
+        >
+          <Tv2 size={14} className={isTV ? 'text-white' : 'text-gray-500'} />
+          <span className="text-[12px] font-bold tracking-tight">GV TV</span>
+          {isTV && <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0" />}
+          <span className={`text-[10.5px] font-medium truncate ${isTV ? 'text-emerald-100/90' : 'text-gray-400'}`}>
+            1.2rb penonton
+          </span>
+        </button>
+
+        {/* GV Radio Chip */}
+        <button
+          type="button"
+          onClick={() => { setSub('radio'); setInnerTab('jadwal') }}
+          className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+            !isTV
+              ? 'text-white shadow-sm ring-1 ring-white/20'
+              : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
+          }`}
+          style={!isTV ? { background: 'linear-gradient(135deg, #3B0D5B, #6A1B9A)' } : {}}
+        >
+          <Radio size={14} className={!isTV ? 'text-white' : 'text-gray-500'} />
+          <span className="text-[12px] font-bold tracking-tight">GV Radio</span>
+          {!isTV && <span className="w-1.5 h-1.5 rounded-full bg-purple-300 animate-pulse flex-shrink-0" />}
+          <span className={`text-[10.5px] font-medium truncate ${!isTV ? 'text-purple-100/90' : 'text-gray-400'}`}>
+            320 pendengar
+          </span>
+        </button>
       </div>
 
       {/* Hero Broadcast Player */}
@@ -1506,7 +1507,7 @@ function TabLive({ navigate, showToast }) {
       <div className="flex-1 overflow-hidden flex flex-col bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
           <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-20">
-            <div className="flex items-center justify-between mb-2.5">
+            <div className="mt-4 flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <Calendar size={13} className="text-brand" />
                 <span>Senin, 23 Agustus 2026</span>
@@ -1516,7 +1517,7 @@ function TabLive({ navigate, showToast }) {
               </span>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col space-y-2">
               {jadwal.map((j) => {
                 if (j.live) {
                   return (
@@ -2971,13 +2972,28 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
           placeholder="Cari siaran, video, kreator..."
           onClick={() => setShowSearch(true)}
         />
-        <NavTabs
-          variant="underline-dark"
-          tabs={TABS}
-          activeTab={tab}
-          onChange={setTab}
-        />
       </ScreenHeader>
+
+      {/* Tab Navigasi Konten */}
+      <div className="bg-white border-b border-[#E5E7EB] px-4 flex select-none flex-shrink-0 z-10">
+        {TABS.map((t) => {
+          const isActive = tab === t.id
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`flex-1 py-3 text-[13px] text-center transition-colors flex items-center justify-center ${
+                isActive
+                  ? 'text-[#1B5E20] border-b-2 border-[#1B5E20] font-bold'
+                  : 'text-[#6B7280] font-medium border-b-2 border-transparent hover:text-gray-900'
+              }`}
+            >
+              <span>{t.label}</span>
+            </button>
+          )
+        })}
+      </div>
 
       {/* Content */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
