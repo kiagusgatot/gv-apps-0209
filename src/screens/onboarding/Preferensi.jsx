@@ -31,11 +31,11 @@ export default function Preferensi({ navigate, userData, updateUser }) {
 
   return (
     <OnboardingLayout
-      currentStep={4}
-      totalSteps={4}
+      currentStep={5}
+      totalSteps={5}
       title="Apa Kebutuhanmu?"
       subtitle="Pilih satu atau lebih. Bisa disesuaikan kapan saja di menu profil."
-      onBack={() => navigate('desa')}
+      onBack={() => navigate('pilih-komunitas')}
       footer={
         <AppButton
           variant="primary"

@@ -64,7 +64,7 @@ export default function SelectDesa({ navigate, userData, updateUser }) {
   }
 
   const handleContinue = () => {
-    if (selected) navigate('preferensi')
+    if (selected) navigate('pilih-komunitas')
   }
 
   // ── Filter logic ───────────────────────────────────────────

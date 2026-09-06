@@ -3,6 +3,7 @@ import Welcome     from './screens/onboarding/Welcome'
 import Register    from './screens/onboarding/Register'
 import OTP         from './screens/onboarding/OTP'
 import SelectDesa  from './screens/onboarding/SelectDesa'
+import PilihKomunitas from './screens/onboarding/PilihKomunitas'
 import Preferensi  from './screens/onboarding/Preferensi'
 import Selesai     from './screens/onboarding/Selesai'
 import Beranda     from './screens/app/Beranda'
@@ -19,15 +20,15 @@ import { AdsProvider } from './components/ads/AdsContext'
 
 const SCREEN_LABELS = {
   welcome:'Welcome', register:'Daftar', otp:'Verifikasi OTP',
-  desa:'Pilih Desa', preferensi:'Preferensi', selesai:'Selesai',
+  desa:'Pilih Desa', 'pilih-komunitas':'Pilih Komunitas', preferensi:'Preferensi', selesai:'Selesai',
   beranda:'Beranda', siaran:'GV Media', 'siaran-live':'GV Media', 'siaran-kreator':'GV Media', 'siaran-video':'GV Media', 'siaran-podcast':'GV Media', 'siaran-gvplus':'GV Media', pasar:'ESTO', 'pasar-pesanan':'Pesanan Saya', 'pasar-toko':'ESTO', bayar:'Bayar', 'bayar-topup':'Bayar', 'bayar-transfer':'Bayar', 'bayar-qris':'Bayar', 'bayar-riwayat':'Bayar', 'bayar-listrik':'Bayar', 'bayar-pulsa':'Bayar', 'bayar-air':'Bayar', 'bayar-bpjs':'Bayar', 'bayar-tv':'Bayar', 'bayar-internet':'Bayar', 'bayar-gas':'Bayar', 'bayar-pendidikan':'Bayar', komunitas:'Komunitas & Arena', berita:'Berita', studio:'Kreator GV', 'studio-upload':'Kreator GV', 'studio-analitik':'Kreator GV', 'studio-membership':'GV Media', profile:'Profil Saya', 'profile-poin':'Profil Saya', 'profile-pesanan':'Pesanan Saya', 'profile-iklan':'Iklan Baris', 'komunitas-jualbeli':'Komunitas',
 }
 
 const NAV_SECTIONS = [
-  { label: 'Onboarding', screens: ['welcome','register','otp','desa','preferensi','selesai'] },
+  { label: 'Onboarding', screens: ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai'] },
   { label: 'Aplikasi', screens: ['beranda','siaran','pasar','bayar','komunitas','studio','profile'] },
 ]
-const NAV_SCREENS = ['welcome','register','otp','desa','preferensi','selesai','beranda','siaran','pasar','toko','bayar','komunitas','studio','profile']
+const NAV_SCREENS = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai','beranda','siaran','pasar','toko','bayar','komunitas','studio','profile']
 
 const DUMMY_USERS = [
   {
@@ -117,12 +118,12 @@ const DUMMY_USERS = [
 
 export default function App() {
   const [screen, setScreen]         = useState('welcome')
-  const [userData, setUser]         = useState({ name:'', phone:'', desa:'', preferences:[] })
+  const [userData, setUser]         = useState({ name:'', phone:'', desa:'', komunitas:'', preferences:[] })
   const [activePersona, setPersona] = useState(null)
 
   const navigate   = (to) => setScreen(to)
   const updateUser = (d)  => setUser(p => ({ ...p, ...d }))
-  const reset      = ()   => { setScreen('welcome'); setUser({ name:'', phone:'', desa:'', preferences:[] }); setPersona(null) }
+  const reset      = ()   => { setScreen('welcome'); setUser({ name:'', phone:'', desa:'', komunitas:'', preferences:[] }); setPersona(null) }
 
   const props = { navigate, userData, updateUser, userProfile: activePersona }
   const extraProps =
@@ -153,9 +154,9 @@ export default function App() {
     : screen === 'komunitas-jualbeli' ? { initialCommunityId: 7 }
     : {}
   const Screen = { welcome:Welcome, register:Register, otp:OTP, desa:SelectDesa,
-    preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas }[screen] || Welcome
+    'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas }[screen] || Welcome
 
-  const isOnboarding = ['welcome','register','otp','desa','preferensi','selesai'].includes(screen)
+  const isOnboarding = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai'].includes(screen)
 
   return (
     <AdsProvider>
