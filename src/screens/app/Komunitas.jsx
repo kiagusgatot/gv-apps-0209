@@ -9,7 +9,8 @@ import { ChevronRight, Search, Sparkles, Wheat, ShoppingBag, HeartPulse,
   Shield, Flag, X, Pin, Tag,
   Megaphone, Trash2, PinOff, CheckCircle, AlertCircle,
   Image, Store, BadgeCheck, Clock,
-  Leaf, Egg, Utensils, Coffee, Package, User, Bot, UserCheck, EyeOff, TrendingUp } from 'lucide-react'
+  Leaf, Egg, Utensils, Coffee, Package, User, Bot, UserCheck, EyeOff, TrendingUp,
+  Zap, Landmark, Home, Handshake } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
 const PRIMARY    = '#1B6B3A'
@@ -20,27 +21,24 @@ const GRADIENT = 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'
 
 // ── Data ───────────────────────────────────────────────────
 const ALL_COMMUNITIES = [
-  { id:1, name:'Komunitas Tani',       Icon:Wheat,         bg:'#E8F5E9', ic:'#2E7D32', g:['#1B5E20','#2E7D32'],
-    members:'12.4rb', desc:'Diskusi harga komoditas, tips bertani, musim tanam, dan inovasi pertanian desa.',
-    rules:['Hormati sesama anggota dan hindari debat tidak sehat','Bagikan informasi yang akurat dan bisa diverifikasi','Dilarang spam, promosi, dan iklan tanpa izin moderator','Topik harus relevan dengan pertanian dan kehidupan desa','Laporkan konten yang melanggar aturan ke moderator'] },
-  { id:2, name:'Komunitas UMKM',       Icon:ShoppingBag,   bg:'#FFF3E0', ic:'#E65100', g:['#BF360C','#E65100'],
-    members:'8.1rb',  desc:'Tips jualan, branding kemasan produk, ekspansi pasar, dan networking pelaku UMKM desa.',
-    rules:['Saling mendukung dan berbagi pengalaman bisnis','Tidak boleh menyebarkan informasi menyesatkan tentang produk'] },
-  { id:3, name:'Komunitas Sehat Desa', Icon:HeartPulse,    bg:'#FFEBEE', ic:'#C62828', g:['#880E4F','#C62828'],
-    members:'5.7rb',  desc:'Posyandu, gizi keluarga, kesehatan ibu & anak, dan akses layanan kesehatan desa.',
-    rules:['Informasi kesehatan harus dari sumber terpercaya','Bukan untuk konsultasi medis','Jaga privasi anggota yang berbagi kondisi kesehatan','Dilarang mempromosikan obat tanpa izin BPOM'] },
-  { id:4, name:'Komunitas Pemuda',     Icon:GraduationCap, bg:'#E3F2FD', ic:'#1565C0', g:['#0D47A1','#1565C0'],
-    members:'3.9rb',  desc:'Beasiswa, keterampilan digital, peluang kerja, dan pengembangan diri pemuda desa.',
-    rules:['Saling mendukung semangat belajar anggota','Bagikan lowongan dan beasiswa yang sudah diverifikasi','Tidak boleh menyebarkan hoaks pendidikan'] },
-  { id:5, name:'Komunitas Ibu Desa',   Icon:Users,         bg:'#F3E5F5', ic:'#6A1B9A', g:['#4A148C','#6A1B9A'],
-    members:'6.2rb',  desc:'Parenting, resep masakan, kegiatan rumah tangga, dan kebersamaan ibu-ibu desa.',
-    rules:['Lingkungan yang aman dan saling mendukung untuk semua ibu','Berbagi pengalaman parenting dengan positif dan tidak menghakimi','Informasi kesehatan anak harus dari sumber terpercaya'] },
-  { id:6, name:'Komunitas Budaya',     Icon:Palette,       bg:'#FFF8E1', ic:'#F57F17', g:['#E65100','#F57F17'],
-    members:'2.8rb',  desc:'Tradisi lokal, kesenian daerah, adat istiadat, dan pelestarian budaya Nusantara.',
-    rules:['Hormati keberagaman budaya dan adat istiadat daerah lain','Dokumentasi budaya lokal sangat didorong','Tidak boleh merendahkan tradisi atau kepercayaan kelompok lain'] },
-  { id:7, name:'Jual Beli GV',         Icon:Store,         bg:'#E3F2FD', ic:JB_COLOR,  g:['#0D47A1',JB_COLOR],
-    members:'4.2rb',  desc:'Marketplace komunitas GV — jual & beli produk terverifikasi langsung dari toko ESTO anggota.',
-    rules:['Hanya produk terdaftar di ESTO yang boleh diposting','Informasi produk harus sesuai dengan listing ESTO','Dilarang menipu atau memalsukan kondisi/harga produk','Transaksi dilakukan melalui halaman produk ESTO','Laporkan penjual mencurigakan ke moderator'] },
+  { id:1, name:'SINARTANI',     Icon:Wheat,         bg:'#E8F5E9', ic:'#2D7A27', g:['#1B5E20','#2D7A27'],
+    members:'—', desc:'Diskusi komoditas pertanian, tips bertani, musim tanam, harga pasar, dan inovasi agribisnis desa.',
+    rules:['Hormati sesama anggota dan hindari debat tidak sehat','Bagikan informasi harga dan komoditas yang akurat dan bisa diverifikasi','Dilarang spam, promosi, dan iklan tanpa izin moderator','Topik harus relevan dengan pertanian, perkebunan, dan agribisnis','Laporkan konten yang melanggar aturan ke moderator'] },
+  { id:2, name:'NEXGENT',       Icon:Zap,           bg:'#E8EAF6', ic:'#1A3A8A', g:['#0D47A1','#1A3A8A'],
+    members:'—', desc:'Ruang generasi muda untuk inovasi, teknologi desa, kewirausahaan digital, dan pengembangan diri.',
+    rules:['Dukung sesama anggota untuk terus berkembang','Bagikan peluang, event, dan info yang sudah diverifikasi','Dilarang menyebarkan hoaks atau informasi menyesatkan','Topik harus relevan dengan inovasi, teknologi, dan generasi muda','Jaga diskusi tetap positif dan konstruktif'] },
+  { id:3, name:'HKTI',          Icon:Landmark,      bg:'#E8F5E9', ic:'#1F5C1A', g:['#145214','#1F5C1A'],
+    members:'—', desc:'Forum resmi Himpunan Kerukunan Tani Indonesia — kebijakan pertanian, program pemerintah, dan sinergi petani nasional.',
+    rules:['Informasi kebijakan harus dari sumber resmi dan dapat diverifikasi','Hormati hierarki dan struktur organisasi HKTI','Dilarang menyebarkan informasi menyesatkan tentang program pertanian','Topik harus relevan dengan kebijakan dan organisasi pertanian','Laporkan pelanggaran ke moderator dalam 24 jam'] },
+  { id:4, name:'Active Campus', Icon:GraduationCap, bg:'#FFEBEE', ic:'#C0392B', g:['#922B21','#C0392B'],
+    members:'—', desc:'Komunitas mahasiswa aktif — beasiswa, keterampilan digital, kegiatan kampus, dan peluang karier generasi muda.',
+    rules:['Saling mendukung semangat belajar antar anggota','Bagikan info beasiswa, magang, dan lowongan yang sudah diverifikasi','Dilarang menyebarkan hoaks akademik atau informasi pendidikan palsu','Topik harus relevan dengan kehidupan kampus dan pengembangan diri mahasiswa','Jaga lingkungan diskusi tetap inklusif dan positif'] },
+  { id:5, name:'RT Online',     Icon:Home,          bg:'#ECEFF1', ic:'#5D6D7E', g:['#455A64','#5D6D7E'],
+    members:'—', desc:'Digitalisasi lingkungan RT/RW — info desa, pengumuman warga, laporan fasilitas, dan kebersamaan komunitas lokal.',
+    rules:['Utamakan kepentingan dan kerukunan warga lingkungan','Informasi pengumuman harus akurat dan dari sumber terpercaya','Dilarang menyebarkan konten provokatif yang memecah kerukunan warga','Topik harus relevan dengan kehidupan dan kegiatan lingkungan RT/RW','Laporkan isu fasilitas dan keamanan ke moderator komunitas'] },
+  { id:6, name:'Dekopin',       Icon:Handshake,     bg:'#FFEBEE', ic:'#922B21', g:['#641010','#922B21'],
+    members:'—', desc:'Dewan Koperasi Indonesia — forum koperasi, pemberdayaan UMKM, wirausaha lokal, dan ekonomi kerakyatan desa.',
+    rules:['Dukung dan perkuat ekosistem koperasi dan UMKM lokal','Informasi bisnis dan koperasi harus akurat dan tidak menyesatkan','Dilarang spam, MLM, atau penawaran bisnis tanpa izin moderator','Topik harus relevan dengan koperasi, UMKM, dan ekonomi kerakyatan','Laporkan praktik bisnis mencurigakan ke moderator'] },
 ]
 
 // ── Dummy produk ESTO per persona ──────────────────────────
@@ -58,10 +56,10 @@ const ESTO_PRODUCTS = {
   ],
 }
 
-const JOINED_IDS_INIT = [1, 2]
+const JOINED_IDS_INIT = [1]
 
 const THREADS_INIT = {
-  // Komunitas Tani — case: petani jual pupuk & bibit
+  // SINARTANI — case: petani jual pupuk & bibit
   1: [
     { id:'t1', type:'pengumuman', title:'Jadwal Penyuluhan Pertanian Organik Agustus 2026', body:'Dinas Pertanian Kabupaten akan mengadakan penyuluhan teknik pertanian organik pada Sabtu, 30 Agustus 2026 pukul 08.00 WIB di Balai Desa Sukamakmur. Harap hadir tepat waktu.', image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=800&auto=format&fit=crop', author:'Wawan Setiawan', authorId:'admin_komunitas', avIcon:UserCheck, time:'1 jam', replies:5, likes:47, isPinned:true },
     { id:'t2', type:'jual_beli', product:{ id:'ep4', name:'Pupuk Organik Kompos 25kg', price:45000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Pertanian', stock:20, toko:'Toko Bu Sari' }, caption:'Stok pupuk organik baru masuk! Cocok untuk musim tanam padi organik. Sudah dipakai 2 musim, hasilnya terbukti.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 jam', replies:6, likes:34, isPinned:false },
@@ -74,20 +72,19 @@ const THREADS_INIT = {
     { id:'t7', type:'thread', title:'Ada yang sudah jualan ke luar desa lewat GV Pasar?', body:'Saya baru daftar toko di GV Pasar 2 minggu lalu. Sudah dapat 3 pesanan dari luar desa, tapi pengirimannya masih jadi tantangan.', author:'Bu Dewi', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:9, likes:34, isPinned:false },
   ],
   3: [
-    { id:'t8', type:'pengumuman', title:'Jadwal Posyandu Agustus 2026', body:'Untuk semua ibu yang punya balita, jadwal posyandu bulan Agustus sudah diupdate. Cek di papan pengumuman desa atau tanya ke kader posyandu RT masing-masing.', author:'Wawan Setiawan', authorId:'admin_komunitas', avIcon:UserCheck, time:'1 jam', replies:5, likes:28, isPinned:true },
-    { id:'t9', type:'thread', title:'Ada yang tahu posyandu terdekat di desa Cikaret?', body:'Saya baru pindah ke desa Cikaret dan belum tahu lokasi posyandu terdekat. Mohon infonya.', author:'Bu Mila', authorId:'warga_baru', avIcon:User, time:'3 jam', replies:4, likes:12, isPinned:false },
+    { id:'t8', type:'pengumuman', title:'Sosialisasi Program Pertanian Nasional Bersama HKTI', body:'HKTI Cabang Kabupaten akan menyelenggarakan sosialisasi kebijakan subsidi pupuk dan asuransi usaha tani bagi kelompok tani desa Sukamakmur.', author:'Wawan Setiawan', authorId:'admin_komunitas', avIcon:UserCheck, time:'1 jam', replies:5, likes:28, isPinned:true },
+    { id:'t9', type:'thread', title:'Peluang kemitraan kelompok tani desa dengan HKTI', body:'Bagi kelompok tani yang ingin memperluas jaringan pasar gabah nasional, HKTI memfasilitasi program kemitraan langsung dengan Bulog.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:4, likes:12, isPinned:false },
   ],
-  4: [{ id:'t10', type:'thread', title:'Beasiswa Kemendikbud untuk pemuda desa — deadline bulan ini', body:'Ada info beasiswa dari Kemendikbud khusus untuk anak muda dari desa. Batas pendaftaran 31 Agustus.', author:'Dedi Muda', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:15, likes:76, isPinned:true }],
-  5: [{ id:'t11', type:'thread', title:'Resep mpasi 6 bulan yang mudah dan bergizi', body:'Berbagi resep MPASI yang sudah saya coba untuk anak 6 bulan: bubur beras merah + wortel + ASI perah.', author:'Bunda Lia', authorId:'warga_aktif', avIcon:User, time:'30 mnt', replies:7, likes:45, isPinned:false }],
-  6: [{ id:'t12', type:'thread', title:'Dokumentasi tari tradisional desa Sukamakmur', body:'Kemarin berhasil merekam pertunjukan tari topeng dari desa Sukamakmur yang sudah sangat jarang dipentaskan.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'4 jam', replies:8, likes:93, isPinned:false },
+  4: [{ id:'t10', type:'thread', title:'Beasiswa Kemendikbud untuk mahasiswa aktif — deadline bulan ini', body:'Ada info beasiswa dari Kemendikbud khusus untuk mahasiswa aktif berprestasi. Batas pendaftaran 31 Agustus.', author:'Dedi Muda', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:15, likes:76, isPinned:true }],
+  5: [{ id:'t11', type:'thread', title:'Jadwal kerja bakti dan posyandu lingkungan RT 02', body:'Pengumuman warga: kerja bakti membersihkan saluran air dilaksanakan Minggu pagi, dilanjutkan posyandu balita di balai RT.', author:'Bunda Lia', authorId:'warga_aktif', avIcon:User, time:'30 mnt', replies:7, likes:45, isPinned:false }],
+  // Dekopin
+  6: [
+    { id:'jb1', type:'jual_beli', product:{ id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan', stock:48, toko:'Toko Bu Sari' }, caption:'Beras pandan wangi dari sawah organik desa Sukamakmur. Tanpa pestisida, langsung dari petani binaan koperasi Dekopin.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'30 mnt', replies:8, likes:52, isPinned:true },
+    { id:'jb2', type:'jual_beli', product:{ id:'ep6', name:'Keripik Singkong Pedas 200g', price:15000, Icon:Package, g:['#E65100','#F57C00'], category:'Camilan', stock:80, toko:'Warung Pak Hendra' }, caption:'Keripik singkong pedas level 3, produksi UMKM koperasi desa. Cocok untuk oleh-oleh.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'2 jam', replies:4, likes:28, isPinned:false },
+    { id:'t12', type:'thread', title:'Sosialisasi Program Kemitraan Koperasi Desa bersama Dekopin', body:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi UMKM dan koperasi unit desa.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'4 jam', replies:8, likes:93, isPinned:false },
   ],
-  // Komunitas Jual Beli GV
   7: [
-    { id:'jb1', type:'jual_beli', product:{ id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan', stock:48, toko:'Toko Bu Sari' }, caption:'Beras pandan wangi dari sawah organik desa Sukamakmur. Tanpa pestisida, langsung dari petani.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'30 mnt', replies:8, likes:52, isPinned:true },
-    { id:'jb2', type:'jual_beli', product:{ id:'ep6', name:'Keripik Singkong Pedas 200g', price:15000, Icon:Package, g:['#E65100','#F57C00'], category:'Camilan', stock:80, toko:'Warung Pak Hendra' }, caption:'Keripik singkong pedas level 3, produksi UMKM desa. Cocok untuk oleh-oleh.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'2 jam', replies:4, likes:28, isPinned:false },
     { id:'jb3', type:'jual_beli', product:{ id:'ep2', name:'Sayur Bayam Organik Segar 250g', price:5000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Sayuran', stock:120, toko:'Toko Bu Sari' }, caption:'Bayam organik dipanen pagi ini, segar langsung dari kebun. Stok terbatas per hari.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 jam', replies:2, likes:15, isPinned:false },
-    { id:'jb4', type:'jual_beli', product:{ id:'ep7', name:'Kopi Robusta Bubuk 250g', price:35000, Icon:Coffee, g:['#4E342E','#6D4C41'], category:'Minuman', stock:25, toko:'Warung Pak Hendra' }, caption:'Kopi robusta dari perkebunan gunung, disangrai manual. Aroma kuat, rasa pahit yang pas.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'5 jam', replies:11, likes:67, isPinned:false },
-    { id:'jb5', type:'jual_beli', product:{ id:'ep3', name:'Telur Ayam Kampung (12 butir)', price:32000, Icon:Egg, g:['#F57F17','#FBC02D'], category:'Pangan', stock:30, toko:'Toko Bu Sari' }, caption:'Telur ayam kampung asli, ayam dibesarkan bebas di halaman. Kuning telur lebih kuning dan bergizi.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'1 hari', replies:5, likes:39, isPinned:false },
   ],
 }
 
@@ -1427,7 +1424,7 @@ function JelajahiTab({ joined, onOpenCommunity, onToggleJoin }) {
 // ── Search Screen ───────────────────────────────────────────
 function SearchScreen({ onClose, navigate }) {
   const [q, setQ] = useState('')
-  const RECENTS = ['Komunitas Tani', 'Diskusi Warga', 'Laporan Keamanan']
+  const RECENTS = ['SINARTANI', 'Diskusi Warga', 'Laporan Keamanan']
   const POPULAR = ['Pasar Desa', 'Bantuan Sosial', 'Tips Bertani']
   return (
     <div className="absolute inset-0 z-50 flex flex-col bg-white animate-fade-in">
