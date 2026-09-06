@@ -1369,7 +1369,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
           g: ['#4A148C', '#7B1FA2'],
         },
         { 
-          label: 'Iklan Baris',      
+          label: 'Iklan Saya',      
           sub: 'Pasang iklan produk & jasa warga',           
           to: 'iklan-baris', 
           nav: false,
