@@ -4579,9 +4579,9 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}
       >
         {/* Promo banners with high-impact image display & integrated pagination */}
-        <div className="px-3.5 pt-2.5 pb-1.5">
+        <div className="w-full px-4 pt-3 pb-2">
           <div
-            className="rounded-3xl overflow-hidden h-44 sm:h-48 relative cursor-pointer shadow-md active:scale-[0.99] transition-all duration-300 group"
+            className="w-full rounded-2xl overflow-hidden relative cursor-pointer shadow-md active:scale-[0.99] transition-all duration-300 group h-[156px] sm:h-[168px]"
             style={{
               background: `linear-gradient(135deg, ${BANNERS_ESTO[bannerIdx].g[0]}, ${BANNERS_ESTO[bannerIdx].g[1]})`,
             }}
@@ -4592,34 +4592,46 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                 src={BANNERS_ESTO[bannerIdx].image}
                 alt={BANNERS_ESTO[bannerIdx].title}
                 key={BANNERS_ESTO[bannerIdx].id}
-                className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-500 transform group-hover:scale-105 transition-transform duration-700"
+                className="absolute inset-0 w-full h-full object-cover object-center animate-in fade-in duration-500 transform group-hover:scale-105 transition-transform duration-700"
               />
             )}
 
-            {/* Gradient Overlays for High Legibility */}
+            {/* Gradient Overlays for High Legibility & Image Visibility */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: `linear-gradient(90deg, ${BANNERS_ESTO[bannerIdx].g[0]}F2 0%, ${BANNERS_ESTO[bannerIdx].g[1]}B3 55%, rgba(0,0,0,0.2) 100%)`,
+                background: `linear-gradient(90deg, ${BANNERS_ESTO[bannerIdx].g[0]}F2 0%, ${BANNERS_ESTO[bannerIdx].g[0]}D9 50%, ${BANNERS_ESTO[bannerIdx].g[1]}4D 100%)`,
               }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/15 pointer-events-none" />
 
             {/* Banner Promotional Content (Clean Visual Poster Format) */}
-            <div className="absolute inset-0 flex flex-col justify-between p-4.5 sm:p-5 z-10">
+            <div className="absolute inset-0 flex flex-col justify-between p-3.5 sm:p-4 z-10">
+              {/* Top Row: Tag Pill */}
+              <div className="flex items-center">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-white text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider border border-white/25 shadow-xs">
+                  {BANNERS_ESTO[bannerIdx].tag}
+                </span>
+              </div>
+
               {/* Content Headline & Subtitle with Enhanced Readability */}
-              <div className="flex-1 flex flex-col justify-center max-w-[280px] sm:max-w-[320px]">
-                <h3 className="text-white font-black text-[17px] sm:text-[19px] leading-tight tracking-tight drop-shadow-md">
+              <div className="pr-3 max-w-[240px] sm:max-w-[280px]">
+                <h3 className="text-white font-black text-[15px] sm:text-[17px] leading-tight tracking-tight drop-shadow-md line-clamp-2">
                   {BANNERS_ESTO[bannerIdx].title}
                 </h3>
-                <p className="text-white/90 text-[11.5px] sm:text-[12px] mt-1.5 line-clamp-2 leading-relaxed font-medium drop-shadow-sm">
+                <p className="text-white/90 text-[11px] sm:text-[11.5px] mt-1 line-clamp-2 leading-snug font-medium drop-shadow-xs">
                   {BANNERS_ESTO[bannerIdx].sub}
                 </p>
               </div>
 
-              {/* Bottom Row: Minimalist Floating Pagination Dots */}
-              <div className="flex items-center justify-end pt-1">
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 shadow-xs">
+              {/* Bottom Row: CTA Button & Minimalist Floating Pagination Dots */}
+              <div className="flex items-center justify-between pt-0.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white text-emerald-950 text-[10.5px] font-black shadow-xs active:scale-95 transition hover:bg-emerald-50">
+                  <span>{BANNERS_ESTO[bannerIdx].cta || 'Lihat Promo'}</span>
+                  <ChevronRight size={12} strokeWidth={2.5} />
+                </span>
+
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 shadow-xs">
                   {BANNERS_ESTO.map((_, i) => (
                     <button
                       key={i}
@@ -4629,7 +4641,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                       }}
                       className="h-1.5 rounded-full transition-all duration-300"
                       style={{
-                        width: i === bannerIdx ? 18 : 5,
+                        width: i === bannerIdx ? 16 : 5,
                         background: i === bannerIdx ? '#FFFFFF' : 'rgba(255,255,255,0.4)',
                       }}
                       aria-label={`Banner slide ${i + 1}`}
@@ -4642,7 +4654,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         </div>
 
           {/* Quick Voucher Strip (Image 5) */}
-          <div className="px-3.5 pt-1 pb-2">
+          <div className="px-4 pt-1 pb-2">
             <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl p-2.5 text-white flex items-center justify-between shadow-xs">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center flex-shrink-0">
@@ -4669,7 +4681,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
           {/* ── Section Toko Pilihan (Standard Vertical Stack) ── */}
           <div className="pt-2 pb-2">
-            <div className="px-3.5 mb-2.5">
+            <div className="px-4 mb-2.5">
               <h3 className="text-[15px] font-extrabold text-gray-900 leading-tight">
                 Toko Pilihan
               </h3>
@@ -4679,7 +4691,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </div>
 
             {/* Standard Vertical Store Cards Stack */}
-            <div className="px-3.5 flex flex-col gap-3.5">
+            <div className="px-4 flex flex-col gap-3.5">
               {ESTO_STORES.slice(0, 2).map((store) => (
                 <StoreCard
                   key={store.id}
@@ -4703,7 +4715,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
           {/* ── Section Produk dari Penjual (Image 3) ── */}
           <div className="pt-3 pb-2">
-            <div className="px-3.5 mb-2.5">
+            <div className="px-4 mb-2.5">
               <h3 className="text-[14px] font-extrabold text-gray-900 leading-tight">
                 Produk dari Penjual
               </h3>
@@ -4734,7 +4746,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             )}
 
             {/* Product grid with ProductCard Molecule */}
-            <div className="grid grid-cols-2 gap-3 px-3.5 pb-4">
+            <div className="grid grid-cols-2 gap-3 px-4 pb-4">
               {communityProducts.map((p) => (
                 <ProductCard
                   key={p.id}

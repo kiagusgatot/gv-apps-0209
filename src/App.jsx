@@ -231,7 +231,7 @@ export default function App() {
         </nav>
 
         {/* ── Phone content area ─────────────── */}
-        <div className="flex-shrink-0 w-[390px] flex flex-col overflow-hidden relative"
+        <div className="flex-shrink-0 w-full max-w-[390px] flex flex-col overflow-hidden relative"
           style={{
             boxShadow:'-1px 0 0 #D4D8D0, 1px 0 0 #D4D8D0, 0 8px 32px rgba(15,26,19,0.08)',
           }}>
