@@ -26,9 +26,19 @@ const KOMUNITAS_LABEL_MAP = {
   dekopin: 'Dekopin',
 }
 
+const COMMUNITY_THEMES = {
+  sinartani:     { label: 'SINARTANI',     color: '#2D7A27', light: '#E8F5E9', gradient: ['#1B5E20','#2D7A27'] },
+  nexgent:       { label: 'NEXGENT',       color: '#1A3A8A', light: '#E8EAF6', gradient: ['#0D47A1','#1A3A8A'] },
+  hkti:          { label: 'HKTI',          color: '#1F5C1A', light: '#E8F5E9', gradient: ['#145214','#1F5C1A'] },
+  active_campus: { label: 'Active Campus', color: '#C0392B', light: '#FFEBEE', gradient: ['#922B21','#C0392B'] },
+  rt_online:     { label: 'RT Online',     color: '#5D6D7E', light: '#ECEFF1', gradient: ['#455A64','#5D6D7E'] },
+  dekopin:       { label: 'Dekopin',       color: '#922B21', light: '#FFEBEE', gradient: ['#641010','#922B21'] },
+}
+
 export default function BerandaBentoGrid({
   userProfile,
   userData,
+  communityTheme = null,
   navigate,
   onOpenQris,
   onOpenMore,
@@ -49,6 +59,8 @@ export default function BerandaBentoGrid({
 
   const userKomunitas = userProfile?.komunitas || userData?.komunitas || p?.komunitas
   const komunitasName = userKomunitas ? (KOMUNITAS_LABEL_MAP[userKomunitas] || userKomunitas) : null
+  const activeTheme = communityTheme
+    || (userKomunitas ? (COMMUNITY_THEMES[userKomunitas.toLowerCase().replace(/\s+/g, '_')] || COMMUNITY_THEMES[userKomunitas]) : null)
 
   const isSuperAdmin = p.capabilities?.includes('Super Admin')
   const isPenjual = p.capabilities?.includes('Penjual')
@@ -222,7 +234,13 @@ export default function BerandaBentoGrid({
           className="p-2.5 flex items-center justify-between active:scale-[0.98] transition cursor-pointer border border-surface-200/60"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{
+                background: (communityTheme || activeTheme) ? (communityTheme || activeTheme).light : '#EFF6FF',
+                color: (communityTheme || activeTheme) ? (communityTheme || activeTheme).color : '#3B82F6',
+              }}
+            >
               <Users size={14} />
             </div>
             <div className="min-w-0">
@@ -353,31 +371,49 @@ export default function BerandaBentoGrid({
           <p className="text-[11px] text-surface-500 mb-2.5">Langkah mudah untuk menikmati layanan desa</p>
           <div className="flex flex-col gap-2">
             {[
-              { title: 'Isi Saldo GV Pay', sub: 'Mulai transaksi & bayar tagihan', to: 'bayar-topup', icon: Plus },
+              { id: 'saldo', title: 'Isi Saldo GV Pay', sub: 'Mulai transaksi & bayar tagihan', to: 'bayar-topup', icon: Plus },
               {
+                id: 'komunitas',
                 title: komunitasName ? `Aktif di ${komunitasName}` : 'Gabung Komunitas GV',
                 sub: komunitasName ? 'Mulai berdiskusi di komunitas pilihanmu' : 'Temukan komunitas yang sesuai denganmu',
                 to: 'komunitas',
                 icon: Users,
               },
-              { title: 'Belanja di Pasar ESTO', sub: 'Beli langsung dari hasil panen desa', to: 'pasar', icon: ShoppingBag },
-            ].map((st, i) => (
-              <button
-                key={st.title}
-                type="button"
-                onClick={() => navigate(st.to)}
-                className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface-50 hover:bg-surface-100 transition text-left active:scale-[0.98]"
-              >
-                <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center text-brand flex-shrink-0 font-bold text-xs">
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-bold text-surface-900 leading-tight">{st.title}</p>
-                  <p className="text-[10px] text-surface-500 leading-tight mt-0.5">{st.sub}</p>
-                </div>
-                <ChevronRight size={14} className="text-surface-400" />
-              </button>
-            ))}
+              { id: 'belanja', title: 'Belanja di Pasar ESTO', sub: 'Beli langsung dari hasil panen desa', to: 'pasar', icon: ShoppingBag },
+            ].map((st, i) => {
+              const isCommStep = st.id === 'komunitas'
+              const StepIcon = st.icon
+              const themeToUse = communityTheme || activeTheme
+              return (
+                <button
+                  key={st.title}
+                  type="button"
+                  onClick={() => navigate(st.to)}
+                  className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface-50 hover:bg-surface-100 transition text-left active:scale-[0.98]"
+                >
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xs ${
+                      !isCommStep || !themeToUse ? 'bg-brand/10 text-brand' : ''
+                    }`}
+                    style={
+                      isCommStep && themeToUse
+                        ? {
+                            background: themeToUse.light,
+                            color: themeToUse.color,
+                          }
+                        : undefined
+                    }
+                  >
+                    {StepIcon ? <StepIcon size={15} /> : i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-bold text-surface-900 leading-tight">{st.title}</p>
+                    <p className="text-[10px] text-surface-500 leading-tight mt-0.5">{st.sub}</p>
+                  </div>
+                  <ChevronRight size={14} className="text-surface-400" />
+                </button>
+              )
+            })}
           </div>
         </BentoCard>
       )}
@@ -446,9 +482,20 @@ export default function BerandaBentoGrid({
       {!isNewUser && threads.length > 0 && (
         <BentoCard colSpan={2} variant="elevated" className="p-3.5">
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Wheat size={14} className="text-amber-600" />
               <h3 className="text-[13px] font-extrabold text-surface-900">Diskusi Hangat Warga</h3>
+              {(communityTheme || activeTheme) && (
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                  style={{
+                    background: (communityTheme || activeTheme).light,
+                    color: (communityTheme || activeTheme).color,
+                  }}
+                >
+                  {(communityTheme || activeTheme).label}
+                </span>
+              )}
             </div>
             <button
               type="button"

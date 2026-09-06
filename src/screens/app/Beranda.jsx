@@ -1252,6 +1252,7 @@ export default function Beranda({ navigate, userData, userProfile }) {
         <BerandaBentoGrid
           userProfile={userProfile}
           userData={userData}
+          communityTheme={activeTheme}
           navigate={navigate}
           onOpenQris={() => setQris(true)}
           onOpenMore={() => setMore(true)}
