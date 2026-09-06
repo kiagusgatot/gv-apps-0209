@@ -222,7 +222,7 @@ export default function BerandaBentoGrid({
             <p className="text-surface-900 text-[12px] font-bold leading-tight">
               Tanya GV AI
             </p>
-            <p className="text-surface-500 text-[10px] mt-0.5">Asisten Desa Pintar →</p>
+            <p className="text-surface-500 text-[10px] mt-0.5">Asisten percakapan warga GV →</p>
           </div>
         </BentoCard>
 

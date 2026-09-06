@@ -1241,7 +1241,7 @@ function CommunityPage({ community, isJoined: initJoined, isAdmin, isPenjual, es
               {[
                 { role:'Owner',       avIcon:UserCheck,   name:'Wawan Setiawan',   badge:'Owner',       badgeBg:'#EDE7F6', badgeColor:'#6A1B9A', desc:'Pemilik & pengelola komunitas' },
                 { role:'Admin',       avIcon:UserCheck,   name:'Wawan Setiawan',   badge:'Admin',       badgeBg:`${ADMIN_COLOR}12`, badgeColor:ADMIN_COLOR, desc:'Moderasi thread & pengumuman' },
-                { role:'Observer AI', avIcon:Bot,  name:'GV Observer',      badge:'AI',          badgeBg:'#E3F2FD', badgeColor:'#1565C0', desc:'Pemantau otomatis konten komunitas' },
+                { role:'Observer AI', avIcon:Bot,  name:'GV Observer',      badge:'AI',          badgeBg:'#E3F2FD', badgeColor:'#1565C0', desc:'Moderator AI — memantau dan memfilter konten yang melanggar aturan komunitas' },
                 { role:'Member',      avIcon:Users,  name:community.members,  badge:'Member',      badgeBg:'#E8F5E9', badgeColor:PRIMARY,    desc:'Anggota aktif komunitas' },
               ].map((r,i)=>(
 <div key={r.role} className={`flex items-center gap-3 py-3 ${i<3?'border-b border-gray-50':''}`}>
@@ -1259,6 +1259,12 @@ function CommunityPage({ community, isJoined: initJoined, isAdmin, isPenjual, es
                   </div>
                 </div>
               ))}
+              <p className="text-[11px] text-surface-400 mt-3 px-1 leading-relaxed">
+                💡 <span className="font-medium">GV Moderator</span> adalah AI otomatis yang
+                memantau konten komunitas. Berbeda dengan{' '}
+                <span className="font-medium">Tanya GV</span> yang merupakan asisten percakapan
+                di Beranda.
+              </p>
             </div>
           </div>
         )}
