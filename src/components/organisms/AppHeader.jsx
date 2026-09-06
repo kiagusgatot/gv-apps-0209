@@ -10,6 +10,7 @@ export default function AppHeader({
   userName = 'Warga GV',
   userRole,
   userColor,
+  communityTheme = null,
   unreadCount = 0,
   onOpenTanyaGV,
   onOpenNotif,
@@ -20,6 +21,15 @@ export default function AppHeader({
     <header
       className={`px-4 pt-3 pb-2.5 flex items-center justify-between relative z-30 transition-all ${className}`}
     >
+      {communityTheme && (
+        <div
+          className="absolute top-0 start-0 end-0 h-[3px] rounded-full opacity-80"
+          style={{
+            background: `linear-gradient(90deg, ${communityTheme.gradient[0]}, ${communityTheme.gradient[1]}, transparent)`,
+          }}
+        />
+      )}
+
       {/* Greeting & Persona Info */}
       <div className="flex flex-col min-w-0">
         <span className="text-[11px] font-semibold text-white/70 tracking-wide flex items-center gap-1">

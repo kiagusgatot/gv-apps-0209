@@ -15,6 +15,15 @@ import {
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
+const COMMUNITY_THEMES = {
+  sinartani:     { label: 'SINARTANI',     color: '#2D7A27', light: '#E8F5E9', gradient: ['#1B5E20','#2D7A27'] },
+  nexgent:       { label: 'NEXGENT',       color: '#1A3A8A', light: '#E8EAF6', gradient: ['#0D47A1','#1A3A8A'] },
+  hkti:          { label: 'HKTI',          color: '#1F5C1A', light: '#E8F5E9', gradient: ['#145214','#1F5C1A'] },
+  active_campus: { label: 'Active Campus', color: '#C0392B', light: '#FFEBEE', gradient: ['#922B21','#C0392B'] },
+  rt_online:     { label: 'RT Online',     color: '#5D6D7E', light: '#ECEFF1', gradient: ['#455A64','#5D6D7E'] },
+  dekopin:       { label: 'Dekopin',       color: '#922B21', light: '#FFEBEE', gradient: ['#641010','#922B21'] },
+}
+
 const S = {
   card: '0 2px 8px rgba(27,107,58,0.08), 0 1px 3px rgba(27,107,58,0.05)',
   cardMd: '0 4px 16px rgba(27,107,58,0.10), 0 2px 4px rgba(27,107,58,0.06)',
@@ -1163,6 +1172,12 @@ export default function Beranda({ navigate, userData, userProfile }) {
 
   const p = userProfile || { name: 'Pengguna', capabilities: [], balance: 0, points: 0, hasWatchHistory: false, urgentOrders: 0, hasActiveOrder: false, hasActiveBills: false, hasJoinedCommunity: false, hasTransactions: false }
 
+  const komunitas = userData?.komunitas || userProfile?.komunitas || ''
+  const activeTheme = COMMUNITY_THEMES[komunitas]
+    || COMMUNITY_THEMES[komunitas.toLowerCase()]
+    || COMMUNITY_THEMES[komunitas.toLowerCase().replace(/\s+/g, '_')]
+    || null
+
   const isSeller = p.capabilities?.includes('Penjual')
   const isCreator = p.capabilities?.includes('Kreator')
   const isAdmin = p.capabilities?.includes('Admin Komunitas')
@@ -1204,8 +1219,20 @@ export default function Beranda({ navigate, userData, userProfile }) {
           <div className="pt-1 pb-1">
             <AppHeader
               userName={p.name}
-              userRole={userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : isAdmin ? 'Admin' : null)}
-              userColor={userProfile?.color}
+              userRole={
+                userProfile?.label
+                  ? userProfile.label                                           // Demo persona: pakai label demo
+                  : isSeller ? 'Penjual'
+                  : isCreator ? 'Kreator'
+                  : isAdmin ? 'Admin'
+                  : activeTheme ? activeTheme.label                            // User nyata: pakai nama komunitas
+                  : null
+              }
+              userColor={
+                userProfile?.color                                              // Demo persona: pakai warna persona
+                  || (activeTheme ? activeTheme.color : undefined)             // User nyata: pakai warna komunitas
+              }
+              communityTheme={activeTheme}
               unreadCount={unread}
               greeting={greeting}
               onOpenTanyaGV={() => setTanyaOpen(true)}
