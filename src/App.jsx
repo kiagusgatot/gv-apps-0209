@@ -161,7 +161,7 @@ export default function App() {
     <AdsProvider>
       <div className="h-screen flex flex-col overflow-hidden grain-overlay" style={{background:'#F5F6F3'}}>
         {/* ── Header ─────────────────────────────────── */}
-        <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-3"
+        <header className="hidden md:flex sticky top-0 z-50 items-center justify-between px-6 py-3"
         style={{
           background:'linear-gradient(135deg, #0C3E1E 0%, #1B6B3A 60%, #217A44 100%)',
           boxShadow:'0 4px 24px rgba(12,62,30,0.25)',
@@ -231,7 +231,7 @@ export default function App() {
         </nav>
 
         {/* ── Phone content area ─────────────── */}
-        <div className="flex-shrink-0 w-full max-w-[390px] flex flex-col overflow-hidden relative"
+        <div className="flex-shrink-0 w-full md:max-w-[390px] flex flex-col overflow-hidden relative"
           style={{
             boxShadow:'-1px 0 0 #D4D8D0, 1px 0 0 #D4D8D0, 0 8px 32px rgba(15,26,19,0.08)',
           }}>
