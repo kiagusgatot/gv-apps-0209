@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { MapPin, CheckCircle, User, Sparkles, ArrowRight } from 'lucide-react'
+import { MapPin, CheckCircle, User, Sparkles, ArrowRight, Users } from 'lucide-react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import AppButton from '@/components/atoms/AppButton'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
+
+const KOMUNITAS_LABEL_MAP = {
+  sinartani: 'SINARTANI',
+  nexgent: 'NEXGENT',
+  hkti: 'HKTI',
+  active_campus: 'Active Campus',
+  rt_online: 'RT Online',
+  dekopin: 'Dekopin',
+}
 
 export default function Selesai({ navigate, userData }) {
   const [showContent, setShowContent] = useState(false)
@@ -63,7 +72,7 @@ export default function Selesai({ navigate, userData }) {
               <div className="min-w-0">
                 <p className="text-[10.5px] font-semibold text-surface-400 leading-none">Nama Warga</p>
                 <p className="text-[13.5px] font-bold text-surface-900 truncate mt-1">
-                  {userData.name || '—'}
+                  {userData.name || 'Warga GV'}
                 </p>
               </div>
             </div>
@@ -74,6 +83,16 @@ export default function Selesai({ navigate, userData }) {
                 <p className="text-[10.5px] font-semibold text-surface-400 leading-none">Desa Terpilih</p>
                 <p className="text-[13.5px] font-bold text-surface-900 truncate mt-1">
                   {userData.desa || 'Desa Sukamaju'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-surface-50/80 border border-surface-200/60">
+              <SkeuoIcon icon={Users} gradient={['#1B5E20', '#2E7D32']} size="sm" />
+              <div className="min-w-0">
+                <p className="text-[10.5px] font-semibold text-surface-400 leading-none">Komunitas</p>
+                <p className="text-[13.5px] font-bold text-surface-900 truncate mt-1">
+                  {KOMUNITAS_LABEL_MAP[userData?.komunitas] || userData?.komunitas || '—'}
                 </p>
               </div>
             </div>

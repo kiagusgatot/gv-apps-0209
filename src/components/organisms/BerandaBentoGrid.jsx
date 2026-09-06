@@ -17,6 +17,15 @@ import SkeuoIcon from '@/components/atoms/SkeuoIcon'
  * Dynamic, multi-proportional Bento Grid layout for the home screen.
  * Adapts modularly to user personas (Warga Baru, Warga Aktif, Penjual, Kreator, Admin, Super Admin).
  */
+const KOMUNITAS_LABEL_MAP = {
+  sinartani: 'SINARTANI',
+  nexgent: 'NEXGENT',
+  hkti: 'HKTI',
+  active_campus: 'Active Campus',
+  rt_online: 'RT Online',
+  dekopin: 'Dekopin',
+}
+
 export default function BerandaBentoGrid({
   userProfile,
   userData,
@@ -31,11 +40,15 @@ export default function BerandaBentoGrid({
 }) {
   const p = userProfile || {
     name: userData?.name || 'Warga Baru',
+    komunitas: userData?.komunitas,
     balance: 0,
     points: 0,
     capabilities: ['Member'],
     preferences: userData?.preferences || [],
   }
+
+  const userKomunitas = userProfile?.komunitas || userData?.komunitas || p?.komunitas
+  const komunitasName = userKomunitas ? (KOMUNITAS_LABEL_MAP[userKomunitas] || userKomunitas) : null
 
   const isSuperAdmin = p.capabilities?.includes('Super Admin')
   const isPenjual = p.capabilities?.includes('Penjual')
@@ -214,7 +227,9 @@ export default function BerandaBentoGrid({
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-bold text-surface-900 truncate">Warga Sekitarmu</p>
-              <p className="text-[9.5px] text-surface-400 truncate">Forum & info desa</p>
+              <p className="text-[9.5px] text-surface-400 truncate">
+                {komunitasName ? `Komunitas ${komunitasName}` : 'Forum & info desa'}
+              </p>
             </div>
           </div>
           <ChevronRight size={13} className="text-surface-400 flex-shrink-0" />
@@ -339,7 +354,12 @@ export default function BerandaBentoGrid({
           <div className="flex flex-col gap-2">
             {[
               { title: 'Isi Saldo GV Pay', sub: 'Mulai transaksi & bayar tagihan', to: 'bayar-topup', icon: Plus },
-              { title: 'Gabung Komunitas Desa', sub: 'Berkenalan dengan warga sekitar', to: 'komunitas', icon: Users },
+              {
+                title: komunitasName ? `Aktif di ${komunitasName}` : 'Gabung Komunitas GV',
+                sub: komunitasName ? 'Mulai berdiskusi di komunitas pilihanmu' : 'Temukan komunitas yang sesuai denganmu',
+                to: 'komunitas',
+                icon: Users,
+              },
               { title: 'Belanja di Pasar ESTO', sub: 'Beli langsung dari hasil panen desa', to: 'pasar', icon: ShoppingBag },
             ].map((st, i) => (
               <button
