@@ -730,7 +730,7 @@ function SearchScreen({ onClose, navigate }) {
                   </div>
                   <div>
                     <p className="text-[13px] font-extrabold text-gray-900 leading-tight">Komunitas</p>
-                    <p className="text-[10.5px] text-gray-500 mt-0.5">Diskusi kelompok tani</p>
+                    <p className="text-[10.5px] text-gray-500 mt-0.5">Forum warga & komunitas</p>
                   </div>
                 </button>
 

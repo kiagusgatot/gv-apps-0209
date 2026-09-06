@@ -48,7 +48,7 @@ export default function OTP({ navigate, userData }) {
   return (
     <OnboardingLayout
       currentStep={2}
-      totalSteps={4}
+      totalSteps={5}
       title="Verifikasi OTP"
       subtitle="Pastikan nomor ponselmu aktif untuk menerima kode"
       onBack={() => navigate('register')}

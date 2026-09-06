@@ -132,7 +132,7 @@ export default function SelectDesa({ navigate, userData, updateUser }) {
   return (
     <OnboardingLayout
       currentStep={3}
-      totalSteps={4}
+      totalSteps={5}
       title={isFound ? 'Desa di Sekitarmu' : 'Pilih Desamu'}
       subtitle={
         isFound

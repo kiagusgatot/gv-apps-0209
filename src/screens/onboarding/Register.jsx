@@ -26,7 +26,7 @@ export default function Register({ navigate, userData, updateUser }) {
   return (
     <OnboardingLayout
       currentStep={1}
-      totalSteps={4}
+      totalSteps={5}
       title="Buat Akun Baru"
       subtitle="Bergabunglah dengan ekosistem digital desa masa depan"
       onBack={() => navigate('welcome')}
