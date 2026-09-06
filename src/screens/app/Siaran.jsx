@@ -7,7 +7,7 @@ import AppButton from '@/components/atoms/AppButton'
 import Badge from '@/components/atoms/Badge'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import SectionHeader from '@/components/molecules/SectionHeader'
-import { Search, Play, Clock, Sparkles, Tv2, Radio, ArrowLeft as ArrowLeft2, ChevronRight, Lock, X,
+import { Search, Play, Clock, Sparkles, Tv2, Tv, Radio, ArrowLeft as ArrowLeft2, ChevronRight, Lock, X,
   ExternalLink, Bell, Users, Crown, Headphones, CheckCircle,
   Pause, SkipBack, SkipForward, Calendar, MessageCircle, Send,
   ArrowLeft, Video as VideoIcon, Info, Heart, Share2, Mic, Clapperboard, Home, UserCheck, User, MoreHorizontal,
@@ -1548,8 +1548,39 @@ function TabLive({ navigate, showToast }) {
       {/* Content Area */}
       <div className="flex-1 flex flex-col min-h-0 bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-1 pb-4">
-            <div className="mt-4 flex items-center justify-between mb-2.5">
+          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-4">
+            {/* Pinned Card "Sedang Tayang" */}
+            <div
+              className="rounded-xl p-3 mb-4 flex flex-col gap-1.5"
+              style={{
+                background: '#F1F8E9',
+                borderLeft: '3px solid #2E7D32',
+              }}
+            >
+              {/* Baris atas */}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-red-600 flex items-center gap-1">
+                  <span>🔴</span> SEDANG TAYANG
+                </span>
+                <span className="text-[11px] text-surface-500">
+                  sampai {isTV ? '10:00 WIB' : '18:00 WIB'}
+                </span>
+              </div>
+
+              {/* Baris tengah */}
+              <p className="font-bold text-[14px] text-surface-900 leading-tight">
+                {isTV ? 'Berita Desa Pagi' : 'Campursari Sore'}
+              </p>
+
+              {/* Baris bawah */}
+              <div className="flex items-center gap-1 text-[12px] text-surface-500">
+                {isTV ? <Tv size={12} /> : <Radio size={12} />}
+                <span>{isTV ? 'GV TV · 09:00 – 10:00 WIB' : 'GV Radio · 15:00 – 18:00 WIB'}</span>
+              </div>
+            </div>
+
+            {/* Header Tanggal */}
+            <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
                 <Calendar size={13} className="text-brand" />
                 <span>Senin, 23 Agustus 2026</span>
@@ -1578,6 +1609,7 @@ function TabLive({ navigate, showToast }) {
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-[12px] font-extrabold" style={{ color: accent }}>{j.time} WIB</span>
+                          <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-md ml-1">LIVE</span>
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-3">
