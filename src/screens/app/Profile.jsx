@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
-import { ChevronRight, Award, HelpCircle, LogOut, Shield, Bell,
+import GlassCard from '@/components/atoms/GlassCard'
+import SkeuoIcon from '@/components/atoms/SkeuoIcon'
+import { ChevronRight, Award, HelpCircle, LogOut, Shield, ShieldCheck, Bell,
   Store, Tv2, MapPin, Crown, CheckCircle, X, ChevronDown,
   ChevronUp, Globe, Trash2, Camera, Star, Gift, Zap, Package,
   ToggleLeft, ToggleRight, ArrowLeft, Check, Plus, Edit3,
   Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone,
-  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2, Wallet } from 'lucide-react'
+  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2, Wallet, Pencil, ImagePlus } from 'lucide-react'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
-import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import NavTabs from '@/components/molecules/NavTabs'
 import BottomNav from '../../components/BottomNav'
 import TanyaGV from '../../components/TanyaGV'
@@ -32,7 +33,7 @@ const COMMUNITY_THEMES = {
 // ── Sub-screen wrapper ──────────────────────────────────────
 function SubScreen({ title, onBack, children, actions, navigate }) {
   return (
-    <div className="flex flex-col h-full bg-[#FAFBF9]">
+    <div className="flex flex-col h-full bg-[#FAFBF9] relative">
       <ScreenHeader title={title} onBack={onBack} actions={actions} />
       <div className="flex-1 overflow-y-auto no-scrollbar">{children}</div>
       {navigate && <BottomNav active="profile" navigate={navigate}/>}
@@ -371,59 +372,121 @@ const MOCK_USER_DATA = {
   pos: '16680'
 }
 
+// ── Bottom Sheet Pilihan Foto ────────────────────────────────
+function PhotoSheet({ isOpen, onClose, onRemovePhoto }) {
+  if (!isOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/40 z-40"
+        onClick={onClose}
+      />
+
+      {/* Sheet */}
+      <div
+        className="absolute bottom-0 left-0 right-0 z-50 px-4 pt-4 pb-8 transition-transform translate-y-0"
+        style={{
+          background: 'rgba(255, 255, 255, 0.96)',
+          backdropFilter: 'blur(20px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+          borderRadius: '20px 20px 0 0',
+          boxShadow: '0 -8px 32px rgba(15, 26, 19, 0.12)',
+        }}
+      >
+        {/* Handle bar */}
+        <div className="w-10 h-1 bg-surface-200 rounded-full mx-auto mb-4" />
+
+        {/* Judul */}
+        <h3 className="text-[14px] font-bold text-surface-900 text-center mb-4">
+          Foto Profil
+        </h3>
+
+        {/* Tiga tombol opsi */}
+        <div className="flex flex-col">
+          {/* Opsi 1 — Ambil Foto Baru */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              alert('Fitur kamera akan tersedia segera')
+            }}
+            className="flex items-center gap-3 p-3 rounded-xl active:bg-surface-50 text-left transition w-full"
+          >
+            <SkeuoIcon icon={Camera} gradient={['#1B5E20', '#2E7D32']} size="sm" />
+            <div>
+              <p className="font-semibold text-[14px] text-surface-800">Ambil Foto Baru</p>
+              <p className="text-[11px] text-surface-400 mt-0.5">Gunakan kamera perangkatmu</p>
+            </div>
+          </button>
+
+          {/* Divider */}
+          <div className="h-px bg-surface-100 mx-1" />
+
+          {/* Opsi 2 — Pilih dari Galeri */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              alert('Fitur galeri akan tersedia segera')
+            }}
+            className="flex items-center gap-3 p-3 rounded-xl active:bg-surface-50 text-left transition w-full"
+          >
+            <SkeuoIcon icon={ImagePlus} gradient={['#1565C0', '#1976D2']} size="sm" />
+            <div>
+              <p className="font-semibold text-[14px] text-surface-800">Pilih dari Galeri</p>
+              <p className="text-[11px] text-surface-400 mt-0.5">Pilih foto dari galeri perangkatmu</p>
+            </div>
+          </button>
+
+          {/* Divider */}
+          <div className="h-px bg-surface-100 mx-1" />
+
+          {/* Opsi 3 — Hapus Foto Profil */}
+          <button
+            type="button"
+            onClick={() => {
+              onClose()
+              if (onRemovePhoto) onRemovePhoto()
+            }}
+            className="flex items-center gap-3 p-3 rounded-xl active:bg-surface-50 text-left transition w-full"
+          >
+            <SkeuoIcon icon={Trash2} gradient={['#C62828', '#E53935']} size="sm" />
+            <div>
+              <p className="font-semibold text-[14px] text-red-600">Hapus Foto Profil</p>
+              <p className="text-[11px] text-red-400 mt-0.5">Kembali ke tampilan inisial nama</p>
+            </div>
+          </button>
+        </div>
+
+        {/* Tombol Batal */}
+        <GlassCard
+          variant="interactive"
+          onClick={onClose}
+          className="mt-2 py-3 text-center w-full flex items-center justify-center cursor-pointer"
+        >
+          <span className="font-semibold text-[14px] text-surface-600">Batal</span>
+        </GlassCard>
+      </div>
+    </>
+  )
+}
+
 // ── Edit Profil ─────────────────────────────────────────────
-function EditProfilScreen({ userData, onBack, onSave, navigate }) {
+function EditProfilScreen({ userData, userProfile, onBack, onSave, navigate }) {
   const fallback = MOCK_USER_DATA
   const [form, setForm] = useState({
     photo: userData?.photo || fallback.photo,
-    name: userData?.name || fallback.name,
-    nik: userData?.nik || fallback.nik || '',
-    gender: userData?.gender || fallback.gender || '',
-    prov: userData?.prov || fallback.prov || '',
-    kab: userData?.kab || fallback.kab || '',
-    kec: userData?.kec || fallback.kec || '',
-    desa: userData?.desa || fallback.desa || ''
+    name: userData?.name || userProfile?.name || fallback.name || '',
+    bio: userData?.bio || fallback.bio || '',
   })
   const [errors, setErrors] = useState({})
-
-  // Mock database for location dropdowns
-  const LOCATIONS = {
-    'Jawa Barat': {
-      'Kabupaten Bogor': {
-        'Dramaga': ['Cikarawang', 'Dramaga', 'Babakan', 'Petir'],
-        'Cibinong': ['Cibinong', 'Ciriung', 'Pabuaran']
-      },
-      'Kota Bogor': {
-        'Bogor Tengah': ['Babakan', 'Pabaton', 'Sempur']
-      }
-    },
-    'Jawa Tengah': {
-      'Kota Semarang': {
-        'Semarang Tengah': ['Bangunharjo', 'Karangkidul', 'Sekayu']
-      }
-    }
-  }
-
-  const provOptions = Object.keys(LOCATIONS)
-  const kabOptions = form.prov && LOCATIONS[form.prov] ? Object.keys(LOCATIONS[form.prov]) : []
-  const kecOptions = form.prov && form.kab && LOCATIONS[form.prov][form.kab] ? Object.keys(LOCATIONS[form.prov][form.kab]) : []
-  const desaOptions = form.prov && form.kab && form.kec && LOCATIONS[form.prov][form.kab][form.kec] ? LOCATIONS[form.prov][form.kab][form.kec] : []
-
-  const fileRef = useRef(null)
-  const handlePhoto = e => {
-    const f = e.target.files?.[0]; if (!f) return
-    const r = new FileReader(); r.onload = ev => setForm(f=>({...f,photo:ev.target.result})); r.readAsDataURL(f)
-  }
+  const [showPhotoSheet, setShowPhotoSheet] = useState(false)
 
   const validateAndSave = () => {
     const err = {}
-    if (!form.name) err.name = 'Wajib diisi'
-    if (!form.nik || form.nik.length !== 16) err.nik = 'NIK harus 16 digit'
-    if (!form.gender) err.gender = 'Wajib dipilih'
-    if (!form.prov) err.prov = 'Wajib dipilih'
-    if (!form.kab) err.kab = 'Wajib dipilih'
-    if (!form.kec) err.kec = 'Wajib dipilih'
-    if (!form.desa) err.desa = 'Wajib dipilih'
+    if (!form.name || !form.name.trim()) err.name = 'Nama tampilan wajib diisi'
     
     setErrors(err)
     if (Object.keys(err).length === 0) {
@@ -432,60 +495,158 @@ function EditProfilScreen({ userData, onBack, onSave, navigate }) {
     }
   }
 
+  const rawPhone = userData?.phone || userProfile?.phone || fallback.phone || ''
+  const phoneDigits = rawPhone.replace(/\D/g, '')
+  const maskedPhone = rawPhone
+    ? `+62 8xx-xxxx-xx${phoneDigits ? phoneDigits.slice(-2) : 'xx'}`
+    : '+62 8xx-xxxx-xxxx'
+
+  const currentDesa = userData?.desa || userProfile?.desa || fallback.desa || ''
+
   return (
-    <SubScreen title="Edit Profil (Data KTP)" onBack={onBack} navigate={navigate}
-      actions={
-        <button onClick={validateAndSave}
-          className="px-4 py-2 rounded-xl text-[12px] font-bold shadow-sm transition active:scale-[0.96]"
-          style={{background:'#FFFFFF', color:PRIMARY}}>Simpan</button>
-      }>
-      <div className="px-4 py-5 flex flex-col">
-        {/* Photo */}
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 flex items-center justify-center border-[1.5px] border-gray-200 bg-white">
-            {form.photo ? <img src={form.photo} alt="" className="w-full h-full object-cover"/>
-              : <span className="text-3xl font-bold" style={{color:PRIMARY}}>{(form.name||'U')[0].toUpperCase()}</span>}
-          </div>
-          <div className="flex flex-col gap-2">
-            <button onClick={()=>fileRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold text-white shadow-sm"
-              style={{background:PRIMARY}}>
-              <Camera size={13}/> {form.photo?'Ganti Foto':'Upload Foto'}
+    <SubScreen title="Edit Data Profil" onBack={onBack} navigate={navigate}>
+      <div className="flex flex-col min-h-full">
+        <div className="px-4 py-5 flex flex-col gap-4 flex-1">
+          {/* Avatar dengan badge kamera pojok kanan bawah */}
+          <div className="relative w-20 h-20 mx-auto mt-5">
+            {/* Avatar utama */}
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden"
+              style={{ background: 'linear-gradient(145deg, #1B5E20, #2E7D32)' }}
+            >
+              {form.photo ? (
+                <img src={form.photo} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-extrabold text-white text-[26px]">
+                  {(form.name || 'U')[0]?.toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            {/* Badge kamera — pojok kanan bawah */}
+            <button
+              type="button"
+              onClick={() => setShowPhotoSheet(true)}
+              className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer border-2 border-white transition active:scale-95"
+              style={{
+                background: 'linear-gradient(145deg, #1B5E20, #2E7D32)',
+                boxShadow: '0 2px 8px rgba(27,94,32,0.35)',
+              }}
+              aria-label="Ganti Foto"
+            >
+              <Camera size={13} strokeWidth={2.5} className="text-white" />
             </button>
-            {form.photo && <button onClick={()=>setForm(f=>({...f,photo:null}))} className="text-[11px] text-red-500 font-semibold text-left ml-1 px-2 py-1">Hapus foto</button>}
           </div>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhoto}/>
+
+          {/* Card Status Verifikasi */}
+          {userData?.verificationStatus === 'pending' ? (
+            <div className="bg-[#E3F2FD] border border-blue-200 rounded-xl p-3 flex items-start gap-2">
+              <Clock size={15} className="text-[#1565C0] flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-[13px] text-blue-800">Verifikasi Sedang Ditinjau</p>
+                <p className="text-[11px] text-blue-700 mt-0.5 leading-relaxed">
+                  Data & wajahmu sedang ditinjau oleh tim GV (estimasi 1–2 hari kerja).
+                </p>
+              </div>
+            </div>
+          ) : userData?.verificationStatus === 'verified' ? (
+            <div className="bg-[#E8F5E9] border border-green-200 rounded-xl p-3 flex items-center gap-2">
+              <CheckCircle size={15} className="text-green-700 flex-shrink-0" />
+              <span className="text-[12px] text-green-800 font-medium">Identitas Terverifikasi</span>
+            </div>
+          ) : (
+            <div className="bg-[#FFFDE7] border border-yellow-200 rounded-xl p-3 flex items-center justify-between">
+              <span className="text-[12px] text-yellow-800 font-medium">
+                Identitas belum diverifikasi
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate?.('verifikasi')}
+                className="text-[11px] font-bold text-green-700 bg-green-50 px-2.5 py-1 rounded-lg hover:bg-green-100 transition active:scale-95 flex-shrink-0"
+              >
+                Verifikasi →
+              </button>
+            </div>
+          )}
+
+          {/* FIELD 1 — Nama Tampilan */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">
+              Nama Tampilan
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Nama yang terlihat warga lain"
+              className={`w-full bg-white border border-surface-200 rounded-2xl px-4 py-3 text-[13px] outline-none transition-all font-medium text-gray-900 focus:ring-1 focus:ring-green-600 focus:border-green-600 ${
+                errors.name ? 'border-red-400 bg-red-50/50 text-red-900' : ''
+              }`}
+            />
+            <p className="text-[11px] text-surface-400 mt-1">
+              Nama ini yang dilihat warga GV lain. Berbeda dengan nama di KTP.
+            </p>
+            {errors.name && <p className="text-[11px] text-red-500 mt-0.5 font-medium">{errors.name}</p>}
+          </div>
+
+          {/* FIELD 2 — Nomor HP */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">
+              Nomor HP
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                disabled
+                value={maskedPhone}
+                className="w-full bg-surface-100 border border-surface-200 rounded-2xl pl-4 pr-10 py-3 text-[13px] text-surface-400 cursor-not-allowed font-medium outline-none"
+              />
+              <Info size={15} color="#9CA3AF" className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+            <p className="text-[11px] text-surface-400 mt-1">
+              Tidak dapat diubah. Hubungi support jika perlu.
+            </p>
+          </div>
+
+          {/* FIELD 3 — Desa / Lokasi */}
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1.5">
+              Desa / Lokasi
+            </label>
+            <button
+              type="button"
+              onClick={() => navigate?.('desa-profile')}
+              className="w-full bg-white border border-surface-200 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer active:bg-surface-100 transition text-left"
+            >
+              <span className={`text-[13px] ${currentDesa ? 'text-gray-900 font-medium' : 'text-surface-400'}`}>
+                {currentDesa || 'Belum dipilih'}
+              </span>
+              <ChevronRight size={16} className="text-surface-400 flex-shrink-0" />
+            </button>
+          </div>
+
         </div>
 
-        <p className="text-[13px] font-extrabold text-gray-900 mt-2 mb-3">Informasi Identitas Pribadi</p>
-        <FormInput label="Nama Lengkap (Sesuai KTP)" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} placeholder="Masukkan nama lengkap" err={errors.name}/>
-        <FormInput label="NIK" type="text" inputMode="numeric" maxLength={16} value={form.nik} 
-          onChange={e => {
-            const val = e.target.value.replace(/\D/g, '').slice(0, 16);
-            setForm({...form, nik: val})
-          }} placeholder="16 digit NIK" err={errors.nik}/>
-        <FormSelect label="Jenis Kelamin" value={form.gender} onChange={e=>setForm({...form,gender:e.target.value})} options={['Laki-laki', 'Perempuan']} err={errors.gender}/>
-        
-        <div className="h-px bg-gray-100 my-4" />
-        <p className="text-[13px] font-extrabold text-gray-900 mt-2 mb-3">Alamat KTP</p>
-        
-        <FormSelect label="Provinsi" value={form.prov} onChange={e=>{
-            setForm({...form, prov:e.target.value, kab:'', kec:'', desa:''})
-          }} options={provOptions} err={errors.prov}/>
-          
-        <FormSelect label="Kabupaten / Kota" value={form.kab} onChange={e=>{
-            setForm({...form, kab:e.target.value, kec:'', desa:''})
-          }} options={kabOptions} err={errors.kab} disabled={!form.prov}/>
-          
-        <FormSelect label="Kecamatan" value={form.kec} onChange={e=>{
-            setForm({...form, kec:e.target.value, desa:''})
-          }} options={kecOptions} err={errors.kec} disabled={!form.kab}/>
-          
-        <FormSelect label="Desa / Kelurahan" value={form.desa} onChange={e=>{
-            setForm({...form, desa:e.target.value})
-          }} options={desaOptions} err={errors.desa} disabled={!form.kec}/>
-
+        {/* Sticky Bottom Save Button */}
+        <div className="sticky bottom-0 bg-white border-t border-surface-100 px-4 py-3 z-10">
+          <button
+            type="button"
+            onClick={validateAndSave}
+            className="w-full text-white font-bold rounded-xl py-3.5 text-[15px] shadow-sm transition active:scale-[0.98] flex items-center justify-center"
+            style={{ background: PRIMARY }}
+          >
+            Simpan Perubahan
+          </button>
+        </div>
       </div>
+
+      {/* Bottom Sheet Pilihan Foto */}
+      <PhotoSheet
+        isOpen={showPhotoSheet}
+        onClose={() => setShowPhotoSheet(false)}
+        onRemovePhoto={() => setForm((f) => ({ ...f, photo: null }))}
+      />
     </SubScreen>
   )
 }
@@ -1033,7 +1194,7 @@ function IklanBarisScreen({ onBack, navigate }) {
   const [activeTab, setActiveTab] = useState('riwayat');
 
   return (
-    <SubScreen title="Iklan Baris" onBack={onBack} navigate={navigate}>
+    <SubScreen title="Iklan Saya" onBack={onBack} navigate={navigate}>
       <div className="bg-white sticky top-0 z-10 px-2">
         <NavTabs
           variant="underline-light"
@@ -1261,6 +1422,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   const [pesananTab, setPesananTab] = useState('all')
   const [tanyaOpen, setTanyaOpen] = useState(false)
   const [localPhoto, setLocalPhoto] = useState(null)
+  const [showPhotoSheet, setShowPhotoSheet] = useState(false)
   const { orders: buyerOrders } = useBuyerOrders()
 
   const name      = userData?.name   || 'Pengguna'
@@ -1278,7 +1440,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
 
   // Sub-screens
   if (screen==='pesanan')         return <PesananSayaScreen onBack={goBack} navigate={navigate} initialTab={pesananTab} />
-  if (screen==='edit-profil')     return <EditProfilScreen userData={{...userData,photo:localPhoto}} onBack={goBack} onSave={d=>{updateUser?.(d);setLocalPhoto(d.photo)}} navigate={navigate}/>
+  if (screen==='edit-profil')     return <EditProfilScreen userData={{...userData,photo:localPhoto}} userProfile={userProfile} onBack={goBack} onSave={d=>{updateUser?.(d);setLocalPhoto(d.photo)}} navigate={navigate}/>
   if (screen==='notifikasi')      return <NotifikasiScreen onBack={goBack} navigate={navigate}/>
   if (screen==='pengaturan')      return <PengaturanScreen onBack={goBack} onLogout={()=>navigate('welcome')} navigate={navigate}/>
   if (screen==='poin')            return <GVPoinScreen points={points} onBack={goBack} navigate={navigate}/>
@@ -1287,52 +1449,125 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   if (screen==='aktivasi-penjual') return <AktivasiScreen onBack={goBack} onActivate={()=>{}} navigate={navigate}/>
   if (screen==='iklan-baris')     return <IklanBarisScreen onBack={goBack} navigate={navigate} />
 
-  // Determine Kreator GV display based on mock application state
-  const appStatus = localStorage.getItem('mockCreatorAppStatus') || 'not_applied'
-  let creatorSub = 'Daftar menjadi Kreator'
-  let creatorBadge = 'Nonaktif'
-  let creatorBadgeColor = '#E65100'
-  let creatorBadgeBg = '#FFF3E0'
-  
-  if (isCreator) {
-    creatorSub = 'Kelola konten dan analitik'
-    creatorBadge = 'Aktif'
-    creatorBadgeColor = PRIMARY
-    creatorBadgeBg = '#E8F5E9'
-  } else if (appStatus === 'pending') {
-    creatorSub = 'Pengajuan sedang ditinjau'
-    creatorBadge = 'Ditinjau'
-    creatorBadgeColor = '#E65100'
-    creatorBadgeBg = '#FFF3E0'
-  } else if (appStatus === 'revision') {
-    creatorSub = 'Pengajuan perlu diperbaiki'
-    creatorBadge = 'Perlu Perbaikan'
-    creatorBadgeColor = '#E65100'
-    creatorBadgeBg = '#FFF3E0'
-  }
+  // ── Status Verifikasi & Persona Multi-State ──────────────────────────────
+  const isVerified = userData?.verificationStatus === 'verified' ||
+    userProfile?.verified === true ||
+    userProfile?.capabilities?.includes('Penjual') ||
+    userProfile?.capabilities?.includes('Kreator') ||
+    localStorage.getItem('mockVerificationStatus') === 'verified'
 
-  // Determine Toko Saya display based on mock application state
+  // ── Penjual ESTO State ──
   const sellerAppStatus = localStorage.getItem('mockSellerAppStatus') || 'not_applied'
+  let sellerDraftStep = null
+  try {
+    const raw = localStorage.getItem('mockSellerDraft')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed?.step) sellerDraftStep = parsed.step
+    }
+  } catch (e) {}
+
+  const isSellerActive = isSeller || sellerAppStatus === 'active'
+
   let sellerSub = 'Mulai jualan di Pasar ESTO'
-  let sellerBadge = 'Nonaktif'
-  let sellerBadgeColor = '#E65100'
-  let sellerBadgeBg = '#FFF3E0'
-  
-  if (isSeller) {
-    sellerSub = 'Kelola toko dan produk'
+  let sellerBadge = 'Mulai'
+  let sellerBadgeColor = '#059669'
+  let sellerBadgeBg = '#ECFDF5'
+  let sellerTarget = 'aktivasi-toko'
+
+  if (isSellerActive) {
+    sellerSub = 'Kelola toko dan pesanan masuk'
     sellerBadge = 'Aktif'
     sellerBadgeColor = PRIMARY
     sellerBadgeBg = '#E8F5E9'
+    sellerTarget = 'toko'
   } else if (sellerAppStatus === 'pending') {
-    sellerSub = 'Pengajuan sedang ditinjau'
+    sellerSub = 'Pengajuan sedang ditinjau tim'
     sellerBadge = 'Ditinjau'
-    sellerBadgeColor = '#E65100'
-    sellerBadgeBg = '#FFF3E0'
+    sellerBadgeColor = '#D97706'
+    sellerBadgeBg = '#FEF3C7'
+    sellerTarget = 'aktivasi-toko'
   } else if (sellerAppStatus === 'revision') {
     sellerSub = 'Pengajuan perlu diperbaiki'
     sellerBadge = 'Perlu Perbaikan'
-    sellerBadgeColor = '#E65100'
-    sellerBadgeBg = '#FFF3E0'
+    sellerBadgeColor = '#D97706'
+    sellerBadgeBg = '#FEF3C7'
+    sellerTarget = 'aktivasi-toko'
+  } else if (sellerDraftStep) {
+    sellerSub = `Lanjutkan setup toko (Tahap ${sellerDraftStep}/4)`
+    sellerBadge = `Draft (${sellerDraftStep}/4)`
+    sellerBadgeColor = '#2563EB'
+    sellerBadgeBg = '#EFF6FF'
+    sellerTarget = 'aktivasi-toko'
+  } else if (!isVerified) {
+    sellerSub = 'Perlu verifikasi data diri e-KTP'
+    sellerBadge = 'Verifikasi Dulu'
+    sellerBadgeColor = '#D97706'
+    sellerBadgeBg = '#FEF3C7'
+    sellerTarget = 'aktivasi-toko'
+  } else {
+    sellerSub = 'Buka toko & mulai jualan di ESTO'
+    sellerBadge = 'Mulai'
+    sellerBadgeColor = '#059669'
+    sellerBadgeBg = '#ECFDF5'
+    sellerTarget = 'aktivasi-toko'
+  }
+
+  // ── Kreator GV State ──
+  const creatorAppStatus = localStorage.getItem('mockCreatorAppStatus') || 'not_applied'
+  let creatorDraftStep = null
+  try {
+    const raw = localStorage.getItem('mockCreatorDraft')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed?.step) creatorDraftStep = parsed.step
+    }
+  } catch (e) {}
+
+  const isCreatorActive = isCreator || creatorAppStatus === 'active'
+
+  let creatorSub = 'Daftar menjadi Kreator GV'
+  let creatorBadge = 'Mulai'
+  let creatorBadgeColor = '#7B1FA2'
+  let creatorBadgeBg = '#F3E5F5'
+  let creatorTarget = 'aktivasi-kreator'
+
+  if (isCreatorActive) {
+    creatorSub = 'Kelola konten, siaran, dan analitik'
+    creatorBadge = 'Aktif'
+    creatorBadgeColor = PRIMARY
+    creatorBadgeBg = '#E8F5E9'
+    creatorTarget = 'studio'
+  } else if (creatorAppStatus === 'pending') {
+    creatorSub = 'Pengajuan sedang ditinjau tim'
+    creatorBadge = 'Ditinjau'
+    creatorBadgeColor = '#D97706'
+    creatorBadgeBg = '#FEF3C7'
+    creatorTarget = 'aktivasi-kreator'
+  } else if (creatorAppStatus === 'revision') {
+    creatorSub = 'Pengajuan perlu diperbaiki'
+    creatorBadge = 'Perlu Perbaikan'
+    creatorBadgeColor = '#D97706'
+    creatorBadgeBg = '#FEF3C7'
+    creatorTarget = 'aktivasi-kreator'
+  } else if (creatorDraftStep) {
+    creatorSub = `Lanjutkan pendaftaran channel (Tahap ${creatorDraftStep}/4)`
+    creatorBadge = `Draft (${creatorDraftStep}/4)`
+    creatorBadgeColor = '#2563EB'
+    creatorBadgeBg = '#EFF6FF'
+    creatorTarget = 'aktivasi-kreator'
+  } else if (!isVerified) {
+    creatorSub = 'Perlu verifikasi data diri e-KTP'
+    creatorBadge = 'Verifikasi Dulu'
+    creatorBadgeColor = '#D97706'
+    creatorBadgeBg = '#FEF3C7'
+    creatorTarget = 'aktivasi-kreator'
+  } else {
+    creatorSub = 'Daftar jadi Kreator & monetisasi'
+    creatorBadge = 'Mulai'
+    creatorBadgeColor = '#7B1FA2'
+    creatorBadgeBg = '#F3E5F5'
+    creatorTarget = 'aktivasi-kreator'
   }
 
   // ── Main screen ──
@@ -1349,8 +1584,9 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
         { 
           label: 'Toko Saya',  
           sub: sellerSub,
-          to: isSeller ? 'toko' : 'aktivasi-penjual',      
-          nav: isSeller, 
+          to: sellerTarget,      
+          nav: true, 
+          onClick: () => navigate(sellerTarget),
           badge: sellerBadge,
           badgeColor: sellerBadgeColor,
           badgeBg: sellerBadgeBg,
@@ -1360,8 +1596,9 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
         { 
           label: 'Kreator GV',  
           sub: creatorSub,
-          to: 'studio',      
+          to: creatorTarget,      
           nav: true, 
+          onClick: () => navigate(creatorTarget),
           badge: creatorBadge,
           badgeColor: creatorBadgeColor,
           badgeBg: creatorBadgeBg,
@@ -1404,164 +1641,141 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
       />
 
       {/* ── Standard Screen Header matching other screens ── */}
-      <ScreenHeader
-        title="Profil Saya"
-        actions={
-          <>
-            <button
-              type="button"
-              onClick={() => setTanyaOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95"
-              style={{
-                background: 'rgba(255, 255, 255, 0.14)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              <Sparkles size={13} className="text-amber-300" />
-              <span className="text-[11.5px] font-bold text-white">Tanya AIDA</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setScreen('pengaturan')}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
-              style={{
-                background: 'rgba(255, 255, 255, 0.14)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-              }}
-            >
-              <Settings size={16} className="text-white/80" />
-            </button>
-          </>
-        }
-      />
+      <ScreenHeader title="Profil Saya" />
 
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        {/* ── PERUBAHAN 1: Hero Card Identitas User ── */}
+        {/* ── Profile Card Layout Horizontal ── */}
         <div
-          className="mx-4 mt-3 rounded-2xl p-4 text-white shadow-md relative overflow-hidden"
+          className="mx-4 mt-3 px-4 py-3.5 flex items-center gap-3 relative"
           style={{
-            background: `linear-gradient(135deg, ${heroGradient[0]}, ${heroGradient[1]})`,
+            background: 'linear-gradient(145deg, #1B5E20 0%, #2E7D32 100%)',
+            boxShadow: '0 6px 20px #1B5E2035, inset 0 1px 0 rgba(255,255,255,0.2)',
+            borderRadius: '16px',
           }}
         >
-          {/* Baris atas */}
-          <div className="flex items-center gap-3.5">
-            {/* Avatar lingkaran */}
-            <div className="relative flex-shrink-0">
-              <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-white/20 border border-white/30 backdrop-blur-sm">
-                {localPhoto ? (
-                  <img src={localPhoto} alt={name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-xl font-extrabold text-white">{name.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setScreen('edit-profil')}
-                className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center transition active:scale-90 shadow-sm bg-emerald-600 border border-white"
-                title="Ubah foto"
-              >
-                <Camera size={10} className="text-white" />
-              </button>
-            </div>
-
-            {/* Nama, Desa, Tombol Edit */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <h2 className="text-[16px] font-bold text-white truncate tracking-tight">
-                  {name}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setScreen('edit-profil')}
-                  className="text-white/80 hover:text-white transition p-1"
-                  title="Edit Profil"
-                >
-                  <Edit3 size={14} />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 mt-0.5 text-white/70 text-[12px]">
-                <MapPin size={12} className="text-white/70 flex-shrink-0" />
-                <span className="truncate">{desa}</span>
-              </div>
+          {/* a) Avatar — kiri, kecil */}
+          <div className="flex-shrink-0">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: '2px solid rgba(255,255,255,0.3)',
+              }}
+            >
+              {localPhoto ? (
+                <img src={localPhoto} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-extrabold text-white text-[18px]">
+                  {name.charAt(0).toUpperCase()}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* Baris bawah: badge-badge */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-white/15">
-            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
-              {userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : 'Warga Aktif')}
-            </span>
-            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm flex items-center gap-1">
-              <CheckCircle size={11} className="text-emerald-300" /> Terverifikasi
-            </span>
-            {userKomunitas && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
-                {communityTheme?.label || userKomunitas}
+          {/* b) Info user — tengah, flex-1 */}
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-white text-[14px] truncate">
+              {name}
+            </h2>
+
+            <div className="flex items-center gap-1 mt-0.5">
+              <MapPin size={10} className="text-white/60 flex-shrink-0" />
+              <span className="text-[11px] text-white/65 truncate">{desa}</span>
+            </div>
+
+            <div className="flex items-center flex-wrap gap-1.5 mt-2">
+              {/* Badge Role */}
+              <span className="bg-white/15 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white">
+                {userProfile?.label || (isSeller ? 'Penjual' : isCreator ? 'Kreator' : 'Warga Baru')}
               </span>
-            )}
+
+              {/* Badge Terverifikasi */}
+              <span className="bg-white/15 rounded-full px-2 py-0.5 flex items-center gap-1 text-[10px] font-semibold text-white">
+                <CheckCircle size={9} className="text-green-300" />
+                <span>Terverifikasi</span>
+              </span>
+
+              {userKomunitas && (
+                <span className="bg-white/15 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white">
+                  {communityTheme?.label || userKomunitas}
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* c) Tombol edit — kanan */}
+          <button
+            type="button"
+            onClick={() => setScreen('edit-profil')}
+            className="p-1.5 rounded-lg flex-shrink-0 cursor-pointer active:scale-95 transition"
+            style={{ background: 'rgba(255,255,255,0.12)' }}
+            aria-label="Edit profil"
+          >
+            <Pencil size={13} className="text-white/75" />
+          </button>
         </div>
 
-        {/* ── PERUBAHAN 2: Dua Kartu Mini Sejajar (GV Poin & GV Pay) ── */}
-        <div className="grid grid-cols-2 gap-3 px-4 mt-3">
-          {/* Kartu kiri — GV Poin */}
-          <div
-            className="rounded-2xl p-3.5 border border-amber-200/60 shadow-xs flex flex-col justify-between"
-            style={{ background: '#FFF8E1' }}
-          >
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <Star size={14} className="text-amber-500 fill-amber-400" />
-                <span className="text-[11px] font-semibold text-surface-500">GV Poin</span>
-              </div>
-              <p className="text-[18px] font-bold text-surface-900 tabular-nums">
-                {points.toLocaleString('id')}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setScreen('poin')}
-              className="text-left text-[11px] font-bold text-brand hover:underline mt-2 inline-flex items-center gap-0.5"
-            >
-              Tukar Poin →
-            </button>
-          </div>
-
-          {/* Kartu kanan — GV Pay */}
-          <div
-            className="rounded-2xl p-3.5 border border-emerald-200/60 shadow-xs flex flex-col justify-between"
-            style={{ background: '#E8F5E9' }}
-          >
-            <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <Wallet size={14} className="text-emerald-600" />
-                <span className="text-[11px] font-semibold text-surface-500">GV Pay</span>
-              </div>
-              <p className="text-[18px] font-bold text-surface-900 tabular-nums">
-                Rp {(userProfile?.balance ?? 125000).toLocaleString('id')}
-              </p>
-            </div>
+        {/* ── PERUBAHAN 2: Gabungan GV Pay & GV Poin ── */}
+        <GlassCard
+          variant="elevated"
+          className="mx-4 mt-3 px-0 py-0 overflow-hidden"
+        >
+          <div className="flex items-stretch">
+            {/* Kiri — GV Pay */}
             <button
               type="button"
               onClick={() => (navigate ? navigate('bayar-topup') : null)}
-              className="text-left text-[11px] font-bold text-brand hover:underline mt-2 inline-flex items-center gap-0.5"
+              className="flex-1 flex items-center gap-3 px-4 py-3.5 active:bg-surface-50 transition-colors cursor-pointer"
             >
-              Top Up →
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(145deg,#1B5E20,#2E7D32)',
+                  boxShadow: '0 2px 8px #1B5E2030',
+                }}
+              >
+                <Wallet size={16} strokeWidth={2.3} className="text-white" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-[11px] text-surface-500 font-medium">GV Pay</p>
+                <p className="font-extrabold text-surface-900 text-[15px] truncate">
+                  Rp {(userProfile?.balance ?? 125000).toLocaleString('id')}
+                </p>
+              </div>
+            </button>
+
+            {/* Divider vertikal */}
+            <div className="w-px bg-surface-100 my-3" />
+
+            {/* Kanan — GV Poin */}
+            <button
+              type="button"
+              onClick={() => setScreen('poin')}
+              className="flex-1 flex items-center gap-3 px-4 py-3.5 active:bg-surface-50 transition-colors cursor-pointer"
+            >
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: 'linear-gradient(145deg,#E65100,#F57C00)',
+                  boxShadow: '0 2px 8px #E6510030',
+                }}
+              >
+                <Star size={16} strokeWidth={2.3} className="text-white" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="text-[11px] text-surface-500 font-medium">GV Poin</p>
+                <p className="font-extrabold text-surface-900 text-[15px] truncate">
+                  {points.toLocaleString('id')}
+                </p>
+              </div>
             </button>
           </div>
-        </div>
+        </GlassCard>
 
-        {/* ── PERUBAHAN 3: Card Pesanan Saya ── */}
+        {/* ── Card Pesanan Saya ── */}
         <div className="mx-4 mt-3">
           <div
-            className="rounded-2xl p-4 bg-white border border-surface-200/80 transition-shadow hover:shadow-brand-sm"
-            style={{
-              boxShadow: '0 2px 10px rgba(27, 107, 58, 0.05)',
-            }}
+            className="rounded-2xl p-4 bg-white border border-surface-100 shadow-sm transition-shadow hover:shadow-brand-sm"
           >
             {/* Header: Pesanan Saya + Riwayat Pesanan > */}
             <div className="flex items-center justify-between pb-3 border-b border-surface-100">
@@ -1706,10 +1920,10 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
           </div>
         </div>
 
-        {/* ── PERUBAHAN 4: Banner GV+ Premium ── */}
+        {/* ── Banner GV+ Premium ── */}
         <div
           onClick={() => setScreen('gvplus')}
-          className="mx-4 mt-3 p-4 rounded-2xl cursor-pointer transition active:scale-[0.99] flex items-center justify-between gap-3 shadow-sm relative overflow-hidden"
+          className="mx-4 mt-3 p-4 rounded-2xl cursor-pointer transition active:scale-[0.99] flex items-center justify-between gap-3 shadow-md relative overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)',
           }}
@@ -1748,18 +1962,16 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
                 {section}
               </p>
               <div
-                className="rounded-2xl overflow-hidden bg-white border border-surface-200/80 divide-y divide-surface-100"
-                style={{
-                  boxShadow: '0 2px 12px rgba(27, 107, 58, 0.04)',
-                }}
+                className="rounded-2xl overflow-hidden bg-white border border-surface-100 shadow-sm divide-y divide-surface-100"
               >
-                {items.map(({ label, sub, to, nav, badge, badgeColor, badgeBg, Icon, g }) => (
+                {items.map(({ label, sub, to, nav, badge, badgeColor, badgeBg, Icon, g, onClick: itemOnClick }) => (
                   <button
                     key={label}
                     type="button"
                     className="w-full flex items-center gap-3.5 px-4 py-3.5 text-left transition duration-150 hover:bg-surface-50 active:scale-[0.99]"
                     onClick={() => {
-                      if (to === 'logout') navigate('welcome')
+                      if (itemOnClick) itemOnClick()
+                      else if (to === 'logout') navigate('welcome')
                       else if (to === 'tanya-gv') setTanyaOpen(true)
                       else if (nav) navigate(to)
                       else setScreen(to)
@@ -1808,6 +2020,13 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
       </div>
 
       <BottomNav active="profile" navigate={navigate} />
+
+      {/* Bottom Sheet Pilihan Foto */}
+      <PhotoSheet
+        isOpen={showPhotoSheet}
+        onClose={() => setShowPhotoSheet(false)}
+        onRemovePhoto={() => setLocalPhoto(null)}
+      />
     </ScreenBackground>
   )
 }

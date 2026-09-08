@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
-import { ArrowLeft, Upload, Play, Crown, BarChart2,
+import { ArrowLeft, ArrowRight, Upload, Play, Crown, BarChart2,
   Eye, TrendingUp, ChevronRight, Video as VideoIcon,
   Edit2, Trash2, Send, Heart, MessageCircle, MoreHorizontal,
   X, PenSquare, Image as ImageIcon, Users, Sparkles,
   Check, Plus, ToggleRight, ToggleLeft, Star, Settings,
-  Tv2, Clock, Info, Shield } from 'lucide-react'
+  Tv2, Clock, Info, Shield, Wallet, ArrowUpRight, RefreshCw } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 import TanyaGV from '../../components/TanyaGV'
 
@@ -204,71 +204,74 @@ function TabKonten({ showUpload, setUpload }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
-      {/* CTA — video only */}
-      <div className="px-4 pt-4 pb-3">
+    <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-24">
+      {/* Action Toolbar */}
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
+          {[['all','Semua'],['tayang','Tayang'],['review','Review'],['publik','Publik'],['member','Members only']].map(([id,label])=>(
+            <button key={id} onClick={()=>setFilter(id)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11.5px] font-bold border transition ${
+                filter===id
+                  ? 'bg-surface-900 text-white border-surface-900 shadow-2xs'
+                  : 'bg-white text-surface-600 border-surface-200 hover:bg-surface-50'
+              }`}>
+              {label}
+            </button>
+          ))}
+        </div>
+
         <button onClick={()=>setUpload(true)}
-          className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white flex items-center justify-center gap-2 transition active:scale-[0.96]"
-          style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:`0 4px 12px ${PRIMARY}40`}}>
-          <Upload size={16}/> Tambah Konten
+          className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold text-white shadow-sm active:scale-95 transition flex items-center gap-1"
+          style={{background:'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)'}}>
+          <Upload size={13}/>
+          <span>Upload</span>
         </button>
       </div>
 
-      {/* Filter */}
-      <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
-        {[['all','Semua'],['tayang','Tayang'],['review','Review'],['publik','Publik'],['member','Members only']].map(([id,label])=>(
-          <button key={id} onClick={()=>setFilter(id)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border transition duration-300"
-            style={filter===id
-              ? {background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',color:'#fff',borderColor:PRIMARY}
-              : {background:'transparent',color:'#9CA3AF',borderColor:'#E0E0E0'}}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content list */}
-      <div className="flex flex-col px-4">
-        {filtered.map((c,i)=>(
-          <div key={c.id} className={`flex gap-3 py-3 ${i<filtered.length-1?'border-b border-gray-50':''}`}>
-            <div className="relative flex-shrink-0 rounded-xl overflow-hidden spotlight-border transition-shadow duration-300"
-              style={{width:110,height:62,background:`linear-gradient(135deg,${c.g[0]},${c.g[1]})`,boxShadow:`0 2px 8px ${c.g[0]}33`}}>
+      {/* Content list as elevated modern cards */}
+      <div className="space-y-3">
+        {filtered.map((c)=>(
+          <div key={c.id} className="bg-white rounded-3xl p-3.5 border border-surface-100 shadow-sm transition hover:shadow-brand-sm flex gap-3.5 items-start">
+            <div className="relative flex-shrink-0 rounded-2xl overflow-hidden shadow-xs"
+              style={{width:116,height:70,background:`linear-gradient(135deg,${c.g[0]},${c.g[1]})`}}>
               <div className="absolute inset-0 flex items-center justify-center">
                 {c.isExclusive
-                  ? <Crown size={16} style={{color:'#F9A825'}}/>
-                  : <Play size={16} className="text-white/70" fill="rgba(255,255,255,0.5)"/>}
+                  ? <Crown size={18} style={{color:'#F9A825'}}/>
+                  : <Play size={18} className="text-white/80" fill="rgba(255,255,255,0.6)"/>}
               </div>
-              <span className="absolute bottom-1 end-1 text-[11px] text-white px-1 py-0.5 rounded"
-                style={{background:'rgba(0,0,0,0.65)'}}>{c.dur}</span>
+              <span className="absolute bottom-1 end-1 text-[10px] font-black text-white px-1.5 py-0.5 rounded bg-black/60">
+                {c.dur}
+              </span>
               {c.isExclusive && (
-                <div className="absolute top-1 start-1 px-1.5 py-0.5 rounded"
-                  style={{background:'linear-gradient(90deg,#F57F17,#F9A825)',boxShadow:'0 2px 8px rgba(249,168,37,0.3)'}}>
-                  <span className="text-[11px] font-bold text-white">Members only</span>
+                <div className="absolute top-1 start-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[9px] font-black">
+                  Members
                 </div>
               )}
             </div>
+
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold text-gray-900 leading-snug line-clamp-2">{c.title}</p>
+              <p className="text-[13px] font-bold text-surface-900 leading-snug line-clamp-2">{c.title}</p>
               <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span className="text-[11px] text-gray-400">{c.ep} · {c.dur}</span>
-                <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md"
+                <span className="text-[11px] text-surface-400 font-medium">{c.ep}</span>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border"
                   style={c.status==='review'
-                    ? {background:'#FFF3E0',color:'#E65100'}
-                    : {background:'#E8F5E9',color:PRIMARY}}>
+                    ? {background:'#FFF7ED',color:'#EA580C',borderColor:'#FFEDD5'}
+                    : {background:'#ECFDF5',color:'#059669',borderColor:'#A7F3D0'}}>
                   {c.status==='review' ? '⏳ Review' : '✓ Tayang'}
                 </span>
               </div>
               {!c.isExclusive && c.views!=='—' && (
-                <div className="flex items-center gap-3 mt-1.5">
-                  <span className="flex items-center gap-1 text-[12px] text-gray-400"><Eye size={10}/><span className="tabular-nums">{c.views}</span></span>
-                  <span className="text-[12px] text-gray-400">❤️ <span className="tabular-nums">{c.likes}</span></span>
+                <div className="flex items-center gap-3 mt-2 text-[11.5px] text-surface-400">
+                  <span className="flex items-center gap-1"><Eye size={11}/><span className="tabular-nums font-bold text-surface-700">{c.views}</span></span>
+                  <span className="flex items-center gap-1">❤️ <span className="tabular-nums font-bold text-surface-700">{c.likes}</span></span>
                 </div>
               )}
             </div>
+
             <button onClick={()=>openEdit(c)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 self-start mt-0.5 transition active:scale-[0.96]"
-              style={{background:'#F0F0F0'}}>
-              <Edit2 size={12} className="text-gray-500"/>
+              className="p-2 rounded-xl bg-surface-100 hover:bg-surface-200 text-surface-600 transition active:scale-95 flex-shrink-0"
+              title="Edit Video">
+              <Edit2 size={14}/>
             </button>
           </div>
         ))}
@@ -1010,11 +1013,131 @@ function TabMembership() {
   )
 }
 
+// ── Tab: Pengaturan ────────────────────────────────────────
+function TabPengaturan({ userProfile, userData, onSaveSuccess }) {
+  const [channelName, setChannelName] = useState(userProfile?.name ? `Channel ${userProfile.name}` : 'Pak Tani Inovatif')
+  const [cat, setCat] = useState('Pertanian & Agribisnis')
+  const [bank, setBank] = useState('Dompet Digital GV Pay')
+  const [rek, setRek] = useState(userData?.phone || '0812-3456-7890')
+  const [owner, setOwner] = useState(userProfile?.name || userData?.name || 'Pak Budi Santoso')
+  const [bio, setBio] = useState('Berbagi pengalaman dan edukasi teknik pertanian modern, pupuk organik, dan inovasi desa mandiri.')
+  const [saved, setSaved] = useState(false)
+
+  const handleSave = () => {
+    setSaved(true)
+    onSaveSuccess?.('Pengaturan channel dan rekening royalti berhasil disimpan!')
+    setTimeout(() => setSaved(false), 2500)
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-4 pb-28">
+      {saved && (
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[12px] font-bold px-3.5 py-2.5 rounded-2xl flex items-center gap-2">
+          <Check size={16} className="text-emerald-600" />
+          <span>Pengaturan channel dan rekening berhasil disimpan!</span>
+        </div>
+      )}
+
+      {/* Profil Channel */}
+      <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-surface-100">
+          <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
+            PROFIL CHANNEL KREATOR
+          </span>
+          <span className="text-[10px] font-extrabold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+            <Sparkles size={10} className="text-purple-600"/> Kreator Terverifikasi
+          </span>
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nama Channel</label>
+          <input
+            type="text"
+            value={channelName}
+            onChange={(e) => setChannelName(e.target.value)}
+            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-extrabold text-surface-900 outline-none focus:border-purple-700 focus:bg-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Kategori Utama Konten</label>
+          <input
+            type="text"
+            value={cat}
+            onChange={(e) => setCat(e.target.value)}
+            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] text-surface-800 outline-none focus:border-purple-700 focus:bg-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Bio Channel Publik</label>
+          <textarea
+            rows={3}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[12.5px] text-surface-800 outline-none focus:border-purple-700 focus:bg-white resize-none"
+          />
+        </div>
+      </div>
+
+      {/* Rekening Monetisasi & Pencairan */}
+      <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-surface-100">
+          <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
+            REKENING PENCAIRAN ROYALTI & MONETISASI
+          </span>
+          <Wallet size={16} className="text-purple-700" />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Metode / Bank Pencairan</label>
+          <input
+            type="text"
+            value={bank}
+            onChange={(e) => setBank(e.target.value)}
+            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-surface-800 outline-none focus:border-purple-700 focus:bg-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nomor Rekening / No GV Pay</label>
+          <input
+            type="text"
+            value={rek}
+            onChange={(e) => setRek(e.target.value)}
+            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-mono font-black text-surface-900 outline-none focus:border-purple-700 focus:bg-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nama Pemilik Rekening</label>
+          <input
+            type="text"
+            value={owner}
+            onChange={(e) => setOwner(e.target.value)}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-semibold text-gray-800 outline-none focus:border-purple-700"
+          />
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleSave}
+        className="w-full py-3.5 rounded-xl text-white font-bold text-[14px] shadow-sm active:scale-[0.98] transition text-center"
+        style={{ background: 'linear-gradient(135deg, #4A148C, #7B1FA2)' }}
+      >
+        Simpan Pengaturan Channel
+      </button>
+    </div>
+  )
+}
+
 const TABS = [
-  {id:'konten',  label:'Konten',  Icon:VideoIcon},
-  {id:'post',    label:'Post',    Icon:PenSquare},
-  {id:'analitik',label:'Analitik',Icon:BarChart2},
-  {id:'membership',label:'Membership',Icon:Crown},
+  {id:'konten',     label:'Konten',     Icon:VideoIcon},
+  {id:'post',       label:'Post',       Icon:PenSquare},
+  {id:'analitik',   label:'Analitik',   Icon:BarChart2},
+  {id:'membership', label:'Membership', Icon:Crown},
+  {id:'pengaturan', label:'Pengaturan', Icon:Settings},
 ]
 
 // ── Creator Application Flow ──────────────────────────────────
@@ -1316,17 +1439,153 @@ function CreatorApplicationFlow({ navigate }) {
   )
 }
 
+// ── Modal Tarik Royalti Kreator ──────────────────────────────
+function WithdrawRoyaltiModal({ balance, onClose, onSuccess }) {
+  const [amount, setAmount] = useState(balance)
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleWithdraw = () => {
+    setSubmitting(true)
+    setTimeout(() => {
+      setSubmitting(false)
+      onSuccess(amount)
+      onClose()
+    }, 800)
+  }
+
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs" onClick={onClose}/>
+      <div className="relative bg-white rounded-t-3xl p-5 shadow-2xl space-y-4">
+        <div className="flex justify-between items-center pb-2 border-b border-surface-100">
+          <div>
+            <h3 className="text-[16px] font-black text-surface-900">Pencairan Royalti Kreator</h3>
+            <p className="text-[11.5px] text-surface-400 mt-0.5">Tarik royalti siaran dan konten ke dompet terdaftar</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-full text-surface-400 hover:bg-surface-100">
+            <X size={18}/>
+          </button>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-purple-50/70 border border-purple-100 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center flex-shrink-0">
+            <Wallet size={18}/>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] text-purple-700 font-bold uppercase tracking-wider">Rekening Royalti Terdaftar</p>
+            <p className="text-[13px] font-extrabold text-surface-900 truncate">Dompet Digital GV Pay</p>
+            <p className="text-[11.5px] text-surface-500 font-mono mt-0.5">0812-3456-7890</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nominal Royalti Ditarik</label>
+          <div className="relative">
+            <span className="absolute left-3.5 top-3 text-[14px] font-bold text-surface-400">Rp</span>
+            <input
+              type="number"
+              max={balance}
+              value={amount}
+              onChange={(e)=>setAmount(Number(e.target.value))}
+              className="w-full bg-surface-50 border border-surface-200 rounded-xl pl-10 pr-3.5 py-2.5 text-[15px] font-black text-surface-900 outline-none focus:border-purple-700"
+            />
+          </div>
+          <div className="flex gap-2 mt-2">
+            {[250000, 500000, balance].map((val)=>(
+              <button key={val} type="button" onClick={()=>setAmount(val)}
+                className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition ${amount===val?'bg-purple-50 text-purple-800 border-purple-300':'bg-surface-50 text-surface-600 border-surface-200'}`}>
+                {val===balance ? 'Tarik Semua' : `Rp ${(val/1000).toFixed(0)}rb`}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={handleWithdraw}
+          disabled={submitting || amount <= 0 || amount > balance}
+          className="w-full h-12 rounded-2xl text-white font-bold text-[13.5px] shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2"
+          style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+        >
+          {submitting ? (
+            <span className="flex items-center gap-2">
+              <RefreshCw size={16} className="animate-spin text-white"/>
+              <span>Memproses...</span>
+            </span>
+          ) : (
+            <>
+              <ArrowUpRight size={16}/>
+              <span>Konfirmasi Pencairan Royalti</span>
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main ───────────────────────────────────────────────────
-export default function Studio({ navigate, userProfile, initialUpload, initialTab }) {
+export default function Studio({ navigate, userProfile, initialUpload, initialTab, userData }) {
   const [tab, setTab]                 = useState(initialUpload ? 'konten' : (initialTab || 'konten'))
   const [showUpload, setUpload]       = useState(initialUpload || false)
   const [tanyaOpen,  setTanyaOpen]    = useState(false)
   const [postComposeType, setPCType]  = useState(null)
+  const [showWithdraw, setShowWithdraw] = useState(false)
+  const [royaltiBalance, setRoyaltiBalance] = useState(1840000)
+  const [toastMsg, setToastMsg]       = useState(null)
 
-  const isCreator = userProfile?.capabilities?.includes('Kreator') || userProfile?.capabilities?.includes('Super Admin')
+  const triggerToast = (msg) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(null), 3000)
+  }
+
+  const [localCreatorStatus] = useState(() => {
+    try {
+      return localStorage.getItem('mockCreatorAppStatus') || ''
+    } catch (e) {
+      return ''
+    }
+  })
+
+  const isCreator = userProfile?.capabilities?.includes('Kreator') ||
+                    userProfile?.capabilities?.includes('Super Admin') ||
+                    userData?.capabilities?.includes('Kreator') ||
+                    localCreatorStatus === 'active'
 
   if (!isCreator) {
-    return <CreatorApplicationFlow navigate={navigate} />
+    return (
+      <div className="flex flex-col h-full bg-[#FAFBF9]">
+        <div className="flex-shrink-0 relative overflow-hidden" style={{background:'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)'}}>
+          <div className="flex items-center px-4 pt-5 pb-4 relative z-10">
+            <button onClick={()=>navigate('profile')} className="w-9 h-9 rounded-xl flex items-center justify-center me-3 flex-shrink-0 transition active:scale-[0.96]" style={{background:'rgba(255,255,255,0.1)', border:'1px solid rgba(255,255,255,0.08)'}}>
+              <ArrowLeft size={16} className="text-white/70"/>
+            </button>
+            <p className="font-extrabold text-white text-[16px] tracking-tight leading-tight">Kreator GV</p>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-[#7B1FA2]/10 text-[#7B1FA2] flex items-center justify-center mb-5 shadow-sm border border-[#7B1FA2]/20">
+            <Sparkles size={36} />
+          </div>
+          <h2 className="text-[18px] font-extrabold text-gray-900 mb-2">Aktivasi Kreator Diperlukan</h2>
+          <p className="text-[13px] text-gray-500 leading-relaxed mb-6 max-w-[280px]">
+            Lengkapi alur pendaftaran dan aktivasi kreator untuk membuka seluruh fitur Studio, monetisasi, dan komunitas.
+          </p>
+          <button
+            onClick={() => navigate('aktivasi-kreator')}
+            className="w-full max-w-[300px] h-12 rounded-2xl text-[14px] font-bold text-white shadow-lg active:scale-[0.98] transition flex items-center justify-center gap-2"
+            style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+          >
+            Mulai Aktivasi Kreator
+          </button>
+          <button
+            onClick={() => navigate('profile')}
+            className="mt-3 text-[13px] font-semibold text-gray-400 py-2"
+          >
+            Kembali ke Profil
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const handlePostCompose = type => {
@@ -1338,33 +1597,137 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
       <ScreenHeader
         title="Kreator GV"
+        subtitle="Studio & Monetisasi Konten"
         onBack={() => navigate('profile')}
-      >
-        <div className="flex gap-1">
-          {TABS.map(t=>{
-            const isRestricted = !isCreator && t.id !== 'analitik'
-            return (
-            <button key={t.id} onClick={()=>!isRestricted && setTab(t.id)}
-              className={`relative flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold transition duration-300 ${isRestricted ? 'opacity-40 cursor-not-allowed' : ''}`}
-              style={tab===t.id
-                ?{color:'white'}
-                :{color:'rgba(255,255,255,0.4)'}}>
-              <t.Icon size={12}/>{t.label}
-              <span className="absolute start-0 end-0 bottom-0 h-[2.5px] rounded-full transition duration-300"
-                style={tab===t.id
-                  ?{background:'linear-gradient(90deg, #43A047, #FFFFFF)'}
-                  :{background:'transparent'}}/>
+      />
+
+      {/* Floating Feedback Toast */}
+      {toastMsg && (
+        <div className="absolute top-16 left-4 right-4 z-40 bg-gray-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-xl flex items-center justify-between text-[12px] font-bold animate-fade-in">
+          <span>{toastMsg}</span>
+          <button onClick={()=>setToastMsg(null)} className="text-white/60 hover:text-white"><X size={14}/></button>
+        </div>
+      )}
+
+      {/* Modal Tarik Royalti */}
+      {showWithdraw && (
+        <WithdrawRoyaltiModal
+          balance={royaltiBalance}
+          onClose={()=>setShowWithdraw(false)}
+          onSuccess={(wAmount)=>{
+            setRoyaltiBalance(b => b - wAmount)
+            triggerToast(`Pencairan royalti Rp ${wAmount.toLocaleString('id')} sedang diproses ke GV Pay!`)
+          }}
+        />
+      )}
+
+      {/* ── 1. HERO CHANNEL & ROYALTI CARD ── */}
+      <div className="px-4 pt-3 flex-shrink-0">
+        <div
+          className="rounded-3xl p-4 bg-white border border-surface-100 shadow-sm relative overflow-hidden"
+          style={{
+            boxShadow: '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)'
+          }}
+        >
+          {/* Channel Top Row */}
+          <div className="flex items-center gap-3 pb-3 border-b border-surface-100">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-[16px] flex-shrink-0 shadow-md relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+            >
+              <span>{userProfile?.name?.charAt(0) || 'K'}</span>
+              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                <Sparkles size={10} className="text-white"/>
+              </span>
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[14.5px] font-black text-surface-900 truncate leading-snug">
+                {userProfile?.name ? `Channel ${userProfile.name}` : 'Pak Tani Inovatif'}
+              </h2>
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200/80 flex items-center gap-0.5">
+                  <Sparkles size={10} className="text-purple-600"/> Kreator Terverifikasi GV
+                </span>
+                <span className="text-[10.5px] text-surface-400">
+                  Pertanian & Edukasi Desa
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Royalti Box */}
+          <div className="mt-3 p-3.5 rounded-2xl bg-surface-50 border border-surface-100 flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1 text-[11px] font-bold text-surface-400 uppercase tracking-wider">
+                <Wallet size={12} className="text-purple-700"/>
+                <span>Saldo Royalti Konten</span>
+              </div>
+              <p className="text-[18px] font-black text-surface-900 leading-tight mt-0.5 tracking-tight">
+                Rp {royaltiBalance.toLocaleString('id')}
+              </p>
+              <p className="text-[11px] font-bold text-purple-700 mt-0.5 flex items-center gap-1">
+                <TrendingUp size={11}/>
+                <span>1.840 Poin Royalti Siap Cair</span>
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowWithdraw(true)}
+              className="flex-shrink-0 px-3.5 py-2 rounded-xl text-white font-extrabold text-[12px] shadow-sm active:scale-95 transition flex items-center gap-1"
+              style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+            >
+              <span>Tarik Royalti</span>
+              <ArrowUpRight size={13}/>
             </button>
+          </div>
+
+          {/* 3 Metric Stats Pill */}
+          <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-surface-100 text-center">
+            <div className="px-1">
+              <p className="text-[15px] font-black text-surface-900">24.8rb</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Pengikut</p>
+            </div>
+            <div className="px-1 border-x border-surface-100">
+              <p className="text-[15px] font-black text-surface-900">10.1rb</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Ditonton</p>
+            </div>
+            <div className="px-1">
+              <p className="text-[15px] font-black text-purple-700">142</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Member GV+</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. SCROLLABLE SEGMENTED TAB BAR ── */}
+      <div className="px-4 pt-3 flex-shrink-0">
+        <div className="bg-surface-100 p-1 rounded-2xl flex gap-1 border border-surface-200/60 overflow-x-auto no-scrollbar">
+          {TABS.map(t => {
+            const active = tab === t.id
+            return (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[11.5px] font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 ${
+                  active ? 'bg-white text-surface-900 shadow-xs' : 'text-surface-500 hover:text-surface-800'
+                }`}
+              >
+                <t.Icon size={13} className={active ? 'text-purple-700' : 'text-surface-400'} />
+                <span>{t.label}</span>
+              </button>
             )
           })}
         </div>
-      </ScreenHeader>
+      </div>
 
+      {/* ── 3. TAB BODY ── */}
       <div className="flex-1 overflow-hidden flex flex-col relative">
-        {tab==='konten'   && isCreator && <TabKonten showUpload={showUpload} setUpload={setUpload}/>}
-        {tab==='post'     && isCreator && <TabPost composeType={postComposeType} clearCompose={()=>setPCType(null)}/>}
-        {tab==='analitik' && <TabAnalitik/>}
+        {tab==='konten'     && isCreator && <TabKonten showUpload={showUpload} setUpload={setUpload}/>}
+        {tab==='post'       && isCreator && <TabPost composeType={postComposeType} clearCompose={()=>setPCType(null)}/>}
+        {tab==='analitik'   && <TabAnalitik/>}
         {tab==='membership' && isCreator && <TabMembership/>}
+        {tab==='pengaturan' && isCreator && <TabPengaturan userProfile={userProfile} userData={userData} onSaveSuccess={triggerToast} />}
       </div>
       <BottomNav active="profile" navigate={navigate}/>
     </ScreenBackground>

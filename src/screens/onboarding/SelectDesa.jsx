@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Search, MapPin, Check, Navigation, X } from 'lucide-react'
+import { Search, MapPin, Check, Navigation, X, ChevronLeft } from 'lucide-react'
 import OnboardingLayout from '@/components/templates/OnboardingLayout'
 import AppButton from '@/components/atoms/AppButton'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
@@ -40,7 +40,7 @@ const AVATAR_COLORS = [
   '#E65100', '#37474F', '#1B6B3A', '#880E4F', '#2E7D32', '#0D47A1', '#F57F17'
 ]
 
-export default function SelectDesa({ navigate, userData, updateUser }) {
+export default function SelectDesa({ navigate, userData, updateUser, userProfile, fromProfile = false }) {
   const [locState, setLocState] = useState('prompt') // 'prompt' | 'loading' | 'found' | 'denied'
   const [query, setQuery]       = useState('')
   const [selected, setSelected] = useState(userData?.desa || null)
@@ -64,7 +64,10 @@ export default function SelectDesa({ navigate, userData, updateUser }) {
   }
 
   const handleContinue = () => {
-    if (selected) navigate('pilih-komunitas')
+    if (selected) {
+      updateUser?.({ desa: selected })
+      navigate(fromProfile ? 'profile' : 'pilih-komunitas')
+    }
   }
 
   // ── Filter logic ───────────────────────────────────────────
@@ -129,6 +132,215 @@ export default function SelectDesa({ navigate, userData, updateUser }) {
     )
   }
 
+  const mainContent = (
+    <div className="flex flex-col flex-1 animate-fade-in overflow-hidden">
+      {/* ── Location Prompt ── */}
+      {locState === 'prompt' && (
+        <div className="rounded-2xl p-3.5 bg-brand/5 border border-brand/15 mb-3.5 animate-fade-in flex-shrink-0">
+          <div className="flex items-start gap-3 mb-2.5">
+            <SkeuoIcon
+              icon={Navigation}
+              gradient={['#1B5E20', '#2E7D32']}
+              size="sm"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-surface-900 leading-tight">
+                Temukan desa terdekat otomatis
+              </p>
+              <p className="text-[11.5px] text-surface-500 leading-relaxed mt-0.5">
+                Gunakan GPS untuk mendeteksi desa GV di sekitarmu secara instan.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <AppButton
+              variant="primary"
+              size="sm"
+              className="flex-1 text-[12px] py-2"
+              onClick={requestLocation}
+            >
+              Izinkan Lokasi
+            </AppButton>
+            <AppButton
+              variant="secondary"
+              size="sm"
+              className="flex-1 text-[12px] py-2"
+              onClick={() => setLocState('denied')}
+            >
+              Cari Manual
+            </AppButton>
+          </div>
+        </div>
+      )}
+
+      {/* ── Detecting / Loading ── */}
+      {isLoading && (
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-brand/5 border border-brand/15 mb-3.5 animate-fade-in flex-shrink-0">
+          <div className="w-7 h-7 rounded-full border-2 border-brand/30 border-t-brand flex-shrink-0 animate-spin" />
+          <div>
+            <p className="text-[13px] font-bold text-surface-900 leading-none">
+              Mendeteksi lokasimu...
+            </p>
+            <p className="text-[11.5px] text-surface-500 mt-1">
+              Mencari desa GV terdekat via sinyal GPS
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Location Found Banner ── */}
+      {isFound && (
+        <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-brand/8 border border-brand/20 mb-3.5 animate-fade-in flex-shrink-0">
+          <SkeuoIcon
+            icon={MapPin}
+            gradient={['#1B5E20', '#2E7D32']}
+            size="xs"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-bold text-brand leading-none">{MOCK_LOCATION}</p>
+            <p className="text-[11px] text-surface-500 mt-1 font-medium">Lokasi terdeteksi otomatis</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setLocState('prompt')
+              setQuery('')
+            }}
+            className="text-[11.5px] font-bold text-brand hover:underline px-2 py-1 rounded-lg"
+          >
+            Ubah
+          </button>
+        </div>
+      )}
+
+      {/* ── Search Bar Input ── */}
+      <div className="mb-3 flex-shrink-0">
+        <div
+          className={`flex items-center gap-2.5 border-2 rounded-2xl px-3.5 py-2.5 transition-all ${
+            query
+              ? 'border-brand bg-brand/5 shadow-brand-xs'
+              : 'border-surface-200 bg-surface-50 focus-within:border-brand focus-within:bg-white'
+          }`}
+        >
+          <Search size={16} className={query ? 'text-brand' : 'text-surface-400'} />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Cari nama desa atau kecamatan..."
+            className="flex-1 text-[13px] font-medium text-surface-900 placeholder-surface-400 outline-none bg-transparent"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery('')}
+              className="text-surface-400 hover:text-surface-700"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Scrollable Village List ── */}
+      <div className="flex-1 overflow-y-auto no-scrollbar pe-0.5">
+        {/* Nearby Section */}
+        {isFound && nearbyFiltered.length > 0 && (
+          <div className="mb-3">
+            <p className="text-[11px] font-extrabold uppercase tracking-wider text-brand mb-2 px-1">
+              Desa Terdekat ({nearbyFiltered.length} ditemukan)
+            </p>
+            {nearbyFiltered.map((d, i) => (
+              <DesaItem key={d.id} desa={d} dist={d.dist} index={i} />
+            ))}
+            <div className="flex items-center gap-3 my-3">
+              <div className="flex-1 h-px bg-surface-200" />
+              <p className="text-[10.5px] font-bold text-surface-400 uppercase tracking-wider flex-shrink-0">
+                Desa Lain di G-Village
+              </p>
+              <div className="flex-1 h-px bg-surface-200" />
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isFound && allFiltered.length === 0 && (
+          <div className="text-center py-12 text-surface-400 text-[13px] animate-fade-in flex flex-col items-center">
+            <div className="w-12 h-12 rounded-2xl bg-surface-100 flex items-center justify-center text-surface-400 mb-2.5">
+              <MapPin size={24} />
+            </div>
+            <p className="font-bold text-surface-700 mb-0.5">Desa tidak ditemukan</p>
+            <p className="text-[11.5px] text-surface-400">
+              Coba gunakan kata kunci nama desa atau kecamatan lain
+            </p>
+          </div>
+        )}
+
+        {/* Default List */}
+        {!isFound && (
+          <div>
+            {!query && locState !== 'denied' && (
+              <p className="text-[11px] font-extrabold uppercase tracking-wider text-surface-400 mb-2 px-1">
+                Semua Desa G-Village
+              </p>
+            )}
+            {allFiltered.map((d, i) => (
+              <DesaItem key={d.id} desa={d} index={i} />
+            ))}
+          </div>
+        )}
+
+        {isFound &&
+          allFiltered.map((d, i) => (
+            <DesaItem key={d.id} desa={d} index={i + nearbyFiltered.length} />
+          ))}
+      </div>
+    </div>
+  )
+
+  if (fromProfile) {
+    return (
+      <div className="h-full flex flex-col bg-white overflow-hidden select-none">
+        {/* Header baru */}
+        <div
+          className="px-4 py-3 flex items-center gap-3 flex-shrink-0 text-white"
+          style={{ background: '#1B6B3A' }}
+        >
+          <button
+            type="button"
+            onClick={() => navigate('profile')}
+            className="p-1 -ml-1 text-white hover:opacity-80 transition active:scale-95 flex items-center justify-center"
+          >
+            <ChevronLeft size={20} className="text-white" />
+          </button>
+          <h1 className="text-white font-bold text-[16px]">Pilih Desa / Lokasi</h1>
+        </div>
+
+        {/* Konten */}
+        <div className="flex-1 overflow-hidden flex flex-col px-4 pt-3.5">
+          {mainContent}
+        </div>
+
+        {/* Tombol Pilih Desamu di bawah */}
+        <div className="px-4 py-3 border-t border-surface-100 bg-white flex-shrink-0">
+          <AppButton
+            variant="primary"
+            size="lg"
+            fullWidth
+            disabled={!selected || isLoading}
+            onClick={handleContinue}
+          >
+            {isLoading
+              ? 'Mendeteksi lokasi...'
+              : selected
+              ? `Pilih ${selected} →`
+              : 'Pilih Desamu'}
+          </AppButton>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <OnboardingLayout
       currentStep={3}
@@ -163,169 +375,7 @@ export default function SelectDesa({ navigate, userData, updateUser }) {
         </div>
       }
     >
-      <div className="flex flex-col flex-1 animate-fade-in">
-        {/* ── Location Prompt ── */}
-        {locState === 'prompt' && (
-          <div className="rounded-2xl p-3.5 bg-brand/5 border border-brand/15 mb-3.5 animate-fade-in flex-shrink-0">
-            <div className="flex items-start gap-3 mb-2.5">
-              <SkeuoIcon
-                icon={Navigation}
-                gradient={['#1B5E20', '#2E7D32']}
-                size="sm"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-surface-900 leading-tight">
-                  Temukan desa terdekat otomatis
-                </p>
-                <p className="text-[11.5px] text-surface-500 leading-relaxed mt-0.5">
-                  Gunakan GPS untuk mendeteksi desa GV di sekitarmu secara instan.
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <AppButton
-                variant="primary"
-                size="sm"
-                className="flex-1 text-[12px] py-2"
-                onClick={requestLocation}
-              >
-                Izinkan Lokasi
-              </AppButton>
-              <AppButton
-                variant="secondary"
-                size="sm"
-                className="flex-1 text-[12px] py-2"
-                onClick={() => setLocState('denied')}
-              >
-                Cari Manual
-              </AppButton>
-            </div>
-          </div>
-        )}
-
-        {/* ── Detecting / Loading ── */}
-        {isLoading && (
-          <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-brand/5 border border-brand/15 mb-3.5 animate-fade-in flex-shrink-0">
-            <div className="w-7 h-7 rounded-full border-2 border-brand/30 border-t-brand flex-shrink-0 animate-spin" />
-            <div>
-              <p className="text-[13px] font-bold text-surface-900 leading-none">
-                Mendeteksi lokasimu...
-              </p>
-              <p className="text-[11.5px] text-surface-500 mt-1">
-                Mencari desa GV terdekat via sinyal GPS
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── Location Found Banner ── */}
-        {isFound && (
-          <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-brand/8 border border-brand/20 mb-3.5 animate-fade-in flex-shrink-0">
-            <SkeuoIcon
-              icon={MapPin}
-              gradient={['#1B5E20', '#2E7D32']}
-              size="xs"
-            />
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-brand leading-none">{MOCK_LOCATION}</p>
-              <p className="text-[11px] text-surface-500 mt-1 font-medium">Lokasi terdeteksi otomatis</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setLocState('prompt')
-                setQuery('')
-              }}
-              className="text-[11.5px] font-bold text-brand hover:underline px-2 py-1 rounded-lg"
-            >
-              Ubah
-            </button>
-          </div>
-        )}
-
-        {/* ── Search Bar Input ── */}
-        <div className="mb-3 flex-shrink-0">
-          <div
-            className={`flex items-center gap-2.5 border-2 rounded-2xl px-3.5 py-2.5 transition-all ${
-              query
-                ? 'border-brand bg-brand/5 shadow-brand-xs'
-                : 'border-surface-200 bg-surface-50 focus-within:border-brand focus-within:bg-white'
-            }`}
-          >
-            <Search size={16} className={query ? 'text-brand' : 'text-surface-400'} />
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Cari nama desa atau kecamatan..."
-              className="flex-1 text-[13px] font-medium text-surface-900 placeholder-surface-400 outline-none bg-transparent"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery('')}
-                className="text-surface-400 hover:text-surface-700"
-              >
-                <X size={15} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* ── Scrollable Village List ── */}
-        <div className="flex-1 overflow-y-auto no-scrollbar pe-0.5">
-          {/* Nearby Section */}
-          {isFound && nearbyFiltered.length > 0 && (
-            <div className="mb-3">
-              <p className="text-[11px] font-extrabold uppercase tracking-wider text-brand mb-2 px-1">
-                Desa Terdekat ({nearbyFiltered.length} ditemukan)
-              </p>
-              {nearbyFiltered.map((d, i) => (
-                <DesaItem key={d.id} desa={d} dist={d.dist} index={i} />
-              ))}
-              <div className="flex items-center gap-3 my-3">
-                <div className="flex-1 h-px bg-surface-200" />
-                <p className="text-[10.5px] font-bold text-surface-400 uppercase tracking-wider flex-shrink-0">
-                  Desa Lain di G-Village
-                </p>
-                <div className="flex-1 h-px bg-surface-200" />
-              </div>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!isFound && allFiltered.length === 0 && (
-            <div className="text-center py-12 text-surface-400 text-[13px] animate-fade-in flex flex-col items-center">
-              <div className="w-12 h-12 rounded-2xl bg-surface-100 flex items-center justify-center text-surface-400 mb-2.5">
-                <MapPin size={24} />
-              </div>
-              <p className="font-bold text-surface-700 mb-0.5">Desa tidak ditemukan</p>
-              <p className="text-[11.5px] text-surface-400">
-                Coba gunakan kata kunci nama desa atau kecamatan lain
-              </p>
-            </div>
-          )}
-
-          {/* Default List */}
-          {!isFound && (
-            <div>
-              {!query && locState !== 'denied' && (
-                <p className="text-[11px] font-extrabold uppercase tracking-wider text-surface-400 mb-2 px-1">
-                  Semua Desa G-Village
-                </p>
-              )}
-              {allFiltered.map((d, i) => (
-                <DesaItem key={d.id} desa={d} index={i} />
-              ))}
-            </div>
-          )}
-
-          {isFound &&
-            allFiltered.map((d, i) => (
-              <DesaItem key={d.id} desa={d} index={i + nearbyFiltered.length} />
-            ))}
-        </div>
-      </div>
+      {mainContent}
     </OnboardingLayout>
   )
 }

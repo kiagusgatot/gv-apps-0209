@@ -17,7 +17,8 @@ import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
   Sparkles, X, Tag, Truck, Clock, ChevronDown, Phone, MessageCircle, Navigation,
   CircleDot, Leaf, Coffee, Droplet, Palette, Wheat, Egg, Landmark, Wallet, Box, Scale, ScanLine,
   AlertTriangle, Trash2, Copy, CheckCircle2, Info, ShieldCheck, CloudRain, RotateCcw,
-  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap, Ticket, Share2
+  PhoneCall, PhoneOff, Volume2, RefreshCw, CheckSquare, Square, ChevronUp, Zap, Ticket, Share2,
+  TrendingUp
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 import { addBuyerOrder, updateBuyerOrder, cancelBuyerOrder, rateBuyerOrder, useBuyerOrders } from '@/utils/orderStore'
@@ -3984,8 +3985,449 @@ function StoreDetailScreen({
   )
 }
 
+// ── Dedicated Search Screen ESTO ───────────────────────────
+const ESTO_SEARCH_RECOMMENDATIONS = [
+  { id: 'rec-1', label: 'Beras', icon: '🌾' },
+  { id: 'rec-2', label: 'Minyak goreng', icon: '🍳' },
+  { id: 'rec-3', label: 'Telur', icon: '🥚' },
+  { id: 'rec-4', label: 'Sayur', icon: '🥬' },
+  { id: 'rec-5', label: 'Buah', icon: '🍎' },
+  { id: 'rec-6', label: 'Sembako', icon: '🛒' },
+  { id: 'rec-7', label: 'Produk pertanian', icon: '🌱' },
+  { id: 'rec-8', label: 'Pupuk organik', icon: '🌿' },
+]
+
+const DEFAULT_ESTO_RECENTS = ['Beras Pandan Wangi', 'Minyak Goreng Sawit', 'Telur Ayam Kampung']
+
+function SearchScreenESTO({
+  onClose,
+  allProducts = ALL_PRODUCTS,
+  cart = {},
+  liked = new Set(),
+  onToggleLike,
+  onOpenDetail,
+  onAddToCart,
+  onUpdateQty,
+  onOpenCart,
+  initialQuery = '',
+  onApplyQuery,
+}) {
+  const [query, setQuery] = useState(initialQuery)
+  const [isSubmitted, setIsSubmitted] = useState(Boolean(initialQuery.trim()))
+  const [activeSort, setActiveSort] = useState('terlaris')
+
+  // Load search history from localStorage
+  const [recents, setRecents] = useState(() => {
+    try {
+      const saved = localStorage.getItem('esto_search_history')
+      if (saved) return JSON.parse(saved)
+    } catch {
+      // fallback
+    }
+    return DEFAULT_ESTO_RECENTS
+  })
+
+  const saveRecents = (newList) => {
+    setRecents(newList)
+    try {
+      localStorage.setItem('esto_search_history', JSON.stringify(newList))
+    } catch {
+      // ignore
+    }
+  }
+
+  const addToRecents = (keyword) => {
+    const clean = keyword.trim()
+    if (!clean) return
+    const updated = [clean, ...recents.filter((r) => r.toLowerCase() !== clean.toLowerCase())].slice(0, 8)
+    saveRecents(updated)
+  }
+
+  const removeRecentItem = (itemToRemove, e) => {
+    e.stopPropagation()
+    const updated = recents.filter((item) => item !== itemToRemove)
+    saveRecents(updated)
+  }
+
+  const clearAllRecents = () => {
+    saveRecents([])
+  }
+
+  const handleSelectKeyword = (keyword) => {
+    const clean = keyword.trim()
+    setQuery(clean)
+    addToRecents(clean)
+    setIsSubmitted(true)
+    if (onApplyQuery) onApplyQuery(clean)
+  }
+
+  // Filter products
+  const qClean = query.trim().toLowerCase()
+  const matchingProducts = qClean
+    ? allProducts
+        .filter(
+          (p) =>
+            p.name.toLowerCase().includes(qClean) ||
+            (p.cat && p.cat.toLowerCase().includes(qClean)) ||
+            (p.seller && p.seller.toLowerCase().includes(qClean)) ||
+            (p.desc && p.desc.toLowerCase().includes(qClean)) ||
+            (p.location && p.location.toLowerCase().includes(qClean))
+        )
+        .sort((a, b) => {
+          if (activeSort === 'termurah') return a.price - b.price
+          if (activeSort === 'termahal') return b.price - a.price
+          if (activeSort === 'rating') return (b.rating || 0) - (a.rating || 0)
+          return parseInt(b.sold || 0) - parseInt(a.sold || 0)
+        })
+    : []
+
+  // Quick suggestions for typing state
+  const quickSuggestions = qClean
+    ? Array.from(
+        new Set(
+          allProducts
+            .filter((p) => p.name.toLowerCase().includes(qClean))
+            .map((p) => p.name)
+        )
+      ).slice(0, 5)
+    : []
+
+  const totalCart = Object.values(cart).reduce((a, b) => a + b, 0)
+  const totalPrice = Object.entries(cart).reduce((s, [id, q]) => {
+    const p = allProducts.find((x) => x.id === parseInt(id))
+    return s + (p?.price || 0) * q
+  }, 0)
+
+  return (
+    <div className="absolute inset-0 z-[45] flex flex-col bg-[#FAFBF9] animate-fade-in">
+      {/* ── Top Header ── */}
+      <div
+        className="flex-shrink-0 relative overflow-hidden select-none z-20"
+        style={{
+          background: 'linear-gradient(135deg, #061A0D 0%, #0C3E1E 50%, #1B6B3A 100%)',
+          boxShadow: '0 4px 16px rgba(12, 62, 30, 0.25)',
+        }}
+      >
+        <div
+          className="absolute -top-10 -end-10 w-40 h-40 rounded-full pointer-events-none opacity-25"
+          style={{ background: 'radial-gradient(circle, #4ade80 0%, transparent 70%)' }}
+        />
+
+        <div className="relative px-4 pt-4 pb-3.5 z-10">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition active:scale-95 text-white"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+              aria-label="Kembali ke ESTO"
+            >
+              <ArrowLeft size={17} />
+            </button>
+
+            <div className="flex-1">
+              <SearchBar
+                autoFocus
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  if (!e.target.value.trim()) {
+                    setIsSubmitted(false)
+                    if (onApplyQuery) onApplyQuery('')
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && query.trim()) {
+                    handleSelectKeyword(query)
+                  }
+                }}
+                onClear={() => {
+                  setQuery('')
+                  setIsSubmitted(false)
+                  if (onApplyQuery) onApplyQuery('')
+                }}
+                variant="glass-dark"
+                placeholder="Cari produk desa di ESTO..."
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Body Content (State Switcher) ── */}
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        {/* 1. INITIAL STATE: Tidak ada query yang dimasukkan */}
+        {!qClean ? (
+          <div className="p-4 space-y-5">
+            {/* Riwayat Pencarian */}
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <Clock size={15} className="text-surface-500" />
+                  <h3 className="text-[13px] font-bold text-surface-800 tracking-tight">
+                    Riwayat Pencarian
+                  </h3>
+                </div>
+                {recents.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllRecents}
+                    className="text-[11.5px] font-semibold text-red-600 hover:text-red-700 active:scale-95 transition"
+                  >
+                    Hapus Semua
+                  </button>
+                )}
+              </div>
+
+              {recents.length > 0 ? (
+                <div className="bg-white rounded-2xl border border-surface-200/80 shadow-2xs divide-y divide-surface-100 overflow-hidden">
+                  {recents.map((item, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => handleSelectKeyword(item)}
+                      className="flex items-center justify-between px-3.5 py-3 hover:bg-surface-50 cursor-pointer transition active:bg-surface-100/80"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <Clock size={14} className="text-surface-400 flex-shrink-0" />
+                        <span className="text-[13px] text-surface-800 font-medium truncate">
+                          {item}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => removeRecentItem(item, e)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-surface-400 hover:text-red-500 hover:bg-red-50 transition active:scale-90 flex-shrink-0 ms-2"
+                        aria-label={`Hapus ${item}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-surface-50/70 border border-dashed border-surface-200 rounded-2xl p-4 text-center">
+                  <p className="text-[12px] text-surface-500 font-medium">
+                    Belum ada riwayat pencarian.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Rekomendasi Pencarian */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Sparkles size={15} className="text-amber-500" />
+                <h3 className="text-[13px] font-bold text-surface-800 tracking-tight">
+                  Rekomendasi Pencarian
+                </h3>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {ESTO_SEARCH_RECOMMENDATIONS.map((rec) => (
+                  <button
+                    key={rec.id}
+                    type="button"
+                    onClick={() => handleSelectKeyword(rec.label)}
+                    className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12.5px] font-semibold bg-white border border-surface-200/90 text-surface-800 hover:border-emerald-600 hover:text-emerald-700 active:scale-95 shadow-2xs transition"
+                  >
+                    <span>{rec.icon}</span>
+                    <span>{rec.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : !isSubmitted ? (
+          /* 2. TYPING STATE: Sedang mengetik kata kunci */
+          <div className="p-4 space-y-4">
+            {/* Primary Action Card to execute search */}
+            <button
+              type="button"
+              onClick={() => handleSelectKeyword(query)}
+              className="w-full p-3 rounded-2xl bg-white border border-emerald-200 shadow-sm flex items-center justify-between text-left hover:bg-emerald-50/50 active:scale-[0.99] transition"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-800 flex items-center justify-center flex-shrink-0">
+                  <Search size={16} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold text-surface-900 truncate">
+                    Cari <span className="text-emerald-700">"{query}"</span>
+                  </p>
+                  <p className="text-[11px] text-surface-500">
+                    Tekan Enter atau ketuk untuk melihat hasil ({matchingProducts.length} produk)
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-emerald-600 flex-shrink-0" />
+            </button>
+
+            {/* Autocomplete Suggestions */}
+            {quickSuggestions.length > 0 && (
+              <div>
+                <p className="text-[11.5px] font-bold text-surface-500 uppercase tracking-wider mb-2 px-1">
+                  Saran Produk Sesuai
+                </p>
+                <div className="bg-white rounded-2xl border border-surface-200/80 shadow-2xs divide-y divide-surface-100 overflow-hidden">
+                  {quickSuggestions.map((sug, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleSelectKeyword(sug)}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-3 hover:bg-surface-50 text-left transition active:bg-surface-100"
+                    >
+                      <Search size={14} className="text-surface-400 flex-shrink-0" />
+                      <span className="text-[13px] text-surface-800 font-medium truncate">
+                        {sug}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : matchingProducts.length > 0 ? (
+          /* 3. RESULT STATE: Menampilkan produk yang sesuai */
+          <div className="pt-3 pb-24">
+            {/* Header info & Sorting */}
+            <div className="px-4 mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[12.5px] font-bold text-surface-700">
+                  Hasil untuk <span className="text-surface-950 font-black">"{query}"</span> ({matchingProducts.length} produk)
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSubmitted(false)
+                  }}
+                  className="text-[11.5px] font-semibold text-emerald-700 hover:underline"
+                >
+                  Ubah Kata Kunci
+                </button>
+              </div>
+
+              {/* Sort Filter Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  { id: 'terlaris', label: 'Terlaris' },
+                  { id: 'termurah', label: 'Harga Termurah' },
+                  { id: 'termahal', label: 'Harga Tertinggi' },
+                  { id: 'rating', label: 'Rating Tertinggi' },
+                ].map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setActiveSort(s.id)}
+                    className={`px-3 py-1.5 rounded-xl text-[11.5px] font-semibold whitespace-nowrap transition active:scale-95 ${
+                      activeSort === s.id
+                        ? 'bg-emerald-700 text-white shadow-xs'
+                        : 'bg-white border border-surface-200 text-surface-700 hover:bg-surface-50'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Cards Grid */}
+            <div className="grid grid-cols-2 gap-3 px-4">
+              {matchingProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  inCartQty={cart[p.id] || 0}
+                  isLiked={liked.has(p.id)}
+                  onToggleLike={onToggleLike}
+                  onOpenDetail={onOpenDetail}
+                  onAddToCart={onAddToCart}
+                  onUpdateQty={onUpdateQty}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* 4. EMPTY STATE: Tidak ada produk yang sesuai */
+          <div className="p-6 text-center flex flex-col items-center justify-center min-h-[360px]">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center mb-4 shadow-xs">
+              <Package size={30} strokeWidth={1.8} />
+            </div>
+
+            <h4 className="text-[16px] font-black text-surface-900 mb-1.5">
+              Produk Tidak Ditemukan
+            </h4>
+            <p className="text-[12.5px] text-surface-500 max-w-xs leading-relaxed mb-5">
+              Tidak ada produk di ESTO yang sesuai dengan kata kunci{' '}
+              <span className="font-bold text-surface-800">"{query}"</span>. Coba gunakan kata kunci lain atau pilih rekomendasi di bawah.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                setIsSubmitted(false)
+                if (onApplyQuery) onApplyQuery('')
+              }}
+              className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white text-[12.5px] font-bold shadow-xs transition mb-6"
+            >
+              Reset Pencarian
+            </button>
+
+            {/* Alternative quick chips */}
+            <div className="w-full pt-4 border-t border-surface-200/70">
+              <p className="text-[11.5px] font-bold text-surface-400 uppercase tracking-wider mb-2.5">
+                Coba Cari Produk Ini
+              </p>
+              <div className="flex flex-wrap justify-center gap-1.5">
+                {ESTO_SEARCH_RECOMMENDATIONS.slice(0, 6).map((rec) => (
+                  <button
+                    key={rec.id}
+                    type="button"
+                    onClick={() => handleSelectKeyword(rec.label)}
+                    className="px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-white border border-surface-200 text-surface-700 hover:border-emerald-600 active:scale-95 transition"
+                  >
+                    {rec.icon} {rec.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Floating Bottom Cart Bar if items in cart */}
+      {totalCart > 0 && onOpenCart && (
+        <div className="absolute bottom-0 inset-x-0 z-40 px-4 py-3 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
+          <button
+            type="button"
+            onClick={onOpenCart}
+            className="w-full py-3.5 rounded-2xl text-white font-bold text-sm flex items-center justify-between px-5 shadow-lg active:scale-95 transition"
+            style={{
+              background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
+              boxShadow: '0 4px 14px rgba(27,107,58,0.3)',
+            }}
+          >
+            <div className="flex items-center gap-2.5">
+              <ShoppingCart size={18} />
+              <span>Lihat Keranjang ({totalCart})</span>
+            </div>
+            <span className="tabular-nums font-extrabold text-[15px]">
+              Rp {totalPrice.toLocaleString('id')}
+            </span>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Screen ────────────────────────────────────────────
 export default function Pasar({ navigate, userProfile, initialTab }) {
+  const [showSearch, setShowSearch] = useState(false)
   const [showEmptyCart, setEmptyCart] = useState(false)
   const [paymentMethod, setPayMethod] = useState('gvpay')
   const { orders: buyerOrders, cancelOrder, updateOrder } = useBuyerOrders()
@@ -4556,12 +4998,11 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           {/* Sticky Search Bar Row: ALWAYS visible! */}
           <div className="w-full">
             <SearchBar
+              readOnly
               value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              onClear={() => setSearchQ('')}
-              variant="surface"
+              variant="glass-dark"
               placeholder="Cari produk desa di ESTO..."
-              className="w-full bg-white border border-gray-200/90 shadow-2xs rounded-2xl"
+              onClick={() => setShowSearch(true)}
             />
           </div>
         </div>
@@ -4578,6 +5019,28 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         className="flex-1 overflow-y-auto no-scrollbar"
         style={{ paddingBottom: totalCart > 0 ? 80 : 20 }}
       >
+        {/* Active Search Filter indicator if any query is applied */}
+        {searchQ && (
+          <div className="mx-4 mt-2.5 mb-1 px-3.5 py-2 rounded-2xl bg-emerald-50/90 border border-emerald-200/80 flex items-center justify-between shadow-2xs">
+            <div
+              onClick={() => setShowSearch(true)}
+              className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer"
+            >
+              <Search size={13} className="text-emerald-700 flex-shrink-0" />
+              <p className="text-[12px] text-emerald-950 truncate">
+                Hasil pencarian: <span className="font-bold">"{searchQ}"</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearchQ('')}
+              className="text-[11px] font-bold text-red-600 hover:text-red-700 active:scale-95 transition ms-2 flex-shrink-0 px-2 py-0.5 rounded-lg hover:bg-red-50"
+            >
+              Hapus Filter
+            </button>
+          </div>
+        )}
+
         {/* Promo banners with high-impact image display & integrated pagination */}
         <div className="w-full px-4 pt-3 pb-2">
           <div
@@ -4780,6 +5243,26 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
             </span>
           </button>
         </div>
+      )}
+
+      {/* Dedicated Search Screen ESTO */}
+      {showSearch && (
+        <SearchScreenESTO
+          onClose={() => setShowSearch(false)}
+          allProducts={ALL_PRODUCTS}
+          cart={cart}
+          liked={liked}
+          onToggleLike={toggleLike}
+          onOpenDetail={openDetail}
+          onAddToCart={addToCart}
+          onUpdateQty={updateCartQty}
+          onOpenCart={() => {
+            setShowSearch(false)
+            setScreen('cart')
+          }}
+          initialQuery={searchQ}
+          onApplyQuery={(q) => setSearchQ(q)}
+        />
       )}
 
       {/* Product Detail Bottom Sheet (confined to PhoneFrame) */}

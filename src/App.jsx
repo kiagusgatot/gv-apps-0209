@@ -15,20 +15,23 @@ import Komunitas   from './screens/app/Komunitas'
 import Berita      from './screens/app/Berita'
 import Studio      from './screens/app/Studio'
 import Profile     from './screens/app/Profile'
+import Verifikasi  from './screens/app/Verifikasi'
+import AktivasiToko    from './screens/app/AktivasiToko'
+import AktivasiKreator from './screens/app/AktivasiKreator'
 import { RotateCcw, Monitor, ChevronRight, Users, Zap } from 'lucide-react'
 import { AdsProvider } from './components/ads/AdsContext'
 
 const SCREEN_LABELS = {
   welcome:'Welcome', register:'Daftar', otp:'Verifikasi OTP',
   desa:'Pilih Desa', 'pilih-komunitas':'Pilih Komunitas', preferensi:'Preferensi', selesai:'Selesai',
-  beranda:'Beranda', siaran:'GV Media', 'siaran-live':'GV Media', 'siaran-kreator':'GV Media', 'siaran-video':'GV Media', 'siaran-podcast':'GV Media', 'siaran-gvplus':'GV Media', pasar:'ESTO', 'pasar-pesanan':'Pesanan Saya', 'pasar-toko':'ESTO', bayar:'Bayar', 'bayar-topup':'Bayar', 'bayar-transfer':'Bayar', 'bayar-qris':'Bayar', 'bayar-riwayat':'Bayar', 'bayar-listrik':'Bayar', 'bayar-pulsa':'Bayar', 'bayar-air':'Bayar', 'bayar-bpjs':'Bayar', 'bayar-tv':'Bayar', 'bayar-internet':'Bayar', 'bayar-gas':'Bayar', 'bayar-pendidikan':'Bayar', komunitas:'Komunitas & Arena', berita:'Berita', studio:'Kreator GV', 'studio-upload':'Kreator GV', 'studio-analitik':'Kreator GV', 'studio-membership':'GV Media', profile:'Profil Saya', 'profile-poin':'Profil Saya', 'profile-pesanan':'Pesanan Saya', 'profile-iklan':'Iklan Baris', 'komunitas-jualbeli':'Komunitas',
+  beranda:'Beranda', siaran:'GV Media', 'siaran-live':'GV Media', 'siaran-kreator':'GV Media', 'siaran-video':'GV Media', 'siaran-podcast':'GV Media', 'siaran-gvplus':'GV Media', pasar:'ESTO', 'pasar-pesanan':'Pesanan Saya', 'pasar-toko':'ESTO', bayar:'Bayar', 'bayar-topup':'Bayar', 'bayar-transfer':'Bayar', 'bayar-qris':'Bayar', 'bayar-riwayat':'Bayar', 'bayar-listrik':'Bayar', 'bayar-pulsa':'Bayar', 'bayar-air':'Bayar', 'bayar-bpjs':'Bayar', 'bayar-tv':'Bayar', 'bayar-internet':'Bayar', 'bayar-gas':'Bayar', 'bayar-pendidikan':'Bayar', komunitas:'Komunitas & Arena', berita:'Berita', studio:'Kreator GV', 'studio-upload':'Kreator GV', 'studio-analitik':'Kreator GV', 'studio-membership':'GV Media', profile:'Profil Saya', 'profile-poin':'Profil Saya', 'profile-pesanan':'Pesanan Saya', 'profile-iklan':'Iklan Baris', 'komunitas-jualbeli':'Komunitas', verifikasi:'Verifikasi Data Diri', 'desa-profile':'Pilih Desa', 'aktivasi-toko':'Aktivasi Toko', 'aktivasi-kreator':'Aktivasi Kreator',
 }
 
 const NAV_SECTIONS = [
   { label: 'Onboarding', screens: ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai'] },
-  { label: 'Aplikasi', screens: ['beranda','siaran','pasar','bayar','komunitas','studio','profile'] },
+  { label: 'Aplikasi', screens: ['beranda','siaran','pasar','bayar','komunitas','studio','profile','verifikasi','desa-profile','aktivasi-toko','aktivasi-kreator'] },
 ]
-const NAV_SCREENS = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai','beranda','siaran','pasar','toko','bayar','komunitas','studio','profile']
+const NAV_SCREENS = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai','beranda','siaran','pasar','toko','bayar','komunitas','studio','profile','verifikasi','desa-profile','aktivasi-toko','aktivasi-kreator']
 
 const DUMMY_USERS = [
   {
@@ -152,9 +155,10 @@ export default function App() {
     : screen === 'profile-poin'  ? { showPoin: true }
     : screen === 'profile-iklan' ? { initialScreen: 'iklan-baris' }
     : screen === 'komunitas-jualbeli' ? { initialCommunityId: 6 }
+    : screen === 'desa-profile' ? { fromProfile: true }
     : {}
   const Screen = { welcome:Welcome, register:Register, otp:OTP, desa:SelectDesa,
-    'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas }[screen] || Welcome
+    'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas, verifikasi:Verifikasi, 'desa-profile':SelectDesa, 'aktivasi-toko':AktivasiToko, 'aktivasi-kreator':AktivasiKreator }[screen] || Welcome
 
   const isOnboarding = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai'].includes(screen)
 
@@ -232,7 +236,7 @@ export default function App() {
         </nav>
 
         {/* ── Phone content area ─────────────── */}
-        <div className="flex-shrink-0 w-full md:max-w-[390px] flex flex-col overflow-hidden relative"
+        <div id="app-phone-container" className="flex-shrink-0 w-full md:max-w-[390px] flex flex-col overflow-hidden relative"
           style={{
             boxShadow:'-1px 0 0 #D4D8D0, 1px 0 0 #D4D8D0, 0 8px 32px rgba(15,26,19,0.08)',
           }}>

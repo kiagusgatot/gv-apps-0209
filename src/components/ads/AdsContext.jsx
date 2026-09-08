@@ -6,37 +6,86 @@ export function AdsProvider({ children }) {
   const [ads, setAds] = useState([
     {
       id: 'ad-1',
-      materi: 'Dijual Sepeda Lipat Polygon, kondisi 95% mulus.',
+      kategori: 'baris',
       tipe: 'jual',
-      harga: 1500000,
+      materi: 'Dijual Sepeda Lipat Polygon Urbano 3, mulus 95% pemakaian santai.',
+      harga: 1850000,
       jangkauan: 'lokal',
       lokasi: 'Desa Sukamaju',
       status: 'tayang',
-      impressions: 1250,
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+      impressions: 2450,
+      clicks: 142,
+      periode: '04 Sep - 11 Sep 2026',
+      createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     },
     {
       id: 'ad-2',
-      materi: 'Dicari guru les privat Matematika SD daerah Cikaret.',
-      tipe: 'beli', // Note: using beli for seeking service
-      harga: null,
+      kategori: 'banner',
+      tipe: 'jual',
+      materi: 'Diskon 30% Paket Pupuk Organik Desa Mandiri untuk Musim Tanam Ini!',
+      harga: 250000,
+      jangkauan: 'lokal',
+      lokasi: 'Kabupaten Bogor',
+      status: 'pembayaran',
+      tagihan: 25000,
+      batasPembayaran: 'Hari ini, 23:59 WIB',
+      impressions: 0,
+      createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
+    },
+    {
+      id: 'ad-3',
+      kategori: 'produk',
+      tipe: 'jual',
+      materi: 'Madu Hutan Murni Asli Desa Sukamaju 500ml - Panen Alami Hutan Lindung',
+      harga: 85000,
       jangkauan: 'nasional',
       lokasi: null,
       status: 'review',
       impressions: 0,
-      createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
+      reviewNote: 'Iklan sedang diperiksa oleh tim kurasi GV Media. Estimasi verifikasi 1×24 jam.',
+      createdAt: new Date(Date.now() - 3600000 * 4).toISOString(),
     },
     {
-      id: 'ad-3',
-      materi: 'Jual Tanah Kavling 100m2 Sertifikat SHM.',
+      id: 'ad-4',
+      kategori: 'video',
       tipe: 'jual',
-      harga: 125000000,
+      materi: 'Promo Paket Wisata Petik Buah & Homestay Desa Wisata Nagrak',
+      harga: 350000,
       jangkauan: 'nasional',
       lokasi: null,
-      status: 'pembayaran',
+      status: 'ditolak',
       impressions: 0,
-      createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    }
+      alasanPenolakan: 'Format nomor kontak pada video belum memenuhi panduan komunitas penyiaran GV Media.',
+      createdAt: new Date(Date.now() - 86400000 * 1.5).toISOString(),
+    },
+    {
+      id: 'ad-5',
+      kategori: 'promo',
+      tipe: 'jual',
+      materi: 'Voucher Potongan Belanja Sembako Rp 20.000 Khusus Warga Desa Berdaya',
+      harga: 20000,
+      jangkauan: 'lokal',
+      lokasi: 'Desa Cikaret',
+      status: 'selesai',
+      impressions: 4890,
+      clicks: 310,
+      periode: '25 Agu - 01 Sep 2026',
+      createdAt: new Date(Date.now() - 86400000 * 14).toISOString(),
+    },
+    {
+      id: 'ad-6',
+      kategori: 'baris',
+      tipe: 'beli',
+      materi: 'Dicari mesin perontok padi bekas kondisi siap pakai untuk kelompok tani.',
+      harga: null,
+      jangkauan: 'lokal',
+      lokasi: 'Kecamatan Dramaga',
+      status: 'kedaluwarsa',
+      impressions: 1120,
+      clicks: 45,
+      periode: '10 Agu - 17 Agu 2026',
+      createdAt: new Date(Date.now() - 86400000 * 28).toISOString(),
+    },
   ]);
 
   const [notifications, setNotifications] = useState([
@@ -72,6 +121,23 @@ export function AdsProvider({ children }) {
     });
   }, []);
 
+  const retryAd = useCallback(async (adId) => {
+    // Re-submit rejected ad for review
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        setAds(prev => prev.map(ad => 
+          ad.id === adId ? { 
+            ...ad, 
+            status: 'review', 
+            reviewNote: 'Iklan perbaikan sedang diperiksa kembali oleh tim kurasi GV Media.',
+            alasanPenolakan: null 
+          } : ad
+        ));
+        resolve({ success: true });
+      }, 600);
+    });
+  }, []);
+
   const markNotificationRead = useCallback((notifId) => {
     setNotifications(prev => prev.map(n => 
       n.id === notifId ? { ...n, read: true } : n
@@ -83,6 +149,7 @@ export function AdsProvider({ children }) {
       ads,
       submitAd,
       payAd,
+      retryAd,
       notifications,
       markNotificationRead
     }}>

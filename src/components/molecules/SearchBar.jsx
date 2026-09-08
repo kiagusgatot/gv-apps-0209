@@ -15,6 +15,7 @@ export default function SearchBar({
   readOnly = false,
   variant = 'glass-dark', // 'glass-dark' | 'glass-light' | 'surface'
   className = '',
+  onKeyDown,
 }) {
   const isDark = variant === 'glass-dark'
 
@@ -40,6 +41,7 @@ export default function SearchBar({
         placeholder={placeholder}
         autoFocus={autoFocus}
         readOnly={readOnly}
+        onKeyDown={onKeyDown}
         className={`flex-1 text-[13px] font-medium outline-none bg-transparent ${
           isDark
             ? 'text-white placeholder-white/50'
