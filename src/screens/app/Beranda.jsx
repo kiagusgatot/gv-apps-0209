@@ -11,9 +11,10 @@ import {
   Video as VideoIcon, Clock, Radio, X, ShoppingCart, Users, ShoppingBag, Droplets,
   Wheat, HeartPulse, GraduationCap, Star, Check, CheckCheck, Flame, AlertCircle,
   Sparkles, ToggleRight, MapPin, ArrowLeft,
-  Store, Clapperboard, MessageCircle, FileText, Plus, ScanLine, MonitorPlay, Leaf, Battery, Coffee, Palette, Droplet, Box, Scale, Lightbulb, Camera, Mic2, Tv, Home, AlertTriangle, Egg, Bot
+  Store, Clapperboard, MessageCircle, FileText, Plus, ScanLine, MonitorPlay, Leaf, Battery, Coffee, Palette, Droplet, Box, Scale, Lightbulb, Camera, Mic2, Tv, Home, AlertTriangle, Egg, Bot, Megaphone
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
+import { getAdsNotifications } from '@/utils/adsNotificationStore'
 
 const COMMUNITY_THEMES = {
   sinartani:     { label: 'SINARTANI',     color: '#2D7A27', light: '#E8F5E9', gradient: ['#1B5E20','#2D7A27'] },
@@ -1186,7 +1187,19 @@ export default function Beranda({ navigate, userData, userProfile }) {
 
   // Shortcuts & notifs per persona
   const shortcuts = isSuperAdmin ? SC_SUPER_ADMIN : isAdmin ? SC_ADMIN : isCreator ? SC_KREATOR : isSeller ? SC_PENJUAL : p.hasTransactions ? SC_WARGA_AKTIF : SC_WARGA_BARU
-  const notifs = isAdmin ? NOTIF_ADMIN : isCreator ? NOTIF_KREATOR : isSeller ? NOTIF_PENJUAL : NOTIF_WARGA
+  const baseNotifs = isAdmin ? NOTIF_ADMIN : isCreator ? NOTIF_KREATOR : isSeller ? NOTIF_PENJUAL : NOTIF_WARGA
+  const adsNotifs = getAdsNotifications().map(an => ({
+    id: an.id,
+    title: an.title,
+    sub: an.sub,
+    time: an.time || 'Terkini',
+    category: 'transaksi',
+    unread: an.unread,
+    Icon: Megaphone,
+    g: ['#1B5E20', '#2E7D32'],
+    actionTarget: 'profile-iklan',
+  }))
+  const notifs = [...adsNotifs, ...baseNotifs]
   const threads = isCreator ? T_KREATOR : isSeller ? T_PENJUAL : T_WARGA_AKTIF
   const unread = notifs.filter(n => n.unread).length
 

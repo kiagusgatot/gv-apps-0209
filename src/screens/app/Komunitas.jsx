@@ -21,22 +21,22 @@ const GRADIENT = 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'
 // ── Data ───────────────────────────────────────────────────
 const ALL_COMMUNITIES = [
   { id:1, name:'SINARTANI',     Icon:Wheat,         bg:'#E8F5E9', ic:'#2D7A27', g:['#1B5E20','#2D7A27'],
-    members:'—', desc:'Diskusi komoditas pertanian, tips bertani, musim tanam, harga pasar, dan inovasi agribisnis desa.',
+    members:'1.240', desc:'Diskusi komoditas pertanian, tips bertani, musim tanam, harga pasar, dan inovasi agribisnis desa.',
     rules:['Hormati sesama anggota dan hindari debat tidak sehat','Bagikan informasi harga dan komoditas yang akurat dan bisa diverifikasi','Dilarang spam, promosi, dan iklan tanpa izin moderator','Topik harus relevan dengan pertanian, perkebunan, dan agribisnis','Laporkan konten yang melanggar aturan ke moderator'] },
   { id:2, name:'NEXGENT',       Icon:Zap,           bg:'#E8EAF6', ic:'#1A3A8A', g:['#0D47A1','#1A3A8A'],
-    members:'—', desc:'Ruang generasi muda untuk inovasi, teknologi desa, kewirausahaan digital, dan pengembangan diri.',
+    members:'860', desc:'Ruang generasi muda untuk inovasi, teknologi desa, kewirausahaan digital, dan pengembangan diri.',
     rules:['Dukung sesama anggota untuk terus berkembang','Bagikan peluang, event, dan info yang sudah diverifikasi','Dilarang menyebarkan hoaks atau informasi menyesatkan','Topik harus relevan dengan inovasi, teknologi, dan generasi muda','Jaga diskusi tetap positif dan konstruktif'] },
   { id:3, name:'HKTI',          Icon:Landmark,      bg:'#E8F5E9', ic:'#1F5C1A', g:['#145214','#1F5C1A'],
-    members:'—', desc:'Forum resmi Himpunan Kerukunan Tani Indonesia — kebijakan pertanian, program pemerintah, dan sinergi petani nasional.',
+    members:'2.150', desc:'Forum resmi Himpunan Kerukunan Tani Indonesia — kebijakan pertanian, program pemerintah, dan sinergi petani nasional.',
     rules:['Informasi kebijakan harus dari sumber resmi dan dapat diverifikasi','Hormati hierarki dan struktur organisasi HKTI','Dilarang menyebarkan informasi menyesatkan tentang program pertanian','Topik harus relevan dengan kebijakan dan organisasi pertanian','Laporkan pelanggaran ke moderator dalam 24 jam'] },
   { id:4, name:'Active Campus', Icon:GraduationCap, bg:'#FFEBEE', ic:'#C0392B', g:['#922B21','#C0392B'],
-    members:'—', desc:'Komunitas mahasiswa aktif — beasiswa, keterampilan digital, kegiatan kampus, dan peluang karier generasi muda.',
+    members:'620', desc:'Komunitas mahasiswa aktif — beasiswa, keterampilan digital, kegiatan kampus, dan peluang karier generasi muda.',
     rules:['Saling mendukung semangat belajar antar anggota','Bagikan info beasiswa, magang, dan lowongan yang sudah diverifikasi','Dilarang menyebarkan hoaks akademik atau informasi pendidikan palsu','Topik harus relevan dengan kehidupan kampus dan pengembangan diri mahasiswa','Jaga lingkungan diskusi tetap inklusif dan positif'] },
   { id:5, name:'RT Online',     Icon:Home,          bg:'#ECEFF1', ic:'#5D6D7E', g:['#455A64','#5D6D7E'],
-    members:'—', desc:'Digitalisasi lingkungan RT/RW — info desa, pengumuman warga, laporan fasilitas, dan kebersamaan komunitas lokal.',
+    members:'340', desc:'Digitalisasi lingkungan RT/RW — info desa, pengumuman warga, laporan fasilitas, dan kebersamaan komunitas lokal.',
     rules:['Utamakan kepentingan dan kerukunan warga lingkungan','Informasi pengumuman harus akurat dan dari sumber terpercaya','Dilarang menyebarkan konten provokatif yang memecah kerukunan warga','Topik harus relevan dengan kehidupan dan kegiatan lingkungan RT/RW','Laporkan isu fasilitas dan keamanan ke moderator komunitas'] },
   { id:6, name:'Dekopin',       Icon:Handshake,     bg:'#FFEBEE', ic:'#922B21', g:['#641010','#922B21'],
-    members:'—', desc:'Dewan Koperasi Indonesia — forum koperasi, pemberdayaan UMKM, wirausaha lokal, dan ekonomi kerakyatan desa.',
+    members:'980', desc:'Dewan Koperasi Indonesia — forum koperasi, pemberdayaan UMKM, wirausaha lokal, dan ekonomi kerakyatan desa.',
     rules:['Dukung dan perkuat ekosistem koperasi dan UMKM lokal','Informasi bisnis dan koperasi harus akurat dan tidak menyesatkan','Dilarang spam, MLM, atau penawaran bisnis tanpa izin moderator','Topik harus relevan dengan koperasi, UMKM, dan ekonomi kerakyatan','Laporkan praktik bisnis mencurigakan ke moderator'] },
 ]
 
@@ -57,42 +57,236 @@ const ESTO_PRODUCTS = {
 
 const JOINED_IDS_INIT = [1]
 
+// ── Kategori Post Badge Styling ────────────────────────────
+const CATEGORY_STYLES = {
+  'PENGUMUMAN':  { bg: '#FFF3E0', color: '#E65100', border: '#FFE0B2' },
+  'DISKUSI':     { bg: '#E3F2FD', color: '#1565C0', border: '#BBDEFB' },
+  'TANYA JAWAB': { bg: '#F3E5F5', color: '#7B1FA2', border: '#E1BEE7' },
+  'TIPS':        { bg: '#E8F5E9', color: '#2E7D32', border: '#C8E6C9' },
+}
+
+// ── Feed Posts Dummy Data (Wajib 6 Skenario + Variatif) ─────
+const FEED_POSTS = [
+  // 1. SINARTANI | PENGUMUMAN (Ada Foto Pertanian/Sawah)
+  {
+    id: 'post-1',
+    communityId: 1,
+    category: 'PENGUMUMAN',
+    type: 'pengumuman',
+    title: 'Jadwal Penyuluhan Pertanian Organik Agustus 2026',
+    body: 'Dinas Pertanian Kab. Bogor hadir Sabtu depan pukul 09.00 di Balai Desa. Semua petani diundang hadir, gratis dan ada konsumsi.',
+    desc: 'Dinas Pertanian Kab. Bogor hadir Sabtu depan pukul 09.00 di Balai Desa. Semua petani diundang hadir, gratis dan ada konsumsi.',
+    image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=800&auto=format&fit=crop',
+    author: 'Dinas Pertanian Kab. Bogor',
+    authorId: 'admin_komunitas',
+    avIcon: UserCheck,
+    time: '1 jam',
+    likes: 48,
+    replies: 12,
+    isPinned: true,
+  },
+  // 2. RT ONLINE | TIPS (Ada Foto Kompos/Kebun)
+  {
+    id: 'post-2',
+    communityId: 5,
+    category: 'TIPS',
+    type: 'thread',
+    title: 'Cara buat pupuk kompos dari sampah dapur, mudah dan murah',
+    body: 'Kumpulkan sisa sayuran, kulit buah, dan ampas kopi. Dalam 3 minggu sudah jadi pupuk siap pakai untuk kebun rumah.',
+    desc: 'Kumpulkan sisa sayuran, kulit buah, dan ampas kopi. Dalam 3 minggu sudah jadi pupuk siap pakai untuk kebun rumah.',
+    image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=800&auto=format&fit=crop',
+    author: 'Pak Bambang (RT 03)',
+    authorId: 'warga_aktif',
+    avIcon: User,
+    time: '3 jam',
+    likes: 67,
+    replies: 19,
+    isPinned: false,
+  },
+  // 3. NEXGENT | DISKUSI (Tanpa Foto)
+  {
+    id: 'post-3',
+    communityId: 2,
+    category: 'DISKUSI',
+    type: 'thread',
+    title: 'Ide kegiatan 17 Agustus tahun ini, yuk vote bareng!',
+    body: 'Mau bikin lomba yang berbeda dari biasanya. Share ide kalian di kolom balasan, yang terbanyak yang dipilih.',
+    desc: 'Mau bikin lomba yang berbeda dari biasanya. Share ide kalian di kolom balasan, yang terbanyak yang dipilih.',
+    image: null,
+    author: 'Rian Pratama',
+    authorId: 'warga_aktif',
+    avIcon: User,
+    time: '5 jam',
+    likes: 85,
+    replies: 42,
+    isPinned: false,
+  },
+  // 4. SINARTANI | TANYA JAWAB (Tanpa Foto)
+  {
+    id: 'post-4',
+    communityId: 1,
+    category: 'TANYA JAWAB',
+    type: 'thread',
+    title: 'Cara mencegah serangan wereng di awal musim hujan',
+    body: 'Padi saya mulai ada tanda-tanda terserang wereng. Sudah coba pestisida tapi belum mempan, ada yang punya solusi?',
+    desc: 'Padi saya mulai ada tanda-tanda terserang wereng. Sudah coba pestisida tapi belum mempan, ada yang punya solusi?',
+    image: null,
+    author: 'Agus Sutrisno',
+    authorId: 'warga_aktif',
+    avIcon: User,
+    time: '7 jam',
+    likes: 39,
+    replies: 24,
+    isPinned: false,
+  },
+  // 5. DEKOPIN | TIPS (Tanpa Foto)
+  {
+    id: 'post-5',
+    communityId: 6,
+    category: 'TIPS',
+    type: 'thread',
+    title: 'Pengalaman pakai GV Pay buat terima pembayaran di warung',
+    body: 'Sudah 2 bulan pakai QRIS GV Pay, pelanggan makin mudah bayar dan saldo langsung masuk. Recommended buat warung kecil!',
+    desc: 'Sudah 2 bulan pakai QRIS GV Pay, pelanggan makin mudah bayar dan saldo langsung masuk. Recommended buat warung kecil!',
+    image: null,
+    author: 'Bu Suryani',
+    authorId: 'penjual_aktif',
+    avIcon: User,
+    time: '10 jam',
+    likes: 94,
+    replies: 31,
+    isPinned: false,
+  },
+  // 6. RT ONLINE | PENGUMUMAN (Ada Foto Kegiatan Warga)
+  {
+    id: 'post-6',
+    communityId: 5,
+    category: 'PENGUMUMAN',
+    type: 'pengumuman',
+    title: 'Kerja bakti RT 03 Minggu pagi jam 07.00',
+    body: 'Mohon warga RT 03 hadir untuk kerja bakti pembersihan saluran air dan perbaikan jalan setapak gang Melati.',
+    desc: 'Mohon warga RT 03 hadir untuk kerja bakti pembersihan saluran air dan perbaikan jalan setapak gang Melati.',
+    image: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?q=80&w=800&auto=format&fit=crop',
+    author: 'Pengurus RT 03',
+    authorId: 'admin_komunitas',
+    avIcon: UserCheck,
+    time: '1 hari',
+    likes: 56,
+    replies: 15,
+    isPinned: false,
+  },
+  // 7. HKTI | PENGUMUMAN (Ada Foto Pertanian)
+  {
+    id: 'post-7',
+    communityId: 3,
+    category: 'PENGUMUMAN',
+    type: 'pengumuman',
+    title: 'Sosialisasi Program Asuransi Usaha Tani & Pupuk Bersubsidi',
+    body: 'HKTI bersama dinas membuka pendataan kelompok tani desa untuk fasilitas asuransi tani dan alokasi pupuk bersubsidi.',
+    desc: 'HKTI bersama dinas membuka pendataan kelompok tani desa untuk fasilitas asuransi tani dan alokasi pupuk bersubsidi.',
+    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=800&auto=format&fit=crop',
+    author: 'Pengurus HKTI',
+    authorId: 'admin_komunitas',
+    avIcon: UserCheck,
+    time: '1 hari',
+    likes: 72,
+    replies: 18,
+    isPinned: false,
+  },
+  // 8. Active Campus | DISKUSI (Tanpa Foto)
+  {
+    id: 'post-8',
+    communityId: 4,
+    category: 'DISKUSI',
+    type: 'thread',
+    title: 'Peluang Magang Riset Desa & Beasiswa Mahasiswa Aktif 2026',
+    body: 'Ada pembukaan program studi independen dan beasiswa pengabdian desa untuk mahasiswa aktif semester 5 ke atas.',
+    desc: 'Ada pembukaan program studi independen dan beasiswa pengabdian desa untuk mahasiswa aktif semester 5 ke atas.',
+    image: null,
+    author: 'Dimas Pratama',
+    authorId: 'warga_aktif',
+    avIcon: User,
+    time: '2 hari',
+    likes: 61,
+    replies: 27,
+    isPinned: false,
+  },
+]
+
 const THREADS_INIT = {
-  // SINARTANI — case: petani jual pupuk & bibit
   1: [
-    { id:'t1', type:'pengumuman', title:'Jadwal Penyuluhan Pertanian Organik Agustus 2026', body:'Dinas Pertanian Kabupaten akan mengadakan penyuluhan teknik pertanian organik pada Sabtu, 30 Agustus 2026 pukul 08.00 WIB di Balai Desa Sukamakmur. Harap hadir tepat waktu.', image: 'https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=800&auto=format&fit=crop', author:'Wawan Setiawan', authorId:'admin_komunitas', avIcon:UserCheck, time:'1 jam', replies:5, likes:47, isPinned:true },
-    { id:'t2', type:'jual_beli', product:{ id:'ep4', name:'Pupuk Organik Kompos 25kg', price:45000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Pertanian', stock:20, toko:'Toko Bu Sari' }, caption:'Stok pupuk organik baru masuk! Cocok untuk musim tanam padi organik. Sudah dipakai 2 musim, hasilnya terbukti.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 jam', replies:6, likes:34, isPinned:false },
-    { id:'t3', type:'jual_beli', product:{ id:'ep5', name:'Bibit Cabai Rawit Lokal (50 biji)', price:15000, Icon:Leaf, g:['#C62828','#EF5350'], category:'Pertanian', stock:60, toko:'Toko Bu Sari' }, caption:'Bibit cabai rawit unggul lokal tahan hama. Siap tanam langsung.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'1 hari', replies:3, likes:19, isPinned:false },
-    { id:'t4', type:'thread', title:'Cara mencegah serangan wereng di awal musim', body:'Pengalaman saya 3 musim terakhir, wereng selalu menyerang di minggu ke-3 setelah tanam. Apa metode pencegahan alami yang paling efektif?', author:'Agus Petani', authorId:'warga_aktif', avIcon:User, time:'5 jam', replies:11, likes:62, isPinned:false },
-    { id:'t5', type:'thread', title:'Pengalaman menggunakan pupuk organik cair buatan sendiri', body:'Sudah 2 musim saya coba pupuk organik cair dari limbah dapur dan kotoran ternak. Hasilnya mengejutkan — biaya input turun 40% dan tanah makin gembur.', author:'Pak Slamet', authorId:'warga_aktif', avIcon:User, time:'1 hari', replies:18, likes:134, isPinned:false },
+    FEED_POSTS[0], // post-1 (SINARTANI | PENGUMUMAN)
+    FEED_POSTS[3], // post-4 (SINARTANI | TANYA JAWAB)
+    { id:'t_sinar_3', type:'thread', category:'TIPS', title:'Pengalaman Menggunakan Pupuk Organik Cair Buatan Sendiri', body:'Sudah 2 musim saya coba pupuk organik cair dari limbah dapur dan kotoran ternak. Biaya input turun 40% dan tanah makin gembur.', desc:'Sudah 2 musim saya coba pupuk organik cair dari limbah dapur dan kotoran ternak. Biaya input turun 40% dan tanah makin gembur.', author:'Pak Slamet', authorId:'warga_aktif', avIcon:User, time:'2 hari', replies:18, likes:134, isPinned:false },
+    { id:'jb1', type:'jual_beli', title:'Pupuk Organik Kompos 25kg', body:'Stok pupuk organik baru masuk! Cocok untuk musim tanam padi organik. Sudah dipakai 2 musim, hasilnya terbukti.', product:{ id:'ep4', name:'Pupuk Organik Kompos 25kg', price:45000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Pertanian', stock:20, toko:'Toko Bu Sari' }, caption:'Stok pupuk organik baru masuk! Cocok untuk musim tanam padi organik. Sudah dipakai 2 musim, hasilnya terbukti.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 hari', replies:6, likes:34, isPinned:false },
   ],
   2: [
-    { id:'t6', type:'thread', title:'Tips foto produk profesional pakai HP Android', body:'Saya sudah coba berbagai teknik dan yang paling berhasil adalah: cahaya alami dari jendela, background polos dari karton, dan mode portrait kamera belakang.', image: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?q=80&w=800&auto=format&fit=crop', author:'Rina UMKM', authorId:'warga_aktif', avIcon:User, time:'12 mnt', replies:3, likes:62, isPinned:true },
-    { id:'t7', type:'thread', title:'Ada yang sudah jualan ke luar desa lewat GV Pasar?', body:'Saya baru daftar toko di GV Pasar 2 minggu lalu. Sudah dapat 3 pesanan dari luar desa, tapi pengirimannya masih jadi tantangan.', author:'Bu Dewi', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:9, likes:34, isPinned:false },
+    FEED_POSTS[2], // post-3 (NEXGENT | DISKUSI)
+    { id:'t_nex_2', type:'thread', category:'TIPS', title:'Tips Foto Produk Menarik Pakai HP untuk Jualan Online', body:'Cahaya alami dari jendela pagi hari dan background karton putih polos sudah cukup bikin foto produk tampak profesional.', desc:'Cahaya alami dari jendela pagi hari dan background karton putih polos sudah cukup bikin foto produk tampak profesional.', image: 'https://images.unsplash.com/photo-1616423640778-28d1b53229bd?q=80&w=800&auto=format&fit=crop', author:'Rina Kreatif', authorId:'warga_aktif', avIcon:User, time:'1 hari', replies:9, likes:62, isPinned:false },
   ],
   3: [
-    { id:'t8', type:'pengumuman', title:'Sosialisasi Program Pertanian Nasional Bersama HKTI', body:'HKTI Cabang Kabupaten akan menyelenggarakan sosialisasi kebijakan subsidi pupuk dan asuransi usaha tani bagi kelompok tani desa Sukamakmur.', author:'Wawan Setiawan', authorId:'admin_komunitas', avIcon:UserCheck, time:'1 jam', replies:5, likes:28, isPinned:true },
-    { id:'t9', type:'thread', title:'Peluang kemitraan kelompok tani desa dengan HKTI', body:'Bagi kelompok tani yang ingin memperluas jaringan pasar gabah nasional, HKTI memfasilitasi program kemitraan langsung dengan Bulog.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:4, likes:12, isPinned:false },
+    FEED_POSTS[6], // post-7 (HKTI | PENGUMUMAN)
+    { id:'t_hkti_2', type:'thread', category:'DISKUSI', title:'Peluang Kemitraan Kelompok Tani Desa dengan HKTI & Bulog', body:'Bagi kelompok tani yang ingin memperluas jaringan pasar gabah nasional, HKTI memfasilitasi program kemitraan langsung dengan Bulog.', desc:'Bagi kelompok tani yang ingin memperluas jaringan pasar gabah nasional, HKTI memfasilitasi program kemitraan langsung dengan Bulog.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'2 hari', replies:4, likes:12, isPinned:false },
   ],
-  4: [{ id:'t10', type:'thread', title:'Beasiswa Kemendikbud untuk mahasiswa aktif — deadline bulan ini', body:'Ada info beasiswa dari Kemendikbud khusus untuk mahasiswa aktif berprestasi. Batas pendaftaran 31 Agustus.', author:'Dedi Muda', authorId:'warga_aktif', avIcon:User, time:'3 jam', replies:15, likes:76, isPinned:true }],
-  5: [{ id:'t11', type:'thread', title:'Jadwal kerja bakti dan posyandu lingkungan RT 02', body:'Pengumuman warga: kerja bakti membersihkan saluran air dilaksanakan Minggu pagi, dilanjutkan posyandu balita di balai RT.', author:'Bunda Lia', authorId:'warga_aktif', avIcon:User, time:'30 mnt', replies:7, likes:45, isPinned:false }],
-  // Dekopin
+  4: [
+    FEED_POSTS[7], // post-8 (Active Campus | DISKUSI)
+    { id:'t_ac_2', type:'thread', category:'TIPS', title:'Tips Lolos Seleksi Beasiswa Mahasiswa Berprestasi', body:'Fokuskan esai pada kontribusi nyata di masyarakat sekitar. Jangan lupa sertakan surat rekomendasi dan portofolio kegiatan aktif.', desc:'Fokuskan esai pada kontribusi nyata di masyarakat sekitar. Jangan lupa sertakan surat rekomendasi dan portofolio kegiatan aktif.', author:'Dedi Muda', authorId:'warga_aktif', avIcon:User, time:'2 hari', replies:15, likes:76, isPinned:false },
+  ],
+  5: [
+    FEED_POSTS[1], // post-2 (RT ONLINE | TIPS)
+    FEED_POSTS[5], // post-6 (RT ONLINE | PENGUMUMAN)
+    { id:'t_rt_3', type:'thread', category:'DISKUSI', title:'Jadwal Posyandu & Pemeriksaan Kesehatan Lansia Bulan Ini', body:'Posyandu Melati akan mengadakan pemeriksaan tensi dan gula darah gratis bagi lansia dan balita Kamis besok pukul 08.30.', desc:'Posyandu Melati akan mengadakan pemeriksaan tensi dan gula darah gratis bagi lansia dan balita Kamis besok pukul 08.30.', author:'Bunda Lia', authorId:'warga_aktif', avIcon:User, time:'2 hari', replies:7, likes:45, isPinned:false },
+  ],
   6: [
-    { id:'jb1', type:'jual_beli', product:{ id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan', stock:48, toko:'Toko Bu Sari' }, caption:'Beras pandan wangi dari sawah organik desa Sukamakmur. Tanpa pestisida, langsung dari petani binaan koperasi Dekopin.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'30 mnt', replies:8, likes:52, isPinned:true },
-    { id:'jb2', type:'jual_beli', product:{ id:'ep6', name:'Keripik Singkong Pedas 200g', price:15000, Icon:Package, g:['#E65100','#F57C00'], category:'Camilan', stock:80, toko:'Warung Pak Hendra' }, caption:'Keripik singkong pedas level 3, produksi UMKM koperasi desa. Cocok untuk oleh-oleh.', author:'Pak Hendra', authorId:'warga_aktif', avIcon:User, time:'2 jam', replies:4, likes:28, isPinned:false },
-    { id:'jb3', type:'jual_beli', product:{ id:'ep2', name:'Sayur Bayam Organik Segar 250g', price:5000, Icon:Leaf, g:['#2E7D32','#4CAF50'], category:'Sayuran', stock:120, toko:'Toko Bu Sari' }, caption:'Bayam organik dipanen pagi ini, segar langsung dari kebun. Stok terbatas per hari.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'3 jam', replies:2, likes:15, isPinned:false },
-    { id:'t12', type:'thread', title:'Sosialisasi Program Kemitraan Koperasi Desa bersama Dekopin', body:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi UMKM dan koperasi unit desa.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'4 jam', replies:8, likes:93, isPinned:false },
+    FEED_POSTS[4], // post-5 (DEKOPIN | TIPS)
+    { id:'t_dek_2', type:'thread', category:'PENGUMUMAN', title:'Sosialisasi Program Kemitraan Modal Koperasi Desa & Dekopin', body:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi pelaku UMKM desa.', desc:'Dekopin membuka pendaftaran program kemitraan permodalan dan sertifikasi produk halal bagi pelaku UMKM desa.', author:'Pak Budiman', authorId:'warga_aktif', avIcon:User, time:'1 hari', replies:8, likes:93, isPinned:false },
+    { id:'jb_dek_1', type:'jual_beli', title:'Beras Pandan Wangi Premium 5kg', body:'Beras pandan wangi dari sawah organik binaan koperasi Dekopin. Tanpa pestisida kimia.', product:{ id:'ep1', name:'Beras Pandan Wangi Premium 5kg', price:65000, Icon:Wheat, g:['#827717','#9E9D24'], category:'Pangan', stock:48, toko:'Toko Bu Sari' }, caption:'Beras pandan wangi dari sawah binaan koperasi Dekopin.', author:'Bu Sari', authorId:'penjual_aktif', avIcon:User, time:'2 hari', replies:8, likes:52, isPinned:false },
   ],
 }
 
 const COMMENTS_DATA = {
+  'post-1': [
+    { id:'c1_1', author:'Bu Sari', avIcon:User, text:'Terima kasih infonya Pak Admin! Petani RW 02 siap hadir kompak jam 09.00.', time:'30 mnt', likes:6, replies:[
+      { id:'c1_1r1', author:'Dinas Pertanian Kab. Bogor', avIcon:UserCheck, text:'Mantap Bu Sari, kami siapkan bibit sample organik juga ya 🙏', time:'25 mnt', likes:4 }
+    ]},
+    { id:'c1_2', author:'Pak Slamet', avIcon:User, text:'Apakah penyuluhan ini terbuka juga untuk petani hortikultura & cabai?', time:'20 mnt', likes:3, replies:[] },
+  ],
+  'post-2': [
+    { id:'c2_1', author:'Bu Dewi', avIcon:User, text:'Wah mantap tipsnya, ampas kopinya dikeringkan dulu atau bisa langsung dicampur?', time:'1 jam', likes:5, replies:[
+      { id:'c2_1r1', author:'Pak Bambang (RT 03)', avIcon:User, text:'Bisa langsung dicampur Bu, asal perbandingannya pas dengan sisa sayuran dan tanah.', time:'45 mnt', likes:7 }
+    ]},
+    { id:'c2_2', author:'Rahmat', avIcon:User, text:'Sudah saya coba 2 minggu, baunya ternyata tidak menyengat kalau wadahnya ditutup rapat.', time:'30 mnt', likes:4, replies:[] },
+  ],
+  'post-3': [
+    { id:'c3_1', author:'Kevin Aditiya', avIcon:User, text:'Gimana kalau lomba mobile gaming antar RT dan lomba inovasi daur ulang sampah desa?', time:'3 jam', likes:18, replies:[] },
+    { id:'c3_2', author:'Maya Lestari', avIcon:User, text:'Setuju! Tambah lomba vlog potensi wisata & UMKM desa antar pemuda.', time:'2 jam', likes:12, replies:[] },
+    { id:'c3_3', author:'Rian Pratama', avIcon:User, text:'Ide keren semua! Nanti kita buat polling 3 besar voting terbanyak di sini ya.', time:'1 jam', likes:9, replies:[] },
+  ],
+  'post-4': [
+    { id:'c4_1', author:'Pak Slamet', avIcon:User, text:'Coba pasang lampu perangkap di malam hari Pak Agus, sama semprot air rebusan daun mimba & tembakau.', time:'4 jam', likes:11, replies:[] },
+    { id:'c4_2', author:'Wawan Penyuluh', avIcon:UserCheck, text:'Segera kurangi pupuk nitrogen (Urea) berlebih dulu Pak, karena bikin wereng makin subur berkembang biak.', time:'3 jam', likes:15, replies:[] },
+  ],
+  'post-5': [
+    { id:'c5_1', author:'Pak Hendra', avIcon:User, text:'Betul Bu, saya juga di warung kopi sudah pakai QRIS GV Pay. Pembeli anak muda pada senang scan, tidak ribet cari kembalian.', time:'6 jam', likes:14, replies:[] },
+    { id:'c5_2', author:'Bu Sri Rejeki', avIcon:User, text:'Pendaftarannya cepat tidak ya Bu? Syarat daftarnya apa saja?', time:'3 jam', likes:4, replies:[
+      { id:'c5_2r1', author:'Bu Suryani', avIcon:User, text:'Cepat banget Bu, cuma butuh KTP dan verifikasi via menu GV Pay di aplikasi, 1 hari langsung aktif!', time:'2 jam', likes:8 }
+    ]},
+  ],
+  'post-6': [
+    { id:'c6_1', author:'Pak RT 03', avIcon:UserCheck, text:'Diharapkan membawa cangkul, sabit, dan karung masing-masing ya warga sekalian.', time:'5 jam', likes:10, replies:[] },
+    { id:'c6_2', author:'Bu Siti Rahmah', avIcon:User, text:'Ibu-ibu RT 03 nanti siapkan air jahe hangat, teh manis, dan gorengan di pos kamling ya!', time:'4 jam', likes:16, replies:[
+      { id:'c6_2r1', author:'Warga RT 03', avIcon:User, text:'Alhamdulillah mantap Bu Siti, makin semangat kerja baktinya 👍', time:'3 jam', likes:9 }
+    ]},
+  ],
+  'post-7': [
+    { id:'c7_1', author:'Pak Sukirno', avIcon:User, text:'Kira-kira premi asuransinya berapa per hektar dan syarat kelompok taninya apa saja Pak?', time:'12 jam', likes:6, replies:[] },
+  ],
+  'post-8': [
+    { id:'c8_1', author:'Rani Mahasiswa', avIcon:User, text:'Info yang sangat membantu kak! Apakah ada batas minimal IPK untuk mendaftar?', time:'1 hari', likes:5, replies:[] },
+  ],
   t1: [
     { id:'c1', author:'Bu Sari', avIcon:User, text:'Terima kasih infonya Pak Admin! Sudah dicatat di kalender.', time:'30 mnt', likes:5, replies:[{ id:'c1r1', author:'Wawan Setiawan', avIcon:UserCheck, text:'Sama-sama Bu, jangan lupa hadir ya 🙏', time:'25 mnt', likes:3 }]},
     { id:'c2', author:'Agus Petani', avIcon:User, text:'Apakah ada sertifikat kehadiran Pak?', time:'20 mnt', likes:2, replies:[] },
-  ],
-  t2: [
-    { id:'c3', author:'Bu Sari', avIcon:User, text:'Iya Pak, di desa kami juga naik. Semoga bertahan sampai habis panen ya.', time:'3 mnt', likes:5, replies:[{ id:'c3r1', author:'Pak Rohmat', avIcon:User, text:'Aamiin Bu. Tapi hati-hati kalau harga naik tiba-tiba biasanya turun lagi cepat.', time:'2 mnt', likes:3 }]},
-    { id:'c4', author:'Agus Petani', avIcon:User, text:'Di desa sebelah malah naik Rp 250/kg. Kayaknya stok nasional lagi berkurang.', time:'4 mnt', likes:8, replies:[] },
   ],
   default: [
     { id:'dc1', author:'Anggota GV', avIcon:User, text:'Informasi yang sangat bermanfaat, terima kasih sudah berbagi!', time:'1 jam', likes:4, replies:[] },
@@ -101,45 +295,54 @@ const COMMENTS_DATA = {
 
 // ── Post Card (Standard discussion/announcement) ──────────────
 function PostCard({ thread, community, isAdmin, onTap, onTogglePin, onDelete }) {
-  const isAnnouncement = thread.type === 'pengumuman'
   const isPinned = thread.isPinned
+  const categoryKey = (thread.category || (thread.type === 'pengumuman' ? 'PENGUMUMAN' : 'DISKUSI')).toUpperCase()
+  const catStyle = CATEGORY_STYLES[categoryKey] || CATEGORY_STYLES['DISKUSI']
 
   return (
-    <div className="bg-white rounded-2xl p-4 cursor-pointer transition-transform active:scale-[0.96] w-full box-border" 
+    <div className="bg-white rounded-2xl p-4 cursor-pointer transition-transform active:scale-[0.98] w-full box-border border border-gray-100/80" 
       onClick={() => onTap(thread, community)}
       style={{boxShadow: S.card}}>
       {/* Header Row */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{background: community?.ic || '#2E7D32'}} />
-          <span className="text-[12px] font-bold text-gray-900 leading-none mt-0.5">{community?.name || 'Komunitas'}</span>
-          <span className="text-gray-300 text-[12px] leading-none mx-0.5 mt-0.5">•</span>
-          <span className="text-[11px] font-semibold leading-none text-gray-400 mt-0.5">{thread.time} lalu</span>
+      <div className="flex items-center justify-between gap-2 mb-2.5">
+        <div className="flex items-center gap-1.5 min-w-0 pr-1">
+          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background: community?.ic || '#2E7D32'}} />
+          <span className="text-[12px] font-bold text-gray-900 truncate">{community?.name || 'Komunitas'}</span>
+          <span className="text-gray-300 text-[12px] leading-none mx-0.5">•</span>
+          <span className="text-[11px] font-medium leading-none text-gray-400 whitespace-nowrap">{thread.time} lalu</span>
         </div>
-        {isAnnouncement && (
-          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full tracking-wider" style={{background: '#FFF3E0', color: '#E65100'}}>
-            PENGUMUMAN
-          </span>
-        )}
+        <span 
+          className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider flex-shrink-0" 
+          style={{ background: catStyle.bg, color: catStyle.color, border: `1px solid ${catStyle.border}` }}
+        >
+          {categoryKey}
+        </span>
       </div>
 
       {/* Post Title */}
-      <h3 className="text-base font-bold text-gray-900 leading-snug text-balance mb-3">{thread.title}</h3>
+      <h3 className="text-[15px] font-extrabold text-gray-900 leading-snug mb-1.5">{thread.title}</h3>
       
+      {/* Post Description */}
+      {(thread.body || thread.desc) && (
+        <p className="text-[12.5px] text-gray-600 leading-relaxed line-clamp-2 mb-3">
+          {thread.body || thread.desc}
+        </p>
+      )}
+
       {/* Optional Image */}
       {thread.image && (
-        <div className="w-full aspect-video rounded-xl overflow-hidden mb-3 bg-gray-50">
-          <img src={thread.image} alt="Thread attachment" className="w-full h-full object-cover border border-black/10" />
+        <div className="w-full aspect-video rounded-xl overflow-hidden mb-3 bg-gray-50 border border-gray-100">
+          <img src={thread.image} alt={thread.title || 'Foto lampiran'} className="w-full h-full object-cover" loading="lazy" />
         </div>
       )}
 
       {/* Footer */}
       <div className="flex items-center gap-4">
-        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400">
-          <TrendingUp size={14} strokeWidth={2}/> <span className="tabular-nums">{thread.likes}</span>
+        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500">
+          <TrendingUp size={14} strokeWidth={2.2} className="text-emerald-600"/> <span className="tabular-nums">{thread.likes}</span>
         </span>
-        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400">
-          <MessageCircle size={14} strokeWidth={2}/> <span className="tabular-nums">{thread.replies}</span> balasan
+        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500">
+          <MessageCircle size={14} strokeWidth={2.2} className="text-gray-400"/> <span className="tabular-nums">{thread.replies}</span> balasan
         </span>
       </div>
 
@@ -785,33 +988,51 @@ function ThreadDetail({ thread, community, onBack, isAdmin, isPenjual, estoProdu
         {/* ── OP — Thread/Pengumuman ── */}
         {!isJualBeli && (
           <div className="px-4 pt-4 pb-4 bg-white border-b border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              {isAnnouncement && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg" style={{background:`${ADMIN_COLOR}12`}}>
-                  <Megaphone size={9} style={{color:ADMIN_COLOR}}/><span className="text-[11px] font-bold" style={{color:ADMIN_COLOR}}>Pengumuman Admin</span>
-                </div>
-              )}
-              {thread.isPinned && !isAnnouncement && (
-                <div className="flex items-center gap-1"><Pin size={9} className="text-gray-400"/><span className="text-[11px] text-gray-400 font-semibold">Disematkan</span></div>
-              )}
+            <div className="flex items-center justify-between gap-2 mb-2.5">
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const catKey = (thread.category || (thread.type === 'pengumuman' ? 'PENGUMUMAN' : 'DISKUSI')).toUpperCase()
+                  const cStyle = CATEGORY_STYLES[catKey] || CATEGORY_STYLES['DISKUSI']
+                  return (
+                    <span 
+                      className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider uppercase"
+                      style={{ background: cStyle.bg, color: cStyle.color, border: `1px solid ${cStyle.border}` }}
+                    >
+                      {catKey}
+                    </span>
+                  )
+                })()}
+                {isAnnouncement && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg" style={{background:`${ADMIN_COLOR}12`}}>
+                    <Megaphone size={9} style={{color:ADMIN_COLOR}}/><span className="text-[11px] font-bold" style={{color:ADMIN_COLOR}}>Pengumuman</span>
+                  </div>
+                )}
+                {thread.isPinned && !isAnnouncement && (
+                  <div className="flex items-center gap-1"><Pin size={9} className="text-gray-400"/><span className="text-[11px] text-gray-400 font-semibold">Disematkan</span></div>
+                )}
+              </div>
+              <span className="text-[11px] text-gray-400">{thread.time} lalu</span>
             </div>
-            <p className="text-[17px] font-extrabold text-gray-900 leading-snug mb-3">{thread.title}</p>
-            {thread.body && <p className="text-[13.5px] text-gray-700 leading-relaxed mb-4">{thread.body}</p>}
+            <p className="text-[17px] font-extrabold text-gray-900 leading-snug mb-2.5">{thread.title}</p>
+            {(thread.body || thread.desc) && <p className="text-[13.5px] text-gray-700 leading-relaxed mb-3.5">{thread.body || thread.desc}</p>}
+            {thread.image && (
+              <div className="w-full aspect-video rounded-xl overflow-hidden mb-3.5 bg-gray-50 border border-gray-100">
+                <img src={thread.image} alt={thread.title} className="w-full h-full object-cover" />
+              </div>
+            )}
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-full flex items-center justify-center shadow-inner flex-shrink-0" style={{background:'#E8F5E9'}}>
                 {thread.avIcon ? <thread.avIcon size={14} className="text-gray-600"/> : <User size={14} className="text-gray-600"/>}
               </div>
               <span className="text-[11px] font-semibold text-gray-700">{thread.author}</span>
               {isAdminPost && <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md" style={{background:`${ADMIN_COLOR}15`,color:ADMIN_COLOR}}>Admin</span>}
-              <span className="text-gray-300">·</span>
-              <span className="text-[12px] text-gray-400">{thread.time} lalu</span>
             </div>
             <div className="flex items-center gap-5 pt-3 border-t border-gray-50">
-              <button onClick={()=>setLiked(!liked)} className="flex items-center gap-1.5 text-[12px] transition-colors"
-                style={{color:liked?'#E53935':'#9CA3AF'}}>
-                <Heart size={15} fill={liked?'#E53935':'none'} style={{color:liked?'#E53935':'#9CA3AF'}}/>{thread.likes+(liked?1:0)} Suka
+              <button onClick={()=>setLiked(!liked)} className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors"
+                style={{color:liked?'#E53935':'#6B7280'}}>
+                <Heart size={15} fill={liked?'#E53935':'none'} style={{color:liked?'#E53935':'#6B7280'}}/>{thread.likes+(liked?1:0)} Suka
               </button>
-              <span className="flex items-center gap-1.5 text-[12px] text-gray-400">
+              <span className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-500">
                 <MessageCircle size={15}/>{comments.length} Balasan
               </span>
             </div>
@@ -1091,11 +1312,14 @@ function EditableRules({ community, isAdmin }) {
 }
 
 // ── Community Page ─────────────────────────────────────────
-function CommunityPage({ community, isJoined: initJoined, isAdmin, isPenjual, estoProducts, onBack, onToggleJoin, navigate }) {
+function CommunityPage({ community, initialThread, isJoined: initJoined, isAdmin, isPenjual, estoProducts, onBack, onToggleJoin, navigate }) {
   const [innerTab, setInnerTab] = useState('thread')
   const [joined, setJoined]     = useState(initJoined)
   const [threads, setThreads]   = useState(THREADS_INIT[community.id]||[])
-  const [selectedThread, setThread] = useState(null)
+  const [selectedThread, setThread] = useState(initialThread || null)
+  useEffect(() => {
+    if (initialThread) setThread(initialThread)
+  }, [initialThread])
   const [showCreate, setCreate]     = useState(false)
   const [menuOpen, setMenu]         = useState(null)
 
@@ -1279,10 +1503,10 @@ function CommunityPage({ community, isJoined: initJoined, isAdmin, isPenjual, es
 
 // ── Post Tab ───────────────────────────────────────────────
 function PostTab({ joined, onOpenCommunity }) {
-  const joinedComms = ALL_COMMUNITIES.filter(c => joined.includes(c.id))
-  const recentThreads = joinedComms.flatMap(c =>
-    (THREADS_INIT[c.id] || []).map(t => ({...t, community: c}))
-  ).slice(0, 15)
+  const recentThreads = FEED_POSTS.map(t => ({
+    ...t,
+    community: ALL_COMMUNITIES.find(c => c.id === t.communityId) || t.community
+  }))
 
   if (recentThreads.length === 0) return (
     <div className="flex-1 flex flex-col items-center justify-center pb-20 px-8 text-center">
@@ -1294,7 +1518,7 @@ function PostTab({ joined, onOpenCommunity }) {
 
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar pb-20" style={{background:'#FAFBF9'}}>
-      <div className="px-4 pt-4 pb-4 flex flex-col gap-2.5">
+      <div className="px-4 pt-4 pb-4 flex flex-col gap-3">
         {recentThreads.map(t => (
           <PostCard 
             key={t.id}
@@ -1537,6 +1761,7 @@ export default function Komunitas({ navigate, userProfile, initialCommunityId })
       <div className="flex flex-col h-full">
         <CommunityPage
           community={selectedCommunity}
+          initialThread={openThread}
           isJoined={joined.includes(selectedCommunity.id)}
           isAdmin={managedIds.includes(selectedCommunity.id)}
           isPenjual={isPenjual}

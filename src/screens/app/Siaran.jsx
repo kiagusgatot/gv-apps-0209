@@ -13,7 +13,8 @@ import { Search, Play, Clock, Sparkles, Tv2, Tv, Radio, ArrowLeft as ArrowLeft2,
   ArrowLeft, Video as VideoIcon, Info, Heart, Share2, Mic, Clapperboard, Home, UserCheck, User, MoreHorizontal,
   Flame, Check, Volume2, Eye, UserPlus, Bookmark, ChevronDown, ChevronUp, Download, ShieldCheck, Maximize2, Zap, RotateCcw, RotateCw } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
-import PlayerAdsBanner from '../../components/ads/PlayerAdsBanner'
+import IklanBarisCarousel from '../../components/ads/IklanBarisCarousel'
+import { isVideoSaved, toggleSavedVideo } from '@/utils/collectionStore'
 
 const PRIMARY = '#1B6B3A'
 
@@ -1453,8 +1454,10 @@ function LiveHero({ data, onPlay, radioPlaying }) {
   )
 }
 
-function TabLive({ navigate, showToast }) {
-  const [sub, setSub]                   = useState('tv')
+function TabLive({ sub: externalSub, setSub: externalSetSub, navigate, showToast }) {
+  const [internalSub, setInternalSub]   = useState('tv')
+  const sub                             = externalSub !== undefined ? externalSub : internalSub
+  const setSub                          = externalSetSub || setInternalSub
   const [innerTab, setInnerTab]         = useState('jadwal')
   const [radioPlaying, setRadioPlaying] = useState(false)
   const [reminderSet, setReminderSet]   = useState({})
@@ -1531,50 +1534,19 @@ function TabLive({ navigate, showToast }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Sub-channel Switcher: GV TV vs GV Radio (Compact Chips) */}
-      <div className="px-4 pt-2.5 pb-2 flex gap-2 w-full">
-        {/* GV TV Chip */}
-        <button
-          type="button"
-          onClick={() => { setSub('tv'); setInnerTab('jadwal') }}
-          className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
-            isTV
-              ? 'text-white shadow-sm ring-1 ring-white/20'
-              : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
-          }`}
-          style={isTV ? { background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A)' } : {}}
-        >
-          <Tv2 size={14} className={isTV ? 'text-white' : 'text-gray-500'} />
-          <span className="text-[12px] font-bold tracking-tight">GV TV</span>
-        </button>
-
-        {/* GV Radio Chip */}
-        <button
-          type="button"
-          onClick={() => { setSub('radio'); setInnerTab('jadwal') }}
-          className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
-            !isTV
-              ? 'text-white shadow-sm ring-1 ring-white/20'
-              : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
-          }`}
-          style={!isTV ? { background: 'linear-gradient(135deg, #3B0D5B, #6A1B9A)' } : {}}
-        >
-          <Radio size={14} className={!isTV ? 'text-white' : 'text-gray-500'} />
-          <span className="text-[12px] font-bold tracking-tight">GV Radio</span>
-        </button>
+    <div className="flex flex-col">
+      {/* 1. Hero Broadcast Player */}
+      <div className="shrink-0 pt-2.5">
+        <LiveHero data={data} onPlay={() => setRadioPlaying(!radioPlaying)} radioPlaying={radioPlaying} />
       </div>
 
-      {/* Hero Broadcast Player */}
-      <LiveHero data={data} onPlay={() => setRadioPlaying(!radioPlaying)} radioPlaying={radioPlaying} />
+      {/* 2. Carousel Iklan Baris (Tepat di bawah player) */}
+      <div className="shrink-0">
+        <IklanBarisCarousel onAdClick={() => navigate?.('profile-iklan')} />
+      </div>
       
-      {/* Player Ads Banner */}
-      <div className="px-4 mb-2">
-        <PlayerAdsBanner navigate={navigate} />
-      </div>
-
-      {/* Sub-tabs Slider */}
-      <div className="px-4 pb-2">
+      {/* 3. Shortcut bar (Jadwal Siaran, Obrolan Live, Kirim Salam) */}
+      <div className="px-4 pt-1 pb-1.5 shrink-0">
         <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
           {INNER.map(t => {
             const active = innerTab === t.id
@@ -1596,10 +1568,10 @@ function TabLive({ navigate, showToast }) {
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 flex flex-col min-h-0 bg-[#FAFBF9]">
+      {/* 4. Content Area (Jadwal Siaran list program) */}
+      <div className="bg-[#FAFBF9]">
         {innerTab === 'jadwal' && (
-          <div ref={scheduleContainerRef} className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-4">
+          <div ref={scheduleContainerRef} className="px-4 pt-3 pb-8">
             {/* Header Tanggal */}
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-700">
@@ -1686,15 +1658,15 @@ function TabLive({ navigate, showToast }) {
         )}
 
         {innerTab === 'obrolan' && (
-          <div className="flex-1 flex flex-col px-4 pt-1 pb-4 min-h-0">
-            <div className="flex-1 flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm min-h-0 overflow-hidden">
+          <div className="px-4 pt-2 pb-6">
+            <div className="h-[480px] flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
               <ObrolanPenonton initialMessages={obrolan} />
             </div>
           </div>
         )}
 
         {innerTab === 'salam' && (
-          <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-4">
+          <div className="px-4 pt-2 pb-6">
             <KirimSalam channel={data.ch} />
           </div>
         )}
@@ -1731,7 +1703,7 @@ function TabKreator({ onGVPlus, navigate, showToast, userProfile }) {
   const spotlightCreator = KREATOR[0]
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
+    <div className="pb-8 bg-[#FAFBF9]">
       {/* Category Filter Chips */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -2045,7 +2017,7 @@ function VideoDetail({ video, onBack, onGVPlus }) {
   const [playing, setPlaying]       = React.useState(false)
   const [liked, setLiked]           = React.useState(false)
   const [likesCount, setLikesCount] = React.useState(128)
-  const [bookmarked, setBookmarked] = React.useState(false)
+  const [bookmarked, setBookmarked] = React.useState(() => isVideoSaved(video?.id))
   const [followed, setFollowed]     = React.useState(false)
   const [toastMsg, setToastMsg]     = React.useState('')
   const [descExpanded, setDescExpanded] = React.useState(false)
@@ -2053,6 +2025,7 @@ function VideoDetail({ video, onBack, onGVPlus }) {
   React.useEffect(() => {
     setCurrVideo(video)
     setPlaying(false)
+    setBookmarked(isVideoSaved(video?.id))
   }, [video])
 
   const triggerToast = (msg) => {
@@ -2223,8 +2196,9 @@ function VideoDetail({ video, onBack, onGVPlus }) {
 
             <button
               onClick={() => {
-                setBookmarked(!bookmarked)
-                triggerToast(bookmarked ? 'Dihapus dari simpanan' : 'Video disimpan ke koleksi!')
+                const nextState = toggleSavedVideo(currVideo)
+                setBookmarked(nextState)
+                triggerToast(nextState ? 'Video disimpan ke koleksi!' : 'Dihapus dari simpanan')
               }}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11.5px] font-bold active:scale-95 transition ${
                 bookmarked
@@ -2365,7 +2339,7 @@ function TabVideo({ onGVPlus, userProfile }) {
   })
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
+    <div className="pb-8 bg-[#FAFBF9]">
       {/* Mode Switcher: Semua | GV+ Eksklusif */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
@@ -2771,7 +2745,7 @@ function TabPodcast({ onPlayEpisode, onGVPlus }) {
   const featuredShow = SHOWS[0]
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-4 bg-[#FAFBF9]">
+    <div className="pb-8 bg-[#FAFBF9]">
       {/* Mode Switcher: Semua | GV+ Eksklusif */}
       <div className="px-4 pt-3 pb-2.5">
         <div className="flex p-1 rounded-2xl bg-gray-100/90 border border-gray-200/50 shadow-inner">
@@ -3024,9 +2998,10 @@ const TABS = [
 ]
 
 export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }) {
-  const [tab,setTab]           = useState(initialTab || 'live')
-  const [paywall,setPaywall]   = useState(showGVPlus ? {title:null} : null)
-  const [toast,setToast]       = useState(null)
+  const [tab,setTab]                 = useState(initialTab || 'live')
+  const [liveSub,setLiveSub]         = useState('tv')
+  const [paywall,setPaywall]         = useState(showGVPlus ? {title:null} : null)
+  const [toast,setToast]             = useState(null)
   const [showSearch,setShowSearch]   = useState(false)  // search overlay
   const [playingEp,setPlayingEp]     = useState(null)   // persistent mini player
   const [playerExpanded,setExpanded] = useState(false)  // full player open
@@ -3041,63 +3016,106 @@ export default function Siaran({ navigate, userProfile, initialTab, showGVPlus }
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
       {/* Search overlay — at root to cover full screen including header */}
       {showSearch && <SearchScreen onClose={()=>setShowSearch(false)} onGVPlus={c=>{setPaywall(c);setShowSearch(false)}} navigate={navigate}/>}
-      {/* Unified ScreenHeader */}
-      <ScreenHeader
-        title="GV Media"
-        actions={
-          <button
-            type="button"
-            onClick={() => setPaywall({ title: null })}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 shadow-sm"
-            style={{
-              background: 'linear-gradient(90deg, #F57F17, #F9A825)',
-              boxShadow: '0 2px 8px rgba(249, 168, 37, 0.3)',
-            }}
+
+      {/* ── UNIFIED OUTER SCROLL CONTAINER ── */}
+      <div className="flex-1 overflow-y-auto no-scrollbar relative flex flex-col min-h-0">
+        {/* Sticky Header Group: ScreenHeader + SearchBar + Tabs (+ Sub-toggle for Live) */}
+        <div className="sticky top-0 z-30 bg-[#FAFBF9] shrink-0 shadow-xs">
+          {/* Unified ScreenHeader */}
+          <ScreenHeader
+            title="GV Media"
+            actions={
+              <button
+                type="button"
+                onClick={() => setPaywall({ title: null })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition active:scale-95 shadow-sm"
+                style={{
+                  background: 'linear-gradient(90deg, #F57F17, #F9A825)',
+                  boxShadow: '0 2px 8px rgba(249, 168, 37, 0.3)',
+                }}
+              >
+                <Crown size={12} className="text-white" />
+                <span className="text-white font-extrabold text-[11px]">GV+</span>
+              </button>
+            }
           >
-            <Crown size={12} className="text-white" />
-            <span className="text-white font-extrabold text-[11px]">GV+</span>
-          </button>
-        }
-      >
-        <SearchBar
-          readOnly
-          variant="glass-dark"
-          placeholder="Cari siaran, video, kreator..."
-          onClick={() => setShowSearch(true)}
-        />
-      </ScreenHeader>
+            <SearchBar
+              readOnly
+              variant="glass-dark"
+              placeholder="Cari siaran, video, kreator..."
+              onClick={() => setShowSearch(true)}
+            />
+          </ScreenHeader>
 
-      {/* Tab Navigasi Konten */}
-      <div className="bg-white border-b border-[#E5E7EB] px-4 flex select-none flex-shrink-0 z-10">
-        {TABS.map((t) => {
-          const isActive = tab === t.id
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`flex-1 py-3 text-[13px] text-center transition-colors flex items-center justify-center ${
-                isActive
-                  ? 'text-[#1B5E20] border-b-2 border-[#1B5E20] font-bold'
-                  : 'text-[#6B7280] font-medium border-b-2 border-transparent hover:text-gray-900'
-              }`}
-            >
-              <span>{t.label}</span>
-            </button>
-          )
-        })}
+          {/* Tab Navigasi Konten */}
+          <div className="bg-white border-b border-[#E5E7EB] px-4 flex select-none flex-shrink-0 shadow-2xs">
+            {TABS.map((t) => {
+              const isActive = tab === t.id
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  className={`flex-1 py-3 text-[13px] text-center transition-colors flex items-center justify-center ${
+                    isActive
+                      ? 'text-[#1B5E20] border-b-2 border-[#1B5E20] font-bold'
+                      : 'text-[#6B7280] font-medium border-b-2 border-transparent hover:text-gray-900'
+                  }`}
+                >
+                  <span>{t.label}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Sub-toggle GV TV / GV Radio — sticky di bawah tab bar saat di tab Live */}
+          {tab === 'live' && (
+            <div className="bg-[#FAFBF9]/95 backdrop-blur-md px-4 pt-2 pb-2 flex gap-2 w-full border-b border-gray-100/90 shadow-2xs">
+              {/* GV TV Chip */}
+              <button
+                type="button"
+                onClick={() => setLiveSub('tv')}
+                className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+                  liveSub === 'tv'
+                    ? 'text-white shadow-sm ring-1 ring-white/20'
+                    : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
+                }`}
+                style={liveSub === 'tv' ? { background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A)' } : {}}
+              >
+                <Tv2 size={14} className={liveSub === 'tv' ? 'text-white' : 'text-gray-500'} />
+                <span className="text-[12px] font-bold tracking-tight">GV TV</span>
+              </button>
+
+              {/* GV Radio Chip */}
+              <button
+                type="button"
+                onClick={() => setLiveSub('radio')}
+                className={`flex-1 min-w-0 h-[38px] max-h-[40px] px-3 rounded-full transition-all duration-150 flex items-center justify-center gap-1.5 active:scale-[0.97] ${
+                  liveSub !== 'tv'
+                    ? 'text-white shadow-sm ring-1 ring-white/20'
+                    : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 shadow-xs'
+                }`}
+                style={liveSub !== 'tv' ? { background: 'linear-gradient(135deg, #3B0D5B, #6A1B9A)' } : {}}
+              >
+                <Radio size={14} className={liveSub !== 'tv' ? 'text-white' : 'text-gray-500'} />
+                <span className="text-[12px] font-bold tracking-tight">GV Radio</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area — Natural Scroll Stream */}
+        <div className="flex-1 flex flex-col pb-24">
+          {tab==='live'    && <TabLive sub={liveSub} setSub={setLiveSub} navigate={navigate} showToast={showToast}/>}
+          {tab==='kreator' && <TabKreator onGVPlus={setPaywall} navigate={navigate} showToast={showToast} userProfile={userProfile}/>}
+          {tab==='video'   && <TabVideo   onGVPlus={setPaywall} userProfile={userProfile}/>}
+          {tab==='podcast' && <TabPodcast onPlayEpisode={handlePlayEpisode} onGVPlus={setPaywall}/>}
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-hidden flex flex-col relative">
-        {tab==='live'    && <TabLive navigate={navigate} showToast={showToast}/>}
-        {tab==='kreator' && <TabKreator onGVPlus={setPaywall} navigate={navigate} showToast={showToast} userProfile={userProfile}/>}
-        {tab==='video'   && <TabVideo   onGVPlus={setPaywall} userProfile={userProfile}/>}
-        {tab==='podcast' && <TabPodcast onPlayEpisode={handlePlayEpisode} onGVPlus={setPaywall}/>}
-        {paywall && <GVPlusPage content={paywall} onClose={()=>setPaywall(null)}/>}
-        {toast   && <Toast message={toast} onDone={()=>setToast(null)}/>}
-        {playerExpanded && playingEp && <PodcastFullPlayer episode={playingEp} onClose={handleCloseFullPlayer}/>}
-      </div>
+      {paywall && <GVPlusPage content={paywall} onClose={()=>setPaywall(null)}/>}
+      {toast   && <Toast message={toast} onDone={()=>setToast(null)}/>}
+      {playerExpanded && playingEp && <PodcastFullPlayer episode={playingEp} onClose={handleCloseFullPlayer}/>}
 
       {/* Persistent mini player — above bottom nav */}
       {playingEp && !playerExpanded && (
@@ -3353,7 +3371,11 @@ function VideoPlayerView({ content, creator, isMember, isFollowed, onBack, onMem
   const [playing, setPlaying]     = React.useState(false)
   const [followed, setFollowed]   = React.useState(isFollowed)
   const [showComments, setShowC]  = React.useState(true)
-  const [bookmarked, setBookmarked] = React.useState(false)
+  const [bookmarked, setBookmarked] = React.useState(() => isVideoSaved(content?.id))
+
+  React.useEffect(() => {
+    setBookmarked(isVideoSaved(content?.id))
+  }, [content?.id])
 
   const send = () => {
     if (!newMsg.trim()) return
@@ -3379,8 +3401,15 @@ function VideoPlayerView({ content, creator, isMember, isFollowed, onBack, onMem
         </div>
         <button
           onClick={() => {
-            setBookmarked(!bookmarked)
-            if (showToast) showToast(bookmarked ? 'Dihapus dari simpanan' : 'Video disimpan ke koleksi!')
+            const nextState = toggleSavedVideo({
+              id: content.id,
+              title: content.title,
+              channel: creator?.name || content.ep || 'Kreator GV',
+              dur: content.dur || '10:00',
+              image: posterImage,
+            })
+            setBookmarked(nextState)
+            if (showToast) showToast(nextState ? 'Video disimpan ke koleksi!' : 'Dihapus dari simpanan')
           }}
           className={`w-9 h-9 rounded-full flex items-center justify-center transition active:scale-95 ${
             bookmarked ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'

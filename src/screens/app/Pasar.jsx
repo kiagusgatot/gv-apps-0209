@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import NavTabs from '@/components/molecules/NavTabs'
@@ -27,6 +27,7 @@ import LocationPickerMap from '@/components/maps/LocationPickerMap'
 import LiveTrackingMap from '@/components/maps/LiveTrackingMap'
 import BuyerSellerChatSheet, { getBuyerTotalUnreadCount } from '@/components/molecules/BuyerSellerChatSheet'
 import { getStoredSchedule, calculateStoreStatus } from '@/utils/storeSchedule'
+import { getWishlistProductIds, toggleWishlistProduct } from '@/utils/collectionStore'
 
 const PRIMARY = '#1B6B3A'
 
@@ -283,9 +284,9 @@ export const INITIAL_ADDRESSES = [
 export function getSavedAddresses() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_ADDRESSES)
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      if (Array.isArray(parsed)) return parsed
     }
   } catch (e) {
     console.error('Failed to parse saved addresses', e)
@@ -296,6 +297,7 @@ export function getSavedAddresses() {
 export function saveAddressesToStorage(list) {
   try {
     localStorage.setItem(STORAGE_KEY_ADDRESSES, JSON.stringify(list))
+    window.dispatchEvent(new Event('gv_addresses_updated'))
   } catch (e) {
     console.error('Failed to save addresses', e)
   }
@@ -1389,6 +1391,12 @@ function CheckoutScreen({
           selectedId={selectedAddressId}
           onSelect={(id) => {
             setSelectedAddressId(id)
+            const updated = addresses.map((a) => ({
+              ...a,
+              isDefault: a.id === id,
+            }))
+            setAddresses(updated)
+            saveAddressesToStorage(updated)
             setAddressModalView(null)
           }}
           onAdd={() => {
@@ -4402,7 +4410,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [sortBy, setSortBy] = useState('terlaris')
   const [showSort, setShowSort] = useState(false)
   const [cart, setCart] = useState({})
-  const [liked, setLiked] = useState(new Set())
+  const [liked, setLiked] = useState(() => new Set(getWishlistProductIds()))
   const [detail, setDetail] = useState(null)
   const [detailQty, setDQty] = useState(1)
   const [screen, setScreen] = useState('list') // 'list' | 'cart' | 'checkout' | 'payment' | 'success' | 'tracking'
@@ -4505,7 +4513,39 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
   const [checkoutData, setCheckoutData] = useState(null)
   const [addresses, setAddresses] = useState(() => getSavedAddresses())
-  const [selectedAddressId, setSelectedAddressId] = useState(() => getSavedAddresses()[0]?.id || 1)
+  const [selectedAddressId, setSelectedAddressId] = useState(() => {
+    const list = getSavedAddresses()
+    const def = list.find((a) => a.isDefault)
+    return def ? def.id : list[0]?.id || null
+  })
+  const [addressModalView, setAddressModalView] = useState(null) // null | 'list' | 'form' | 'map'
+  const [editingAddressId, setEditingAddressId] = useState(null)
+  const [newAddressDraft, setNewAddressDraft] = useState({})
+
+  // Sinkronisasi alamat dari localStorage / event
+  useEffect(() => {
+    const syncAddresses = () => {
+      const list = getSavedAddresses()
+      setAddresses(list)
+    }
+    window.addEventListener('storage', syncAddresses)
+    window.addEventListener('gv_addresses_updated', syncAddresses)
+    return () => {
+      window.removeEventListener('storage', syncAddresses)
+      window.removeEventListener('gv_addresses_updated', syncAddresses)
+    }
+  }, [])
+
+  const activeDeliveryAddress = useMemo(() => {
+    if (!Array.isArray(addresses) || addresses.length === 0) return null
+    if (selectedAddressId) {
+      const found = addresses.find((a) => a.id === selectedAddressId)
+      if (found) return found
+    }
+    const def = addresses.find((a) => a.isDefault)
+    if (def) return def
+    return addresses[0] || null
+  }, [addresses, selectedAddressId])
 
   const isSeller = userProfile?.capabilities?.includes('Penjual')
 
@@ -4580,11 +4620,26 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
     })
   }
 
-  const toggleLike = (id) => setLiked(p => {
-    const n = new Set(p)
-    n.has(id) ? n.delete(id) : n.add(id)
-    return n
-  })
+  const toggleLike = (id) => {
+    toggleWishlistProduct(id)
+    setLiked((p) => {
+      const n = new Set(p)
+      n.has(id) ? n.delete(id) : n.add(id)
+      return n
+    })
+  }
+
+  useEffect(() => {
+    const handleSyncWishlist = () => {
+      setLiked(new Set(getWishlistProductIds()))
+    }
+    window.addEventListener('storage', handleSyncWishlist)
+    window.addEventListener('gv_wishlist_updated', handleSyncWishlist)
+    return () => {
+      window.removeEventListener('storage', handleSyncWishlist)
+      window.removeEventListener('gv_wishlist_updated', handleSyncWishlist)
+    }
+  }, [])
 
   const openDetail = (p) => {
     const fresh = liveAllProducts.find(x => x.id === p.id) || p
@@ -5064,38 +5119,32 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                 : 'max-h-14 opacity-100 translate-y-0 mb-2.5'
             }`}
           >
-            <div className="min-w-0">
-              <h1 className="text-[20px] font-extrabold text-white tracking-tight leading-tight drop-shadow-sm">
-                ESTO
-              </h1>
-            </div>
-
-            {/* Action Buttons: Wishlist, Chat Toko & Cart */}
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.14)',
-                  backdropFilter: 'blur(8px)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                }}
-                onClick={() => setShowWishlist(true)}
-                aria-label="Wishlist Produk Favorit"
-              >
-                <Heart
-                  size={16}
-                  className={liked.size > 0 ? 'text-red-400 fill-red-400' : 'text-white/80'}
-                />
-                {liked.size > 0 && (
-                  <span
-                    className="absolute -top-1 -end-1 w-4 h-4 rounded-full text-white text-[10px] font-black flex items-center justify-center tabular-nums bg-red-500"
-                    style={{ boxShadow: '0 0 0 2px #0C3E1E' }}
-                  >
-                    {liked.size}
+            {/* Delivery Address Selector Button */}
+            <button
+              type="button"
+              onClick={() => setAddressModalView('list')}
+              className="flex flex-col text-left flex-1 min-w-0 pr-3 group transition active:scale-[0.98] focus:outline-none"
+              title="Ubah Alamat Pengiriman"
+            >
+              <span className="text-[10px] font-medium text-emerald-200/80 leading-none">
+                Dikirim ke
+              </span>
+              <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                {activeDeliveryAddress ? (
+                  <span className="text-[12px] font-semibold text-white truncate drop-shadow-xs leading-tight">
+                    {activeDeliveryAddress.address || activeDeliveryAddress.locationLabel || activeDeliveryAddress.label || 'Alamat Tersimpan'}
+                  </span>
+                ) : (
+                  <span className="text-[11.5px] font-medium text-emerald-200/60 truncate leading-tight">
+                    Pilih alamat pengiriman
                   </span>
                 )}
-              </button>
+                <ChevronDown size={13} className="text-emerald-200/90 flex-shrink-0 transition-transform group-hover:translate-y-0.5" />
+              </div>
+            </button>
+
+            {/* Action Buttons: Chat Toko & Cart */}
+            <div className="flex items-center gap-2 flex-shrink-0">
 
               {/* Chat Toko Inbox Button */}
               <button
@@ -5695,6 +5744,108 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
         }}
         onOpenDetail={(p) => openDetail(p)}
       />
+
+      {/* ── Address Management Modals (ESTO Header / Screen) ── */}
+      {addressModalView === 'list' && (
+        <AddressListModal
+          addresses={addresses}
+          selectedId={activeDeliveryAddress?.id || selectedAddressId}
+          onSelect={(id) => {
+            setSelectedAddressId(id)
+            const updated = addresses.map((a) => ({
+              ...a,
+              isDefault: a.id === id,
+            }))
+            setAddresses(updated)
+            saveAddressesToStorage(updated)
+            setAddressModalView(null)
+          }}
+          onAdd={() => {
+            setEditingAddressId(null)
+            setNewAddressDraft({})
+            setAddressModalView('form')
+          }}
+          onEdit={(addr) => {
+            setEditingAddressId(addr.id)
+            setNewAddressDraft({ ...addr })
+            setAddressModalView('form')
+          }}
+          onDelete={(id) => {
+            if (addresses.length <= 1) {
+              if (window.confirm('Hapus alamat terakhir? Alamat pengiriman akan kosong.')) {
+                setAddresses([])
+                saveAddressesToStorage([])
+                setSelectedAddressId(null)
+              }
+              return
+            }
+            if (window.confirm('Hapus alamat ini dari daftar pengiriman?')) {
+              const updated = addresses.filter((a) => a.id !== id)
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+              if (selectedAddressId === id) {
+                const nextDef = updated.find((a) => a.isDefault) || updated[0] || null
+                setSelectedAddressId(nextDef ? nextDef.id : null)
+              }
+            }
+          }}
+          onClose={() => setAddressModalView(null)}
+        />
+      )}
+      {addressModalView === 'form' && (
+        <AddressFormModal
+          draft={newAddressDraft}
+          setDraft={setNewAddressDraft}
+          isEdit={!!editingAddressId}
+          onBack={() => setAddressModalView(addresses.length > 0 ? 'list' : null)}
+          onOpenMap={() => setAddressModalView('map')}
+          onSave={() => {
+            const locStr =
+              typeof newAddressDraft?.locationLabel === 'string' ? newAddressDraft.locationLabel : ''
+            if (editingAddressId) {
+              const updated = addresses.map((a) =>
+                a.id === editingAddressId
+                  ? { ...newAddressDraft, locationLabel: locStr, id: editingAddressId }
+                  : a
+              )
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+            } else {
+              const isFirst = addresses.length === 0
+              const newAddr = {
+                ...newAddressDraft,
+                locationLabel: locStr,
+                id: Date.now(),
+                isDefault: isFirst || !!newAddressDraft.isDefault,
+              }
+              const updated = [...addresses, newAddr]
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+              setSelectedAddressId(newAddr.id)
+            }
+            setEditingAddressId(null)
+            setAddressModalView('list')
+          }}
+        />
+      )}
+      {addressModalView === 'map' && (
+        <AddressMapModal
+          initialLocation={newAddressDraft?.locationLabel || newAddressDraft?.address || ''}
+          onBack={() => setAddressModalView('form')}
+          onConfirm={(locationLabel) => {
+            const label =
+              typeof locationLabel === 'string' && locationLabel.trim()
+                ? locationLabel.trim()
+                : 'Desa Sukamaju, Kec. Sukamakmur, Bogor'
+            setNewAddressDraft((prev) => ({
+              ...prev,
+              locationLabel: label,
+              address: prev.address ? prev.address : label,
+            }))
+            setAddressModalView('form')
+          }}
+        />
+      )}
 
       <BottomNav active="pasar" navigate={navigate} />
     </ScreenBackground>

@@ -7,13 +7,16 @@ import { ChevronRight, Award, HelpCircle, LogOut, Shield, ShieldCheck, Bell,
   ChevronUp, Globe, Trash2, Camera, Star, Gift, Zap, Package,
   ToggleLeft, ToggleRight, ArrowLeft, Check, Plus, Edit3,
   Lock, Eye, EyeOff, CreditCard, TrendingUp, TrendingDown, Settings, Copy, Clock, Info, Megaphone,
-  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2, Wallet, Pencil, ImagePlus } from 'lucide-react'
+  Sparkles, Clapperboard, Truck, ShoppingBag, CheckCircle2, Wallet, Pencil, ImagePlus, Bookmark } from 'lucide-react'
+import KoleksiSayaScreen from './KoleksiSayaScreen'
+import { useWishlist, useSavedVideos } from '@/utils/collectionStore'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
 import NavTabs from '@/components/molecules/NavTabs'
 import BottomNav from '../../components/BottomNav'
 import TanyaGV from '../../components/TanyaGV'
 import AdsSubmissionForm from '../../components/ads/AdsSubmissionForm'
 import UserAdsDashboard from '../../components/ads/UserAdsDashboard'
+import { useAdsNotifications } from '@/utils/adsNotificationStore'
 import OrderCard from '@/components/molecules/OrderCard'
 import { useBuyerOrders } from '@/utils/orderStore'
 import { OrderDetailSheet, CancelOrderModal, RatingSheet, OrderTracking, AddressFormModal, AddressMapModal, getSavedAddresses, saveAddressesToStorage } from './Pasar'
@@ -1425,35 +1428,144 @@ function BantuanScreen({ onBack, navigate }) {
   )
 }
 
-// ── Iklan Baris Screen ───────────────────────────────────────
-function IklanBarisScreen({ onBack, navigate }) {
-  // Default to Tab 2: Riwayat Iklan
-  const [activeTab, setActiveTab] = useState('riwayat');
+// ── Notifikasi Iklan Screen (Halaman Penuh) ─────────────────
+function NotifikasiIklanScreen({ onBack, navigate }) {
+  const { notifications } = useAdsNotifications();
 
   return (
-    <SubScreen title="Iklan Saya" onBack={onBack} navigate={navigate}>
-      <div className="bg-white sticky top-0 z-10 px-2">
-        <NavTabs
-          variant="underline-light"
-          tabs={[
-            { id: 'buat', label: 'Buat Iklan' },
-            { id: 'riwayat', label: 'Riwayat Iklan' },
-          ]}
-          activeTab={activeTab}
-          onChange={setActiveTab}
-        />
-      </div>
-      
-      <div className="p-4 flex flex-col gap-4 min-h-[500px]">
-        {activeTab === 'buat' ? (
-          <AdsSubmissionForm onSuccess={() => setActiveTab('riwayat')} />
+    <SubScreen title="Notifikasi Iklan" onBack={onBack} navigate={navigate}>
+      <div className="p-4 space-y-3">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 mb-3 shadow-2xs">
+              <Bell size={24} />
+            </div>
+            <h4 className="text-sm font-bold text-gray-800">Belum Ada Notifikasi</h4>
+            <p className="text-xs text-gray-400 mt-1 max-w-xs leading-relaxed">
+              Pemberitahuan status penayangan, moderasi, atau penawaran iklan Anda akan muncul di sini.
+            </p>
+          </div>
         ) : (
-          <UserAdsDashboard />
+          notifications.map((n) => (
+            <div
+              key={n.id}
+              className={`p-3.5 rounded-2xl border transition-all ${
+                n.unread
+                  ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                  : 'bg-white border-gray-100 shadow-2xs hover:border-gray-200'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="font-bold text-gray-900 text-[13px] leading-tight">{n.title}</p>
+                <span className="text-[10px] text-gray-400 whitespace-nowrap shrink-0">{n.time || 'Terkini'}</span>
+              </div>
+              <p className="text-[11.5px] text-gray-600 mt-1.5 leading-relaxed">{n.sub}</p>
+              <div className="mt-2.5 flex items-center gap-1.5">
+                <span className="text-[9.5px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md">
+                  {n.category || 'Iklan Baris'}
+                </span>
+                {n.type && (
+                  <span className="text-[10px] font-semibold text-gray-400">
+                    • {n.type}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
         )}
       </div>
     </SubScreen>
   );
 }
+
+// ── Iklan Baris Screen ───────────────────────────────────────
+function IklanBarisScreen({ onBack, navigate }) {
+  // Default to Tab 2: Riwayat Iklan
+  const [activeTab, setActiveTab] = useState('riwayat');
+  const [editingAd, setEditingAd] = useState(null);
+  const [subView, setSubView] = useState('main'); // 'main' | 'notifikasi'
+  const { notifications, unreadCount, markAllRead } = useAdsNotifications();
+
+  const handleEditAd = (ad) => {
+    setEditingAd(ad);
+    setActiveTab('buat');
+  };
+
+  if (subView === 'notifikasi') {
+    return (
+      <NotifikasiIklanScreen
+        onBack={() => setSubView('main')}
+        navigate={navigate}
+      />
+    );
+  }
+
+  const headerActions = (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => {
+          setSubView('notifikasi');
+          markAllRead();
+        }}
+        className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 relative cursor-pointer"
+        style={{
+          background: 'rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(8px)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+        }}
+        title="Notifikasi Iklan"
+      >
+        <Bell size={17} className="text-white" />
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-[#0C3E1E]">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+    </div>
+  );
+
+  return (
+    <SubScreen title="Iklan Saya" onBack={onBack} actions={headerActions} navigate={navigate}>
+      <div className="bg-white sticky top-0 z-10 px-2">
+        <NavTabs
+          variant="underline-light"
+          tabs={[
+            { id: 'buat', label: editingAd ? 'Revisi Iklan' : 'Buat Iklan' },
+            { id: 'riwayat', label: 'Riwayat Iklan' },
+          ]}
+          activeTab={activeTab}
+          onChange={(tab) => {
+            if (tab === 'buat' && !editingAd) {
+              setEditingAd(null);
+            }
+            setActiveTab(tab);
+          }}
+        />
+      </div>
+      
+      <div className="p-4 flex flex-col gap-4 min-h-[500px]">
+        {activeTab === 'buat' ? (
+          <AdsSubmissionForm 
+            initialData={editingAd}
+            onCancelEdit={() => {
+              setEditingAd(null);
+              setActiveTab('riwayat');
+            }}
+            onSuccess={() => {
+              setEditingAd(null);
+              setActiveTab('riwayat');
+            }} 
+          />
+        ) : (
+          <UserAdsDashboard onEditAd={handleEditAd} />
+        )}
+      </div>
+    </SubScreen>
+  );
+}
+
 
 // ── Pesanan Saya Sub-Screen ────────────────────────────────
 function PesananSayaScreen({ onBack, navigate, initialTab = 'all', userProfile }) {
@@ -1722,10 +1834,16 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   const countShipped = buyerOrders.filter((o) => o.status === 'shipped').length
   const countReview = buyerOrders.filter((o) => o.status === 'done' && !o.rating).length
 
+  // Koleksi Saya hook
+  const { count: wishlistCount } = useWishlist()
+  const { count: savedVideosCount } = useSavedVideos()
+  const totalKoleksiCount = wishlistCount + savedVideosCount
+
   const goBack = () => setScreen('main')
 
   // Sub-screens
   if (screen==='pesanan')         return <PesananSayaScreen onBack={goBack} navigate={navigate} initialTab={pesananTab} userProfile={userProfile} />
+  if (screen==='koleksi')         return <KoleksiSayaScreen onBack={goBack} navigate={navigate} />
   if (screen==='daftar-alamat')   return <DaftarAlamatScreen onBack={goBack} navigate={navigate} />
   if (screen==='edit-profil')     return <EditProfilScreen userData={{...userData,photo:localPhoto}} userProfile={userProfile} onBack={goBack} onSave={d=>{updateUser?.(d);setLocalPhoto(d.photo)}} navigate={navigate}/>
   if (screen==='notifikasi')      return <NotifikasiScreen onBack={goBack} navigate={navigate}/>
@@ -1735,6 +1853,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   if (screen==='gvplus')          return <GVPlusScreen onBack={goBack} navigate={navigate}/>
   if (screen==='aktivasi-penjual') return <AktivasiScreen onBack={goBack} onActivate={()=>{}} navigate={navigate}/>
   if (screen==='iklan-baris')     return <IklanBarisScreen onBack={goBack} navigate={navigate} />
+  if (screen==='notifikasi-iklan') return <NotifikasiIklanScreen onBack={goBack} navigate={navigate} />
 
   // ── Status Verifikasi & Persona Multi-State ──────────────────────────────
   const isVerified = userData?.verificationStatus === 'verified' ||
@@ -2210,6 +2329,38 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
                 </span>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* ── Section Aktivitas Saya ── */}
+        <div className="mx-4 mt-3">
+          <p className="text-[11.5px] font-extrabold uppercase tracking-wider text-surface-400 px-1 mb-2">
+            Aktivitas Saya
+          </p>
+          <div className="rounded-2xl overflow-hidden bg-white border border-surface-100 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setScreen('koleksi')}
+              className="w-full flex items-center gap-3.5 px-4 py-3.5 text-left transition duration-150 hover:bg-surface-50 active:scale-[0.99]"
+            >
+              <SkeuoIcon icon={Bookmark} gradient={['#1B6B3A', '#2E7D32']} size="sm" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="text-[13px] font-bold text-surface-900 leading-snug">
+                    Koleksi Saya
+                  </p>
+                  {totalKoleksiCount > 0 && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 tabular-nums">
+                      {totalKoleksiCount}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-surface-400 mt-0.5 line-clamp-1">
+                  Produk favorit &amp; video tersimpan
+                </p>
+              </div>
+              <ChevronRight size={15} className="text-surface-300 flex-shrink-0" />
+            </button>
           </div>
         </div>
 
