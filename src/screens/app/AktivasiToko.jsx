@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Store,
   ShieldAlert,
@@ -19,11 +19,18 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  LocateFixed,
+  Loader2,
+  Plus,
+  Trash2,
+  X,
+  UploadCloud,
 } from 'lucide-react'
 import GlassCard from '@/components/atoms/GlassCard'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
+import LocationPickerMap from '@/components/maps/LocationPickerMap'
 
 const KATEGORI_TOKO = [
   'Pertanian & Bibit',
@@ -48,13 +55,26 @@ const BANK_OPTIONS = [
 
 export default function AktivasiToko({ navigate, userData, updateUser, userProfile }) {
   // Verifikasi Prasyarat
-  const isVerified = userData?.verificationStatus === 'verified' || userProfile?.verified === true
+  const isVerified =
+    userData?.verificationStatus === 'verified' ||
+    userProfile?.verified === true ||
+    userProfile?.verificationStatus === 'verified' ||
+    userProfile?.capabilities?.includes('Penjual') ||
+    localStorage.getItem('mockVerificationStatus') === 'verified'
   
   // Status Toko Aktif
   const isSeller =
     userProfile?.capabilities?.includes('Penjual') ||
+    userProfile?.isSeller === true ||
     userData?.isSeller === true ||
     localStorage.getItem('mockSellerAppStatus') === 'active'
+
+  // Jika sudah aktif sebagai penjual, langsung arahkan ke Dashboard Toko
+  useEffect(() => {
+    if (isSeller) {
+      navigate('toko')
+    }
+  }, [isSeller, navigate])
 
   // Load Saved Draft & Application Status
   const savedStatus = localStorage.getItem('mockSellerAppStatus') || 'not_applied'
@@ -75,12 +95,65 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
     return 'intro'
   })
 
-  // Form State
+  // File Input Refs
+  const storeFileInputRef = useRef(null)
+  const productFileInputRef = useRef(null)
+
+  // Map Picker & GPS States
+  const [showMapPicker, setShowMapPicker] = useState(false)
+  const [isLocatingGps, setIsLocatingGps] = useState(false)
+
+  // Local state untuk form produk aktif yang sedang diisi di Step 2
+  const [currentProduct, setCurrentProduct] = useState({
+    namaProduk: '',
+    kategoriProduk: 'Sayur & Buah Segar',
+    hargaProduk: '',
+    satuanProduk: 'kg',
+    stokProduk: '',
+    fotoProduk: [], // array data URLs (maks 5)
+  })
+
+  function getDefaultForm() {
+    return {
+      fotoToko: '',
+      namaToko: '',
+      kategoriToko: 'Sayur & Buah Segar',
+      deskripsiToko: '',
+      alamatToko: '',
+      coords: null,
+      // Array produk yang sudah didaftarkan
+      products: [],
+      // Rekening (kosong secara default agar step 3 belum tercentang pada awal aktivasi)
+      metodePencairan: 'gv_pay',
+      nomorRekening: '',
+      namaPemilik: '',
+    }
+  }
+
+  // Form State dengan normalisasi kompatibilitas draft lama
   const [form, setForm] = useState(() => {
     const savedDraft = localStorage.getItem('mockSellerDraft')
     if (savedDraft) {
       try {
-        return JSON.parse(savedDraft).form || getDefaultForm()
+        const parsed = JSON.parse(savedDraft)
+        const parsedForm = parsed.form || getDefaultForm()
+        if (!Array.isArray(parsedForm.products)) {
+          parsedForm.products = []
+          if (parsedForm.namaProduk && parsedForm.namaProduk.trim() !== '') {
+            parsedForm.products.push({
+              id: 'prod_' + Date.now(),
+              namaProduk: parsedForm.namaProduk,
+              kategoriProduk: parsedForm.kategoriProduk || 'Sayur & Buah Segar',
+              hargaProduk: parsedForm.hargaProduk || '',
+              satuanProduk: parsedForm.satuanProduk || 'kg',
+              stokProduk: parsedForm.stokProduk || '',
+              fotoProduk: parsedForm.fotoProduk ? [parsedForm.fotoProduk] : [],
+            })
+          }
+        }
+        if (parsedForm.fotoToko === undefined) parsedForm.fotoToko = ''
+        if (parsedForm.coords === undefined) parsedForm.coords = null
+        return parsedForm
       } catch (e) {
         console.error(e)
       }
@@ -88,25 +161,40 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
     return getDefaultForm()
   })
 
-  function getDefaultForm() {
-    return {
-      namaToko: '',
-      kategoriToko: 'Sayur & Buah Segar',
-      deskripsiToko: '',
-      alamatToko: userData?.desa ? `RT 02 / RW 04, ${userData.desa}` : '',
-      // Produk
+  // Reset / Sinkronisasi State ketika Persona Berganti
+  useEffect(() => {
+    const currentSavedStatus = localStorage.getItem('mockSellerAppStatus') || 'not_applied'
+    setAppStatus(currentSavedStatus)
+
+    if (currentSavedStatus === 'pending') {
+      setStep('pending')
+      return
+    }
+
+    const savedDraft = localStorage.getItem('mockSellerDraft')
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft)
+        if (parsed.form) {
+          setForm(parsed.form)
+          if (parsed.currentStep) setStep(parsed.currentStep)
+          return
+        }
+      } catch (e) {}
+    }
+
+    // Jika tidak ada draft tersimpan (e.g. Warga Aktif fresh):
+    setForm(getDefaultForm())
+    setCurrentProduct({
       namaProduk: '',
       kategoriProduk: 'Sayur & Buah Segar',
       hargaProduk: '',
       satuanProduk: 'kg',
       stokProduk: '',
-      fotoProduk: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80',
-      // Rekening
-      metodePencairan: 'gv_pay',
-      nomorRekening: userData?.phone || '',
-      namaPemilik: userData?.name || userProfile?.name || '',
-    }
-  }
+      fotoProduk: [],
+    })
+    setStep('intro')
+  }, [userProfile?.id, userData?.name])
 
   // Simpan Draft ke LocalStorage setiap form berubah
   useEffect(() => {
@@ -122,18 +210,245 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
     }
   }, [form, step])
 
+  // Handlers Foto Toko (Step 1)
+  const handleStorePhotoChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      setForm((f) => ({ ...f, fotoToko: ev.target.result }))
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  const handleRemoveStorePhoto = () => {
+    setForm((f) => ({ ...f, fotoToko: '' }))
+  }
+
+  // Handler GPS "Gunakan Lokasi Saya" (Step 1)
+  const handleUseCurrentGps = () => {
+    if (!navigator.geolocation) {
+      alert('Browser Anda tidak mendukung akses GPS.')
+      return
+    }
+    setIsLocatingGps(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+            { headers: { 'Accept-Language': 'id' } }
+          )
+          if (res.ok) {
+            const data = await res.json()
+            if (data && data.display_name) {
+              const addr = data.address || {}
+              const road = addr.road || addr.village || addr.suburb || ''
+              const village = addr.village || addr.city_district || 'Desa Bojong'
+              const district = addr.county || addr.city || 'Bogor'
+              let formatted = road ? `${road}, ${village}` : village
+              if (district && !formatted.includes(district)) {
+                formatted += `, ${district}`
+              }
+              setForm((f) => ({
+                ...f,
+                alamatToko: formatted || data.display_name.split(',').slice(0, 3).join(','),
+                coords: { lat, lng },
+              }))
+              setIsLocatingGps(false)
+              return
+            }
+          }
+        } catch (err) {
+          console.error(err)
+        }
+        // Fallback jika API reverse geocode offline/lambat
+        setForm((f) => ({
+          ...f,
+          alamatToko: `RT 02/RW 04, Dusun Karanganyar, ${userData?.desa || 'Desa Bojong'}`,
+          coords: { lat, lng },
+        }))
+        setIsLocatingGps(false)
+      },
+      (err) => {
+        console.warn('Geolocation error:', err)
+        setForm((f) => ({
+          ...f,
+          alamatToko: `RT 02/RW 04, Dusun Karanganyar, ${userData?.desa || 'Desa Bojong'}`,
+          coords: { lat: -6.6042, lng: 107.0395 },
+        }))
+        setIsLocatingGps(false)
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    )
+  }
+
+  // Handlers Foto Produk (Step 2 - Maksimal 5 foto, slot 0 = thumbnail)
+  const handleProductPhotoChange = (e) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+
+    const currentCount = currentProduct.fotoProduk.length
+    const availableSlots = 5 - currentCount
+    if (availableSlots <= 0) {
+      alert('Maksimal 5 foto per produk.')
+      return
+    }
+
+    const filesToProcess = files.slice(0, availableSlots)
+    const readers = filesToProcess.map((file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (ev) => resolve(ev.target.result)
+        reader.readAsDataURL(file)
+      })
+    })
+
+    Promise.all(readers).then((newPhotos) => {
+      setCurrentProduct((cp) => ({
+        ...cp,
+        fotoProduk: [...cp.fotoProduk, ...newPhotos].slice(0, 5),
+      }))
+    })
+    e.target.value = ''
+  }
+
+  const handleRemoveProductPhoto = (index) => {
+    setCurrentProduct((cp) => ({
+      ...cp,
+      fotoProduk: cp.fotoProduk.filter((_, i) => i !== index),
+    }))
+  }
+
+  // Handlers Multi-Produk
+  const isCurrentProductValid =
+    currentProduct.namaProduk.trim() !== '' &&
+    currentProduct.hargaProduk !== '' &&
+    Number(currentProduct.hargaProduk) > 0 &&
+    currentProduct.stokProduk !== '' &&
+    Number(currentProduct.stokProduk) >= 0 &&
+    currentProduct.fotoProduk.length > 0
+
+  const handleAddAnotherProduct = () => {
+    if (!isCurrentProductValid) return
+    const newProd = {
+      id: 'prod_' + Date.now(),
+      ...currentProduct,
+    }
+    setForm((f) => ({
+      ...f,
+      products: [...(f.products || []), newProd],
+    }))
+    // Reset form produk berikutnya
+    setCurrentProduct({
+      namaProduk: '',
+      kategoriProduk: 'Sayur & Buah Segar',
+      hargaProduk: '',
+      satuanProduk: 'kg',
+      stokProduk: '',
+      fotoProduk: [],
+    })
+  }
+
+  const handleDeleteProduct = (productId) => {
+    setForm((f) => ({
+      ...f,
+      products: (f.products || []).filter((p) => p.id !== productId),
+    }))
+  }
+
+  const handleProceedFromStep2 = () => {
+    if (isCurrentProductValid) {
+      const newProd = {
+        id: 'prod_' + Date.now(),
+        ...currentProduct,
+      }
+      setForm((f) => ({
+        ...f,
+        products: [...(f.products || []), newProd],
+      }))
+      setCurrentProduct({
+        namaProduk: '',
+        kategoriProduk: 'Sayur & Buah Segar',
+        hargaProduk: '',
+        satuanProduk: 'kg',
+        stokProduk: '',
+        fotoProduk: [],
+      })
+      setStep('setup-rekening')
+    } else if ((form.products || []).length >= 1) {
+      setStep('setup-rekening')
+    }
+  }
+
   // Evaluasi Kelengkapan Tiap Tahap
   const isStep1Complete = form.namaToko.trim() !== '' && form.alamatToko.trim() !== ''
-  const isStep2Complete =
-    form.namaProduk.trim() !== '' &&
-    form.hargaProduk !== '' &&
-    Number(form.hargaProduk) > 0 &&
-    form.stokProduk !== '' &&
-    Number(form.stokProduk) >= 0
+  const isStep2Complete = (form.products && form.products.length > 0) || isCurrentProductValid
   const isStep3Complete = form.nomorRekening.trim() !== '' && form.namaPemilik.trim() !== ''
 
   const completedStepsCount =
     (isStep1Complete ? 1 : 0) + (isStep2Complete ? 1 : 0) + (isStep3Complete ? 1 : 0)
+
+  // ═════════════════════════════════════════════════════════════
+  // ── SCREEN: SUDAH AKTIF SEBAGAI PENJUAL ──────────────────────
+  // ═════════════════════════════════════════════════════════════
+  if (isSeller) {
+    return (
+      <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
+        <ScreenHeader title="Toko Saya" onBack={() => navigate('profile')} />
+
+        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-between p-4 pb-6">
+          <div className="flex flex-col items-center text-center mt-8">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center shadow-xs mb-4">
+              <Store size={44} className="text-[#1B6B3A]" />
+            </div>
+
+            <h2 className="font-extrabold text-[20px] text-surface-900 tracking-tight">
+              Toko ESTO Anda Aktif!
+            </h2>
+            <p className="text-[12.5px] text-surface-500 px-6 mt-1.5 leading-relaxed max-w-xs">
+              Toko Anda sudah terdaftar resmi dan siap menerima pesanan dari warga desa di Pasar ESTO.
+            </p>
+
+            <div className="w-full max-w-sm bg-white rounded-2xl p-4 border border-surface-200/80 shadow-2xs mt-6 text-left">
+              <div className="flex items-center gap-2.5 text-emerald-800 font-bold text-[13px] pb-2 border-b border-surface-100">
+                <CheckCircle2 size={16} className="text-emerald-600" />
+                <span>Status: Toko Beroperasi</span>
+              </div>
+              <p className="text-[11.5px] text-surface-500 mt-2.5 leading-relaxed">
+                Kelola katalog produk, periksa pesanan masuk, dan pantau omzet harian Anda melalui Dashboard Penjual.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm mx-auto space-y-2.5 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate('toko')}
+              className="w-full py-3.5 rounded-xl text-white font-bold text-[14.5px] shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
+                boxShadow: '0 4px 14px rgba(27,107,58,0.35)',
+              }}
+            >
+              <span>Buka Dashboard Toko Penjual</span>
+              <ArrowRight size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('profile')}
+              className="w-full py-3 rounded-xl bg-surface-50 text-surface-600 font-semibold text-[13px] border border-surface-200 transition active:scale-[0.98] text-center"
+            >
+              Kembali ke Profil
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // ═════════════════════════════════════════════════════════════
   // ── GATE SCREEN: BELUM TERVERIFIKASI ─────────────────────────
@@ -233,64 +548,6 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
   }
 
   // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: SUDAH AKTIF SEBAGAI PENJUAL ──────────────────────
-  // ═════════════════════════════════════════════════════════════
-  if (isSeller) {
-    return (
-      <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Toko Saya" onBack={() => navigate('profile')} />
-
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-between p-4 pb-6">
-          <div className="flex flex-col items-center text-center mt-8">
-            <div className="w-20 h-20 rounded-3xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center shadow-xs mb-4">
-              <Store size={44} className="text-[#1B6B3A]" />
-            </div>
-
-            <h2 className="font-extrabold text-[20px] text-surface-900 tracking-tight">
-              Toko ESTO Anda Aktif!
-            </h2>
-            <p className="text-[12.5px] text-surface-500 px-6 mt-1.5 leading-relaxed max-w-xs">
-              Toko Anda sudah terdaftar resmi dan siap menerima pesanan dari warga desa di Pasar ESTO.
-            </p>
-
-            <div className="w-full max-w-sm bg-white rounded-2xl p-4 border border-surface-200/80 shadow-2xs mt-6 text-left">
-              <div className="flex items-center gap-2.5 text-emerald-800 font-bold text-[13px] pb-2 border-b border-surface-100">
-                <CheckCircle2 size={16} className="text-emerald-600" />
-                <span>Status: Toko Beroperasi</span>
-              </div>
-              <p className="text-[11.5px] text-surface-500 mt-2.5 leading-relaxed">
-                Kelola katalog produk, periksa pesanan masuk, dan pantau omzet harian Anda melalui Dashboard Penjual.
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full max-w-sm mx-auto space-y-2.5 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('toko')}
-              className="w-full py-3.5 rounded-xl text-white font-bold text-[14.5px] shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2"
-              style={{
-                background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',
-                boxShadow: '0 4px 14px rgba(27,107,58,0.35)',
-              }}
-            >
-              <span>Buka Dashboard Toko Penjual</span>
-              <ArrowRight size={17} />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('profile')}
-              className="w-full py-3 rounded-xl bg-surface-50 text-surface-600 font-semibold text-[13px] border border-surface-200 transition active:scale-[0.98] text-center"
-            >
-              Kembali ke Profil
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // ═════════════════════════════════════════════════════════════
   // ── SCREEN: PENDING / SEDANG DITINJAU ────────────────────────
   // ═════════════════════════════════════════════════════════════
   if (step === 'pending') {
@@ -338,8 +595,12 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                   <span className="font-medium text-surface-800">{form.kategoriToko}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-surface-500">Produk Awal:</span>
-                  <span className="font-medium text-surface-800">{form.namaProduk || 'Produk Perdana'}</span>
+                  <span className="text-surface-500">Produk Terdaftar:</span>
+                  <span className="font-medium text-surface-800">
+                    {form.products && form.products.length > 0
+                      ? `${form.products[0].namaProduk}${form.products.length > 1 ? ` (+${form.products.length - 1} lainnya)` : ''}`
+                      : '1 Produk Siap Jual'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-surface-500">Pencairan:</span>
@@ -355,6 +616,24 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
               type="button"
               onClick={() => {
                 localStorage.setItem('mockSellerAppStatus', 'active')
+                localStorage.setItem('gv_store_open', 'true')
+                if (form.namaToko) {
+                  localStorage.setItem(
+                    'mockSellerStoreInfo',
+                    JSON.stringify({
+                      name: form.namaToko,
+                      category: form.kategoriToko || 'Sayur & Buah Segar',
+                      address: form.alamatToko || '',
+                      coords: form.coords || null,
+                      fotoToko: form.fotoToko || '',
+                      products: form.products || [],
+                      phone: userData?.phone || '0812-3456-7890',
+                      bankName: form.metodePencairan === 'gv_pay' ? 'GV Pay (Dompet Digital Desa)' : 'Transfer Bank',
+                      accountNumber: form.nomorRekening || userData?.phone || '0812-3456-7890',
+                      accountHolder: form.namaPemilik || userData?.name || userProfile?.name || 'Pak Budi Santoso',
+                    })
+                  )
+                }
                 updateUser?.({ isSeller: true })
                 navigate('toko')
               }}
@@ -441,6 +720,23 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
   if (step === 'setup-info') {
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
+        {/* Overlay LocationPickerMap jika user memilih 'Pilih di Peta' */}
+        {showMapPicker && (
+          <LocationPickerMap
+            initialLocation={form.alamatToko}
+            initialCoords={form.coords || null}
+            onBack={() => setShowMapPicker(false)}
+            onConfirm={({ locationLabel, lat, lng }) => {
+              setForm((f) => ({
+                ...f,
+                alamatToko: locationLabel,
+                coords: { lat, lng },
+              }))
+              setShowMapPicker(false)
+            }}
+          />
+        )}
+
         <ScreenHeader title="Setup Toko ESTO" onBack={() => setStep('intro')} />
         <StepperHeader currentStepIndex={0} />
 
@@ -453,6 +749,73 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
               <p className="text-[12px] text-surface-500 mt-1 leading-relaxed">
                 Tentukan identitas tokomu agar warga desa dapat mengenali usaha dan lokasimu.
               </p>
+            </div>
+
+            {/* 1. UPLOAD FOTO TOKO (Di atas Nama Toko, Hanya 1 foto, ada Preview) */}
+            <div>
+              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
+                Foto Profil Toko <span className="text-surface-400 font-normal">(1 foto)</span>
+              </label>
+              <input
+                type="file"
+                ref={storeFileInputRef}
+                accept="image/*"
+                onChange={handleStorePhotoChange}
+                className="hidden"
+              />
+              {form.fotoToko ? (
+                <div className="relative w-full h-36 rounded-2xl overflow-hidden border border-surface-200 shadow-2xs group bg-surface-100">
+                  <img
+                    src={form.fotoToko}
+                    alt="Foto Profil Toko"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/20 flex items-end justify-between p-3">
+                    <div className="flex items-center gap-1.5 text-white text-[11.5px] font-bold">
+                      <Camera size={14} className="text-emerald-400" />
+                      <span>Foto Profil Terpasang</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => storeFileInputRef.current?.click()}
+                        className="px-2.5 py-1 rounded-lg bg-white/95 hover:bg-white text-surface-800 text-[11px] font-bold shadow-xs active:scale-95 transition"
+                      >
+                        Ganti Foto
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveStorePhoto}
+                        className="p-1.5 rounded-lg bg-red-600/90 hover:bg-red-600 text-white shadow-xs active:scale-95 transition"
+                        title="Hapus foto"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  onClick={() => storeFileInputRef.current?.click()}
+                  className="w-full py-5 px-4 rounded-2xl border-2 border-dashed border-surface-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/30 flex flex-col items-center justify-center cursor-pointer transition shadow-2xs group"
+                >
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-50 group-hover:bg-emerald-100/70 text-emerald-700 flex items-center justify-center mb-1.5 transition">
+                    <Camera size={20} />
+                  </div>
+                  <p className="text-[12.5px] font-bold text-surface-800">
+                    Unggah Foto Profil Toko
+                  </p>
+                  <p className="text-[10.5px] text-surface-400 mt-0.5">
+                    Format JPG, PNG, atau WebP (1 foto profil)
+                  </p>
+                  <button
+                    type="button"
+                    className="mt-2 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200/80 pointer-events-none"
+                  >
+                    Pilih Foto Toko
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Input Nama Toko */}
@@ -517,11 +880,38 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
               </p>
             </div>
 
-            {/* Alamat Toko / Titik Penjemputan */}
+            {/* 2. ALAMAT TOKO & TITIK PENJEMPUTAN (Integrasi GPS & Peta) */}
             <div>
               <label className="block text-xs font-semibold text-surface-700 mb-1.5">
                 Alamat Toko & Titik Penjemputan <span className="text-red-500">*</span>
               </label>
+
+              {/* 2 Opsi Tombol Cepat: GPS & Peta */}
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                <button
+                  type="button"
+                  onClick={handleUseCurrentGps}
+                  disabled={isLocatingGps}
+                  className="py-2.5 px-3 rounded-xl border border-emerald-200/80 bg-emerald-50/80 hover:bg-emerald-100/80 text-emerald-800 text-[11.5px] font-bold flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-[0.98] disabled:opacity-60"
+                >
+                  {isLocatingGps ? (
+                    <Loader2 size={15} className="animate-spin text-emerald-700" />
+                  ) : (
+                    <LocateFixed size={15} className="text-emerald-700" strokeWidth={2.2} />
+                  )}
+                  <span>{isLocatingGps ? 'Mencari GPS...' : 'Gunakan Lokasi Saya'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowMapPicker(true)}
+                  className="py-2.5 px-3 rounded-xl border border-surface-200 bg-white hover:bg-surface-50 text-surface-700 text-[11.5px] font-bold flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-[0.98]"
+                >
+                  <MapPin size={15} className="text-[#1B6B3A]" />
+                  <span>Pilih di Peta</span>
+                </button>
+              </div>
+
               <div className="relative">
                 <MapPin size={16} className="absolute left-3.5 top-3.5 text-surface-400 pointer-events-none" />
                 <input
@@ -532,6 +922,14 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                   className="w-full bg-white border border-surface-200 rounded-xl pl-9 pr-4 py-3 text-[13px] text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
                 />
               </div>
+
+              {/* Status Koordinat GPS */}
+              {form.coords && (
+                <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-emerald-800 font-medium bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 w-fit">
+                  <CheckCircle2 size={13} className="text-emerald-600 flex-shrink-0" />
+                  <span>Titik GPS: {form.coords.lat.toFixed(4)}, {form.coords.lng.toFixed(4)}</span>
+                </div>
+              )}
               <p className="text-[11px] text-surface-400 mt-1">
                 Lokasi untuk kurir desa atau pembeli yang memilih ambil sendiri (pickup)
               </p>
@@ -567,12 +965,14 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
   }
 
   // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: TAHAP 2 — TAMBAH PRODUK & STOK ──────────────────
+  // ── SCREEN: TAHAP 2 — TAMBAH PRODUK & STOK (MULTI-PRODUK) ───
   // ═════════════════════════════════════════════════════════════
   if (step === 'setup-produk') {
+    const hasSavedProducts = (form.products || []).length > 0
+
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Produk Pertama" onBack={() => setStep('setup-info')} />
+        <ScreenHeader title="Produk & Stok Toko" onBack={() => setStep('setup-info')} />
         <StepperHeader currentStepIndex={1} />
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
@@ -586,128 +986,207 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
               </p>
             </div>
 
-            {/* Foto Produk Preview Card */}
-            <div className="bg-white rounded-2xl p-3.5 border border-surface-200/80 shadow-2xs flex items-center gap-3.5">
-              <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-100 border border-surface-200 flex items-center justify-center flex-shrink-0 relative">
-                {form.fotoProduk ? (
-                  <img src={form.fotoProduk} alt="Produk" className="w-full h-full object-cover" />
-                ) : (
-                  <Package size={24} className="text-surface-400" />
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[12.5px] font-bold text-surface-900 leading-tight">
-                  Foto Produk Perdana
-                </p>
-                <p className="text-[11px] text-surface-400 mt-0.5">
-                  Foto jernih meningkatkan minat pembeli warga desa
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setForm((f) => ({
-                        ...f,
-                        fotoProduk:
-                          'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&auto=format&fit=crop&q=80',
-                      }))
-                    }
-                    className="text-[10.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-                  >
-                    Foto Sayur
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setForm((f) => ({
-                        ...f,
-                        fotoProduk:
-                          'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&auto=format&fit=crop&q=80',
-                      }))
-                    }
-                    className="text-[10.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
-                  >
-                    Foto Beras
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Nama Produk */}
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Nama Produk <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="cth. Sayur Bayam Organik Segar 250gr"
-                value={form.namaProduk}
-                onChange={(e) => setForm((f) => ({ ...f, namaProduk: e.target.value }))}
-                className="w-full bg-white border border-surface-200 rounded-xl px-4 py-3 text-[13px] text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
-              />
-            </div>
-
-            {/* Harga Jual (Rp) & Satuan */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                  Harga Jual (Rp) <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-3 text-[12px] font-bold text-surface-400">
-                    Rp
+            {/* 4. DAFTAR PRODUK YANG SUDAH TERDAFTAR (Card Ringkas) */}
+            {hasSavedProducts && (
+              <div className="space-y-2 pb-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-surface-600">
+                    Produk Terdaftar ({form.products.length})
                   </span>
-                  <input
-                    type="number"
-                    placeholder="15000"
-                    value={form.hargaProduk}
-                    onChange={(e) => setForm((f) => ({ ...f, hargaProduk: e.target.value }))}
-                    className="w-full bg-white border border-surface-200 rounded-xl pl-9 pr-3 py-3 text-[13px] font-bold text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
-                  />
+                  <span className="text-[10.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/60">
+                    Siap Jual
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-0.5 no-scrollbar">
+                  {form.products.map((p, idx) => (
+                    <div
+                      key={p.id || idx}
+                      className="bg-white rounded-xl p-2.5 border border-surface-200/90 shadow-2xs flex items-center gap-3"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-surface-100 overflow-hidden border border-surface-200 flex-shrink-0 relative">
+                        {p.fotoProduk && p.fotoProduk[0] ? (
+                          <img src={p.fotoProduk[0]} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <Package size={20} className="text-surface-400 m-auto mt-3" />
+                        )}
+                        {p.fotoProduk && p.fotoProduk.length > 1 && (
+                          <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[8px] font-bold px-1 py-0.2 rounded">
+                            +{p.fotoProduk.length - 1}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[12.5px] font-bold text-surface-900 truncate">
+                          {p.namaProduk}
+                        </p>
+                        <p className="text-[11.5px] font-extrabold text-emerald-700 mt-0.5">
+                          Rp {Number(p.hargaProduk || 0).toLocaleString('id')} / {p.satuanProduk}
+                        </p>
+                        <span className="text-[10.5px] text-surface-500 font-medium">
+                          Stok: {p.stokProduk} {p.satuanProduk}
+                        </span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteProduct(p.id)}
+                        className="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center transition flex-shrink-0 active:scale-95"
+                        title="Hapus produk ini"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* FORM INPUT PRODUK (BARU / TAMBAHAN) */}
+            <div className="bg-white rounded-2xl p-3.5 border border-surface-200 shadow-2xs space-y-3.5">
+              <div className="flex items-center justify-between pb-1.5 border-b border-surface-100">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+                  {hasSavedProducts ? 'Form Tambah Produk Lagi' : 'Form Produk Pertama'}
+                </span>
+                <span className="text-[10.5px] text-surface-400">
+                  {currentProduct.fotoProduk.length}/5 Foto
+                </span>
+              </div>
+
+              {/* 3. FOTO PRODUK — MANUAL UPLOAD (Maksimal 5 foto, Slot 0 = Utama) */}
+              <div>
+                <label className="block text-xs font-semibold text-surface-700 mb-1">
+                  Foto Produk <span className="text-red-500">*</span>
+                </label>
+                <p className="text-[10.5px] text-surface-400 mb-2">
+                  Maksimal 5 foto. Foto pertama otomatis jadi thumbnail utama di katalog.
+                </p>
+
+                <input
+                  type="file"
+                  ref={productFileInputRef}
+                  accept="image/*"
+                  multiple
+                  onChange={handleProductPhotoChange}
+                  className="hidden"
+                />
+
+                {/* Grid Preview Foto Produk */}
+                <div className="grid grid-cols-4 gap-2">
+                  {currentProduct.fotoProduk.map((photo, idx) => (
+                    <div
+                      key={idx}
+                      className="relative aspect-square rounded-xl overflow-hidden border border-surface-200 bg-surface-100 shadow-2xs group"
+                    >
+                      <img src={photo} alt="" className="w-full h-full object-cover" />
+                      {idx === 0 && (
+                        <span className="absolute bottom-1 left-1 bg-[#0C3E1E] text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded shadow-xs">
+                          Utama
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveProductPhoto(idx)}
+                        className="w-5 h-5 rounded-full bg-black/65 hover:bg-red-600 text-white flex items-center justify-center transition absolute top-1 right-1 shadow-xs active:scale-90"
+                        title="Hapus foto"
+                      >
+                        <X size={11} strokeWidth={3} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Slot Tambah Foto */}
+                  {currentProduct.fotoProduk.length < 5 && (
+                    <button
+                      type="button"
+                      onClick={() => productFileInputRef.current?.click()}
+                      className="aspect-square rounded-xl border-2 border-dashed border-surface-300 hover:border-emerald-600 bg-surface-50 hover:bg-emerald-50/50 flex flex-col items-center justify-center text-surface-400 hover:text-emerald-700 transition cursor-pointer shadow-2xs"
+                    >
+                      <Plus size={18} />
+                      <span className="text-[9.5px] font-bold mt-0.5">
+                        + Foto
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
 
+              {/* Nama Produk */}
               <div>
                 <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                  Satuan <span className="text-red-500">*</span>
+                  Nama Produk <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={form.satuanProduk}
-                  onChange={(e) => setForm((f) => ({ ...f, satuanProduk: e.target.value }))}
-                  className="w-full bg-white border border-surface-200 rounded-xl px-3 py-3 text-[13px] font-semibold text-surface-800 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
-                >
-                  {SATUAN_PRODUK.map((sat) => (
-                    <option key={sat} value={sat}>
-                      per {sat}
-                    </option>
-                  ))}
-                </select>
+                <input
+                  type="text"
+                  placeholder="cth. Sayur Bayam Organik Segar 250gr"
+                  value={currentProduct.namaProduk}
+                  onChange={(e) => setCurrentProduct((cp) => ({ ...cp, namaProduk: e.target.value }))}
+                  className="w-full bg-surface-50/50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
+                />
               </div>
-            </div>
 
-            {/* Jumlah Stok Awal */}
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Stok Awal Barang <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                placeholder="cth. 50"
-                value={form.stokProduk}
-                onChange={(e) => setForm((f) => ({ ...f, stokProduk: e.target.value }))}
-                className="w-full bg-white border border-surface-200 rounded-xl px-4 py-3 text-[13px] text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
-              />
-              <p className="text-[11px] text-surface-400 mt-1">
-                Stok akan otomatis berkurang setiap ada pesanan yang terbayar
-              </p>
+              {/* Harga Jual & Satuan */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-surface-700 mb-1.5">
+                    Harga Jual (Rp) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-[12px] font-bold text-surface-400">
+                      Rp
+                    </span>
+                    <input
+                      type="number"
+                      placeholder="15000"
+                      value={currentProduct.hargaProduk}
+                      onChange={(e) => setCurrentProduct((cp) => ({ ...cp, hargaProduk: e.target.value }))}
+                      className="w-full bg-surface-50/50 border border-surface-200 rounded-xl pl-9 pr-2.5 py-2.5 text-[13px] font-bold text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-surface-700 mb-1.5">
+                    Satuan <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={currentProduct.satuanProduk}
+                    onChange={(e) => setCurrentProduct((cp) => ({ ...cp, satuanProduk: e.target.value }))}
+                    className="w-full bg-surface-50/50 border border-surface-200 rounded-xl px-2.5 py-2.5 text-[12.5px] font-semibold text-surface-800 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
+                  >
+                    {SATUAN_PRODUK.map((sat) => (
+                      <option key={sat} value={sat}>
+                        per {sat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Jumlah Stok Awal */}
+              <div>
+                <label className="block text-xs font-semibold text-surface-700 mb-1.5">
+                  Stok Awal Barang <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  placeholder="cth. 50"
+                  value={currentProduct.stokProduk}
+                  onChange={(e) => setCurrentProduct((cp) => ({ ...cp, stokProduk: e.target.value }))}
+                  className="w-full bg-surface-50/50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] text-surface-900 focus:outline-none focus:border-emerald-600 shadow-2xs transition"
+                />
+              </div>
             </div>
           </div>
 
+          {/* Action Buttons di Bawah */}
           <div className="max-w-sm mx-auto w-full pt-4 pb-2 space-y-2">
+            {/* Tombol Utama: Lanjut ke Rekening */}
             <button
               type="button"
               disabled={!isStep2Complete}
-              onClick={() => setStep('setup-rekening')}
+              onClick={handleProceedFromStep2}
               className={`w-full py-3.5 rounded-xl font-bold text-[14.5px] transition flex items-center justify-center gap-2 ${
                 isStep2Complete
                   ? 'text-white shadow-md active:scale-[0.98] cursor-pointer'
@@ -725,10 +1204,23 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
               <span>Lanjut: Rekening Pencairan</span>
               <ArrowRight size={17} />
             </button>
+
+            {/* Tombol Kedua: Tambah Produk Lagi (Muncul saat form produk saat ini valid) */}
+            {isCurrentProductValid && (
+              <button
+                type="button"
+                onClick={handleAddAnotherProduct}
+                className="w-full py-3 rounded-xl border-2 border-emerald-600 bg-emerald-50/80 hover:bg-emerald-100/80 text-emerald-850 font-bold text-[13.5px] shadow-xs active:scale-[0.98] transition flex items-center justify-center gap-1.5"
+              >
+                <Plus size={16} className="text-emerald-700" strokeWidth={2.5} />
+                <span>Tambah Produk Lagi</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => setStep('setup-info')}
-              className="w-full py-2.5 text-[13px] font-semibold text-surface-500 hover:text-surface-800 transition text-center"
+              className="w-full py-2 text-[13px] font-semibold text-surface-500 hover:text-surface-800 transition text-center"
             >
               Kembali ke Info Toko
             </button>
@@ -795,9 +1287,20 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
 
             {/* Nomor Rekening */}
             <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Nomor Rekening / Nomor GV Pay <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-surface-700">
+                  Nomor Rekening / Nomor GV Pay <span className="text-red-500">*</span>
+                </label>
+                {userData?.phone && !form.nomorRekening && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, nomorRekening: userData.phone }))}
+                    className="text-[10.5px] font-bold text-emerald-700 hover:underline"
+                  >
+                    Gunakan No. HP ({userData.phone})
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="cth. 08123456789 atau 1234567890"
@@ -809,9 +1312,20 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
 
             {/* Nama Pemilik Rekening */}
             <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Nama Pemilik Rekening <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-surface-700">
+                  Nama Pemilik Rekening <span className="text-red-500">*</span>
+                </label>
+                {(userData?.name || userProfile?.name) && !form.namaPemilik && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, namaPemilik: userData?.name || userProfile?.name }))}
+                    className="text-[10.5px] font-bold text-emerald-700 hover:underline"
+                  >
+                    Gunakan Nama ({userData?.name || userProfile?.name})
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="Harus sesuai nama di identitas KTP"
@@ -864,6 +1378,20 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
   // ── SCREEN: TAHAP 4 — REVIEW DATA SEBELUM DIAKTIFKAN ────────
   // ═════════════════════════════════════════════════════════════
   if (step === 'setup-review') {
+    const reviewProducts = form.products && form.products.length > 0
+      ? form.products
+      : [
+          {
+            id: 'default',
+            namaProduk: currentProduct.namaProduk || 'Produk Perdana',
+            kategoriProduk: currentProduct.kategoriProduk || form.kategoriToko,
+            hargaProduk: currentProduct.hargaProduk || '0',
+            satuanProduk: currentProduct.satuanProduk || 'kg',
+            stokProduk: currentProduct.stokProduk || '0',
+            fotoProduk: currentProduct.fotoProduk || [],
+          }
+        ]
+
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
         <ScreenHeader title="Review Pengajuan Toko" onBack={() => setStep('setup-rekening')} />
@@ -876,7 +1404,7 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                 Periksa Data Toko Anda
               </h2>
               <p className="text-[12px] text-surface-500 mt-1 leading-relaxed">
-                Pastikan informasi profil toko, produk perdana, dan rekening pencairan sudah tepat.
+                Pastikan informasi profil toko, seluruh produk yang didaftarkan, dan rekening pencairan sudah tepat.
               </p>
             </div>
 
@@ -895,9 +1423,15 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-extrabold text-lg border border-emerald-200/60">
-                  <Store size={22} />
-                </div>
+                {form.fotoToko ? (
+                  <div className="w-13 h-13 rounded-2xl overflow-hidden border border-surface-200 flex-shrink-0">
+                    <img src={form.fotoToko} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-extrabold text-lg border border-emerald-200/60">
+                    <Store size={22} />
+                  </div>
+                )}
                 <div className="min-w-0 flex-1">
                   <p className="font-extrabold text-[14px] text-surface-900 truncate">
                     {form.namaToko || 'Nama Toko'}
@@ -906,40 +1440,65 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                 </div>
               </div>
               <div className="mt-2.5 pt-2 border-t border-surface-50 text-[11.5px] text-surface-600">
-                <span className="font-bold text-surface-700">Alamat: </span>
-                {form.alamatToko}
+                <div className="flex items-start gap-1">
+                  <span className="font-bold text-surface-700 flex-shrink-0">Alamat:</span>
+                  <span className="line-clamp-2">{form.alamatToko}</span>
+                </div>
+                {form.coords && (
+                  <div className="flex items-center gap-1.5 mt-1.5 text-[10.5px] text-emerald-700 font-medium">
+                    <MapPin size={13} className="text-emerald-600 flex-shrink-0" />
+                    <span>GPS: {form.coords.lat.toFixed(4)}, {form.coords.lng.toFixed(4)}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Card Preview Produk Perdana */}
+            {/* Card Preview SEMUA Produk Terdaftar */}
             <div className="bg-white rounded-2xl p-4 border border-surface-200/80 shadow-2xs">
               <div className="flex items-start justify-between pb-2 mb-2 border-b border-surface-100">
                 <span className="text-[10px] font-bold text-surface-400 uppercase tracking-wider">
-                  PRODUK PERTAMA
+                  PRODUK TERDAFTAR ({reviewProducts.length} PRODUK)
                 </span>
                 <button
                   type="button"
                   onClick={() => setStep('setup-produk')}
                   className="text-[11px] font-bold text-emerald-700 hover:underline"
                 >
-                  Ubah
+                  Ubah / Tambah
                 </button>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-surface-100 border border-surface-200 flex-shrink-0">
-                  <img src={form.fotoProduk} alt="" className="w-full h-full object-cover" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-[13px] text-surface-900 truncate">
-                    {form.namaProduk}
-                  </p>
-                  <p className="text-[12px] font-extrabold text-emerald-700 mt-0.5">
-                    Rp {Number(form.hargaProduk || 0).toLocaleString('id')} / {form.satuanProduk}
-                  </p>
-                  <span className="text-[10.5px] text-surface-500 font-medium">
-                    Stok awal: {form.stokProduk} {form.satuanProduk}
-                  </span>
-                </div>
+
+              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-0.5 no-scrollbar">
+                {reviewProducts.map((p, idx) => (
+                  <div
+                    key={p.id || idx}
+                    className="flex items-center gap-3 p-2 rounded-xl bg-surface-50/70 border border-surface-100"
+                  >
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-surface-100 border border-surface-200 flex-shrink-0 relative">
+                      {p.fotoProduk && p.fotoProduk[0] ? (
+                        <img src={p.fotoProduk[0]} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <Package size={20} className="text-surface-400 m-auto mt-3" />
+                      )}
+                      {p.fotoProduk && p.fotoProduk.length > 1 && (
+                        <span className="absolute bottom-0.5 right-0.5 bg-black/75 text-white text-[8px] font-bold px-1 py-0.2 rounded">
+                          +{p.fotoProduk.length - 1}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-[12.5px] text-surface-900 truncate">
+                        {p.namaProduk}
+                      </p>
+                      <p className="text-[11.5px] font-extrabold text-emerald-700 mt-0.5">
+                        Rp {Number(p.hargaProduk || 0).toLocaleString('id')} / {p.satuanProduk}
+                      </p>
+                      <span className="text-[10px] text-surface-500 font-medium">
+                        Stok awal: {p.stokProduk} {p.satuanProduk}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -981,6 +1540,24 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
             <button
               type="button"
               onClick={() => {
+                // Simpan profil toko lengkap termasuk semua produk dan koordinat
+                if (form.namaToko) {
+                  localStorage.setItem(
+                    'mockSellerStoreInfo',
+                    JSON.stringify({
+                      name: form.namaToko,
+                      category: form.kategoriToko || 'Sayur & Buah Segar',
+                      address: form.alamatToko || '',
+                      coords: form.coords || null,
+                      fotoToko: form.fotoToko || '',
+                      products: form.products || [],
+                      phone: userData?.phone || '0812-3456-7890',
+                      bankName: form.metodePencairan === 'gv_pay' ? 'GV Pay (Dompet Digital Desa)' : 'Transfer Bank',
+                      accountNumber: form.nomorRekening || userData?.phone || '0812-3456-7890',
+                      accountHolder: form.namaPemilik || userData?.name || userProfile?.name || 'Pak Budi Santoso',
+                    })
+                  )
+                }
                 localStorage.setItem('mockSellerAppStatus', 'pending')
                 localStorage.removeItem('mockSellerDraft')
                 updateUser?.({ tokoStatus: 'pending' })
@@ -1111,9 +1688,11 @@ export default function AktivasiToko({ navigate, userData, updateUser, userProfi
                     {isStep2Complete ? <Check size={14} strokeWidth={3} /> : '2'}
                   </div>
                   <div>
-                    <p className="font-bold text-[12.5px] text-surface-900">Produk Pertama & Stok</p>
+                    <p className="font-bold text-[12.5px] text-surface-900">Produk & Stok Awal</p>
                     <p className="text-[11px] text-surface-400">
-                      {isStep2Complete ? form.namaProduk : 'Foto produk, harga & stok'}
+                      {isStep2Complete
+                        ? `${(form.products || []).length || 1} Produk didaftarkan`
+                        : 'Foto produk, harga & stok'}
                     </p>
                   </div>
                 </div>

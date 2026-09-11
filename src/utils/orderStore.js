@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Leaf, CircleDot, Wheat, Coffee, Droplet, Egg } from 'lucide-react'
+import { restoreStock } from './stockStore.js'
 
 export const STATUS_CONFIG = {
   waiting:   { label: 'Menunggu Konfirmasi', color: '#F57F17', bg: '#FFF8E1' },
@@ -11,6 +12,51 @@ export const STATUS_CONFIG = {
 }
 
 export const INITIAL_BUYER_ORDERS = [
+  {
+    id: 'GV-20260905',
+    date: 'Hari ini, 11:20',
+    seller: 'Pak Budi',
+    payment: 'GV Pay',
+    delivery: 'Pengiriman (Kilat Desa)',
+    total: 41000,
+    status: 'shipped',
+    address: 'Jl. Melati No. 14, RT 02/04, Desa Sukamaju',
+    courier: {
+      name: 'Agus Santoso',
+      rating: 4.9,
+      trips: '240+',
+      vehicle: 'Honda Beat · B 4521 KDF',
+      avatar: '👨',
+      plate: 'B 4521 KDF',
+      phone: '0812-9876-5432',
+    },
+    items: [
+      {
+        id: 1,
+        name: 'Tempe Mendoan Jumbo',
+        qty: 2,
+        price: 12000,
+        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop',
+        Icon: CircleDot,
+        g: ['#E65100', '#F57C00'],
+      },
+      {
+        id: 2,
+        name: 'Bayam Organik Segar',
+        qty: 2,
+        price: 8500,
+        image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=600&auto=format&fit=crop',
+        Icon: Leaf,
+        g: ['#2E7D32', '#4CAF50'],
+      },
+    ],
+    timeline: [
+      { s: 'waiting', time: '11:20', label: 'Pesanan Dibuat', sub: 'Menunggu konfirmasi dari penjual' },
+      { s: 'confirmed', time: '11:23', label: 'Penjual Mengonfirmasi', sub: 'Penjual menerima dan memverifikasi pesanan' },
+      { s: 'preparing', time: '11:32', label: 'Pesanan Sedang Disiapkan', sub: 'Penjual menyiapkan paket dan mengemas produk' },
+      { s: 'shipped', time: '11:45', label: 'Dalam Perjalanan ke Lokasimu', sub: 'GV Man sedang mengantar paket ke rumahmu' },
+    ],
+  },
   {
     id: 'GV-20260902',
     date: 'Hari ini, 10:15',
@@ -146,6 +192,18 @@ function loadOrdersFromStorage() {
     if (raw) {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed) && parsed.length > 0) {
+        // Pastikan dummy order shipped selalu tersedia jika belum ada order shipped
+        const hasShipped = parsed.some((o) => o.status === 'shipped')
+        if (!hasShipped) {
+          const shippedOrder = INITIAL_BUYER_ORDERS.find((o) => o.status === 'shipped')
+          if (shippedOrder && !parsed.some((o) => o.id === shippedOrder.id)) {
+            const merged = [shippedOrder, ...parsed]
+            try {
+              localStorage.setItem('gv_buyer_orders', JSON.stringify(merged))
+            } catch (e) {}
+            return merged
+          }
+        }
         return parsed
       }
     }
@@ -194,6 +252,10 @@ export function updateBuyerOrder(orderId, patch) {
 
 export function cancelBuyerOrder(orderId, reason) {
   const current = getBuyerOrders()
+  const orderToCancel = current.find((o) => o.id === orderId)
+  if (orderToCancel && orderToCancel.status !== 'cancelled' && orderToCancel.items) {
+    restoreStock(orderToCancel.items)
+  }
   const nowStr = new Date().toLocaleTimeString('id', { hour: '2-digit', minute: '2-digit' })
   const next = current.map((o) => {
     if (o.id !== orderId) return o

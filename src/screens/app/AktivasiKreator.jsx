@@ -7,9 +7,6 @@ import {
   Play,
   Star,
   Users,
-  Video,
-  Mic,
-  Radio,
   Clock,
   ArrowRight,
   ArrowLeft,
@@ -34,32 +31,8 @@ const KATEGORI_CHANNEL = [
   'Hiburan & Vlogging',
 ]
 
-const TIPE_KONTEN_OPTIONS = [
-  {
-    id: 'Video',
-    title: 'Video Edukasi & Dokumenter',
-    desc: 'Tutorial pertanian, video desa, kisah sukses UMKM',
-    icon: Video,
-    gradient: ['#C62828', '#E53935'],
-  },
-  {
-    id: 'Podcast',
-    title: 'Podcast Audio & Obrolan',
-    desc: 'Wawancara tokoh desa, sharing pengalaman, dongeng lokal',
-    icon: Mic,
-    gradient: ['#6A1B9A', '#7B1FA2'],
-  },
-  {
-    id: 'Live Streaming',
-    title: 'Siaran Langsung (Live)',
-    desc: 'Live panen, lelang komoditas, Q&A interaktif warga',
-    icon: Radio,
-    gradient: ['#1B5E20', '#2E7D32'],
-  },
-]
-
 const BANK_OPTIONS = [
-  { id: 'gv_pay', label: 'Dompet Digital GV Pay (Bebas Biaya Admin)', icon: '⚡' },
+  { id: 'gv_pay', label: 'GV Pay (Instan & Bebas Biaya)', icon: '⚡' },
   { id: 'bri', label: 'Bank BRI', icon: '🏦' },
   { id: 'mandiri', label: 'Bank Mandiri', icon: '🏦' },
   { id: 'bca', label: 'Bank BCA', icon: '🏦' },
@@ -69,13 +42,26 @@ const BANK_OPTIONS = [
 
 export default function AktivasiKreator({ navigate, userData, updateUser, userProfile }) {
   // Verifikasi Prasyarat
-  const isVerified = userData?.verificationStatus === 'verified' || userProfile?.verified === true
+  const isVerified =
+    userData?.verificationStatus === 'verified' ||
+    userProfile?.verified === true ||
+    userProfile?.verificationStatus === 'verified' ||
+    userProfile?.capabilities?.includes('Kreator') ||
+    localStorage.getItem('mockVerificationStatus') === 'verified'
 
   // Status Kreator Aktif
   const isCreator =
     userProfile?.capabilities?.includes('Kreator') ||
+    userProfile?.isCreator === true ||
     userData?.isCreator === true ||
     localStorage.getItem('mockCreatorAppStatus') === 'active'
+
+  // Jika sudah aktif sebagai kreator, langsung arahkan ke Studio Kreator GV
+  useEffect(() => {
+    if (isCreator) {
+      navigate('studio')
+    }
+  }, [isCreator, navigate])
 
   // Load Saved Application Status
   const savedStatus = localStorage.getItem('mockCreatorAppStatus') || 'not_applied'
@@ -115,15 +101,39 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
       kategoriChannel: 'Pertanian & Agribisnis',
       bioChannel: '',
       avatar: '🌾',
-      tipeKonten: ['Video'],
-      preferensiPublikasi: 'Semua Warga (Publik)',
-      frekuensiUpload: '1-2x per minggu',
       metodePencairan: 'gv_pay',
-      nomorRekening: userData?.phone || '',
-      namaPemilik: userData?.name || userProfile?.name || '',
-      setujuSyarat: true,
+      nomorRekening: '',
+      namaPemilik: '',
+      setujuSyarat: false,
     }
   }
+
+  // Sinkronisasi saat persona berubah atau status berubah
+  useEffect(() => {
+    const currentStatus = localStorage.getItem('mockCreatorAppStatus') || 'not_applied'
+    setAppStatus(currentStatus)
+
+    if (currentStatus === 'pending') {
+      setStep('pending')
+      return
+    }
+
+    const savedDraft = localStorage.getItem('mockCreatorDraft')
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft)
+        if (parsed.form) {
+          setForm(parsed.form)
+          if (parsed.currentStep) setStep(parsed.currentStep)
+          return
+        }
+      } catch (e) {}
+    }
+
+    // Jika tidak ada draft tersimpan (e.g. Warga Aktif fresh):
+    setForm(getDefaultForm())
+    setStep('intro')
+  }, [userProfile?.id, userData?.name])
 
   // Simpan Draft ke LocalStorage
   useEffect(() => {
@@ -141,23 +151,67 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
 
   // Evaluasi Kelengkapan
   const isStep1Complete = form.namaChannel.trim() !== '' && form.bioChannel.trim() !== ''
-  const isStep2Complete = form.tipeKonten.length > 0
-  const isStep3Complete =
+  const isStep2Complete =
     form.nomorRekening.trim() !== '' && form.namaPemilik.trim() !== '' && form.setujuSyarat
 
-  const completedStepsCount =
-    (isStep1Complete ? 1 : 0) + (isStep2Complete ? 1 : 0) + (isStep3Complete ? 1 : 0)
+  const completedStepsCount = (isStep1Complete ? 1 : 0) + (isStep2Complete ? 1 : 0)
 
-  const toggleTipeKonten = (id) => {
-    setForm((prev) => {
-      const exists = prev.tipeKonten.includes(id)
-      return {
-        ...prev,
-        tipeKonten: exists
-          ? prev.tipeKonten.filter((item) => item !== id)
-          : [...prev.tipeKonten, id],
-      }
-    })
+  // ═════════════════════════════════════════════════════════════
+  // ── SCREEN: SUDAH AKTIF SEBAGAI KREATOR ──────────────────────
+  // ═════════════════════════════════════════════════════════════
+  if (isCreator) {
+    return (
+      <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
+        <ScreenHeader title="Aktivasi Kreator GV" onBack={() => navigate('profile')} />
+
+        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-between p-4 pb-6">
+          <div className="flex flex-col items-center text-center mt-8">
+            <div className="w-20 h-20 rounded-3xl bg-purple-50 border border-purple-200/80 flex items-center justify-center shadow-xs mb-4">
+              <Clapperboard size={44} className="text-purple-700" />
+            </div>
+
+            <h2 className="font-extrabold text-[20px] text-surface-900 tracking-tight">
+              Channel Kreator Anda Aktif!
+            </h2>
+            <p className="text-[12.5px] text-surface-500 px-6 mt-1.5 leading-relaxed max-w-xs">
+              Channel Anda telah terdaftar dan aktif di GV Media. Anda dapat langsung mengunggah video, membuat postingan, atau siaran live.
+            </p>
+
+            <div className="w-full max-w-sm bg-white rounded-2xl p-4 border border-surface-200/80 shadow-2xs mt-6 text-left">
+              <div className="flex items-center gap-2.5 text-purple-900 font-bold text-[13px] pb-2 border-b border-surface-100">
+                <CheckCircle2 size={16} className="text-purple-700" />
+                <span>Status: Kreator Terverifikasi GV</span>
+              </div>
+              <p className="text-[11.5px] text-surface-500 mt-2.5 leading-relaxed">
+                Akses analitik penonton, kelola monetisasi subscriber, dan publikasikan karya Anda melalui Studio Kreator.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full max-w-sm mx-auto space-y-2.5 pt-4">
+            <button
+              type="button"
+              onClick={() => navigate('studio')}
+              className="w-full py-3.5 rounded-xl text-white font-bold text-[14.5px] shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
+                boxShadow: '0 4px 14px rgba(123,31,162,0.35)',
+              }}
+            >
+              <span>Buka Studio Kreator GV</span>
+              <ArrowRight size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('profile')}
+              className="w-full py-3 rounded-xl bg-surface-50 text-surface-600 font-semibold text-[13px] border border-surface-200 transition active:scale-[0.98] text-center"
+            >
+              Kembali ke Profil
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // ═════════════════════════════════════════════════════════════
@@ -166,7 +220,7 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   if (!isVerified) {
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Kreator GV" onBack={() => navigate('profile')} />
+        <ScreenHeader title="Aktivasi Kreator GV" onBack={() => navigate('profile')} />
 
         <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-between p-4 pb-6">
           <div className="flex flex-col items-center text-center mt-6">
@@ -258,64 +312,6 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   }
 
   // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: SUDAH AKTIF SEBAGAI KREATOR ──────────────────────
-  // ═════════════════════════════════════════════════════════════
-  if (isCreator) {
-    return (
-      <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Kreator GV" onBack={() => navigate('profile')} />
-
-        <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col justify-between p-4 pb-6">
-          <div className="flex flex-col items-center text-center mt-8">
-            <div className="w-20 h-20 rounded-3xl bg-purple-50 border border-purple-200/80 flex items-center justify-center shadow-xs mb-4">
-              <Clapperboard size={44} className="text-purple-700" />
-            </div>
-
-            <h2 className="font-extrabold text-[20px] text-surface-900 tracking-tight">
-              Channel Kreator Anda Aktif!
-            </h2>
-            <p className="text-[12.5px] text-surface-500 px-6 mt-1.5 leading-relaxed max-w-xs">
-              Channel Anda telah terdaftar dan aktif di GV Media. Anda dapat langsung mengunggah video, membuat postingan, atau siaran live.
-            </p>
-
-            <div className="w-full max-w-sm bg-white rounded-2xl p-4 border border-surface-200/80 shadow-2xs mt-6 text-left">
-              <div className="flex items-center gap-2.5 text-purple-900 font-bold text-[13px] pb-2 border-b border-surface-100">
-                <CheckCircle2 size={16} className="text-purple-700" />
-                <span>Status: Kreator Terverifikasi GV</span>
-              </div>
-              <p className="text-[11.5px] text-surface-500 mt-2.5 leading-relaxed">
-                Akses analitik penonton, kelola monetisasi subscriber, dan publikasikan karya Anda melalui Studio Kreator.
-              </p>
-            </div>
-          </div>
-
-          <div className="w-full max-w-sm mx-auto space-y-2.5 pt-4">
-            <button
-              type="button"
-              onClick={() => navigate('studio')}
-              className="w-full py-3.5 rounded-xl text-white font-bold text-[14.5px] shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2"
-              style={{
-                background: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
-                boxShadow: '0 4px 14px rgba(123,31,162,0.35)',
-              }}
-            >
-              <span>Buka Studio Kreator GV</span>
-              <ArrowRight size={17} />
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('profile')}
-              className="w-full py-3 rounded-xl bg-surface-50 text-surface-600 font-semibold text-[13px] border border-surface-200 transition active:scale-[0.98] text-center"
-            >
-              Kembali ke Profil
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // ═════════════════════════════════════════════════════════════
   // ── SCREEN: PENDING / SEDANG DITINJAU ────────────────────────
   // ═════════════════════════════════════════════════════════════
   if (step === 'pending') {
@@ -363,12 +359,10 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
                   <span className="font-medium text-surface-800">{form.kategoriChannel}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-surface-500">Format:</span>
-                  <span className="font-medium text-surface-800">{form.tipeKonten.join(', ')}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-surface-500">Pencairan:</span>
-                  <span className="font-medium text-surface-800">{form.metodePencairan.toUpperCase()}</span>
+                  <span className="font-medium text-surface-800">
+                    {form.metodePencairan === 'gv_pay' ? 'GV PAY' : form.metodePencairan.toUpperCase()}
+                  </span>
                 </div>
               </div>
             </div>
@@ -380,6 +374,20 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
               type="button"
               onClick={() => {
                 localStorage.setItem('mockCreatorAppStatus', 'active')
+                localStorage.setItem(
+                  'mockCreatorChannelInfo',
+                  JSON.stringify({
+                    channelName: form.namaChannel || 'Channel Kreator GV',
+                    category: form.kategoriChannel,
+                    bio: form.bioChannel,
+                    avatar: form.avatar || '🌾',
+                    contentTypes: ['Video', 'Podcast'],
+                    payoutMethod: form.metodePencairan,
+                    accountNumber: form.nomorRekening,
+                    accountHolder: form.namaPemilik,
+                  })
+                )
+                localStorage.removeItem('mockCreatorDraft')
                 updateUser?.({ isCreator: true })
                 navigate('studio')
               }}
@@ -412,7 +420,6 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   const StepperHeader = ({ currentStepIndex }) => {
     const STEPS = [
       { id: 'channel', label: 'Channel' },
-      { id: 'konten', label: 'Konten' },
       { id: 'rekening', label: 'Monetisasi' },
       { id: 'review', label: 'Review' },
     ]
@@ -547,132 +554,14 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
             <button
               type="button"
               disabled={!isStep1Complete}
-              onClick={() => setStep('setup-konten')}
-              className={`w-full py-3.5 rounded-xl font-bold text-[14.5px] transition flex items-center justify-center gap-2 ${
-                isStep1Complete
-                  ? 'text-white shadow-md active:scale-[0.98] cursor-pointer'
-                  : 'bg-surface-200 text-surface-400 cursor-not-allowed'
-              }`}
-              style={
-                isStep1Complete
-                  ? {
-                      background: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
-                      boxShadow: '0 4px 14px rgba(123,31,162,0.3)',
-                    }
-                  : {}
-              }
-            >
-              <span>Lanjut: Pengaturan Konten</span>
-              <ArrowRight size={17} />
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: TAHAP 2 — PENGATURAN KONTEN & FORMAT ─────────────
-  // ═════════════════════════════════════════════════════════════
-  if (step === 'setup-konten') {
-    return (
-      <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Pengaturan Konten" onBack={() => setStep('setup-channel')} />
-        <StepperHeader currentStepIndex={1} />
-
-        <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
-          <div className="max-w-sm mx-auto w-full space-y-4 pt-1">
-            <div>
-              <h2 className="text-[17px] font-extrabold text-surface-900 leading-tight">
-                Format & Preferensi Publikasi
-              </h2>
-              <p className="text-[12px] text-surface-500 mt-1 leading-relaxed">
-                Pilih media konten yang ingin Anda produksi untuk menjangkau warga desa.
-              </p>
-            </div>
-
-            {/* Pilihan Multi-select Tipe Konten */}
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Format Konten <span className="text-red-500">*</span> (pilih satu atau lebih)
-              </label>
-              <div className="space-y-2.5">
-                {TIPE_KONTEN_OPTIONS.map((item) => {
-                  const isSelected = form.tipeKonten.includes(item.id)
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => toggleTipeKonten(item.id)}
-                      className={`p-3 rounded-2xl flex items-center gap-3 cursor-pointer transition border ${
-                        isSelected
-                          ? 'border-purple-600 bg-purple-50/50 shadow-2xs'
-                          : 'border-surface-200 bg-white hover:bg-surface-50'
-                      }`}
-                    >
-                      <SkeuoIcon size="xs" gradient={item.gradient} icon={item.icon} />
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-bold text-surface-900 leading-tight">
-                          {item.title}
-                        </p>
-                        <p className="text-[11px] text-surface-500 mt-0.5">{item.desc}</p>
-                      </div>
-                      <div
-                        className={`w-5 h-5 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'border-purple-700 bg-purple-700 text-white' : 'border-surface-300'
-                        }`}
-                      >
-                        {isSelected && <Check size={11} strokeWidth={3} />}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* Preferensi Akses Publikasi */}
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Akses Penonton Awal
-              </label>
-              <select
-                value={form.preferensiPublikasi}
-                onChange={(e) => setForm((f) => ({ ...f, preferensiPublikasi: e.target.value }))}
-                className="w-full bg-white border border-surface-200 rounded-xl px-3 py-3 text-[13px] font-semibold text-surface-800 focus:outline-none focus:border-purple-700 shadow-2xs transition"
-              >
-                <option value="Semua Warga (Publik)">Semua Warga (Publik Bebas Nonton)</option>
-                <option value="Eksklusif GV+">Kombinasi Publik & Eksklusif Member GV+</option>
-              </select>
-            </div>
-
-            {/* Frekuensi Upload */}
-            <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Rencana Jadwal Tayang
-              </label>
-              <select
-                value={form.frekuensiUpload}
-                onChange={(e) => setForm((f) => ({ ...f, frekuensiUpload: e.target.value }))}
-                className="w-full bg-white border border-surface-200 rounded-xl px-3 py-3 text-[13px] font-semibold text-surface-800 focus:outline-none focus:border-purple-700 shadow-2xs transition"
-              >
-                <option value="1-2x per minggu">1 – 2 kali per minggu</option>
-                <option value="3-5x per minggu">3 – 5 kali per minggu</option>
-                <option value="Jadwal Fleksibel">Jadwal Fleksibel / Sesuai Panen & Acara</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="max-w-sm mx-auto w-full pt-4 pb-2 space-y-2">
-            <button
-              type="button"
-              disabled={!isStep2Complete}
               onClick={() => setStep('setup-rekening')}
               className={`w-full py-3.5 rounded-xl font-bold text-[14.5px] transition flex items-center justify-center gap-2 ${
-                isStep2Complete
+                isStep1Complete
                   ? 'text-white shadow-md active:scale-[0.98] cursor-pointer'
                   : 'bg-surface-200 text-surface-400 cursor-not-allowed'
               }`}
               style={
-                isStep2Complete
+                isStep1Complete
                   ? {
                       background: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
                       boxShadow: '0 4px 14px rgba(123,31,162,0.3)',
@@ -683,13 +572,6 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
               <span>Lanjut: Rekening Monetisasi</span>
               <ArrowRight size={17} />
             </button>
-            <button
-              type="button"
-              onClick={() => setStep('setup-channel')}
-              className="w-full py-2.5 text-[13px] font-semibold text-surface-500 hover:text-surface-800 transition text-center"
-            >
-              Kembali
-            </button>
           </div>
         </div>
       </div>
@@ -697,13 +579,13 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   }
 
   // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: TAHAP 3 — REKENING MONETISASI & ROYALTI ─────────
+  // ── SCREEN: TAHAP 2 — REKENING MONETISASI & ROYALTI ─────────
   // ═════════════════════════════════════════════════════════════
   if (step === 'setup-rekening') {
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-        <ScreenHeader title="Rekening Monetisasi" onBack={() => setStep('setup-konten')} />
-        <StepperHeader currentStepIndex={2} />
+        <ScreenHeader title="Rekening Monetisasi" onBack={() => setStep('setup-channel')} />
+        <StepperHeader currentStepIndex={1} />
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
           <div className="max-w-sm mx-auto w-full space-y-4 pt-1">
@@ -751,14 +633,29 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
               </div>
             </div>
 
-            {/* Nomor Rekening */}
+            {/* Nomor Rekening / Nomor GV Pay Dinamis */}
             <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Nomor Rekening / Nomor GV Pay <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-surface-700">
+                  {form.metodePencairan === 'gv_pay' ? 'Nomor GV Pay' : 'Nomor Rekening'} <span className="text-red-500">*</span>
+                </label>
+                {userData?.phone && form.nomorRekening !== userData.phone && (
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, nomorRekening: userData.phone }))}
+                    className="text-[10.5px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 hover:bg-purple-100 transition active:scale-95"
+                  >
+                    Gunakan No. HP ({userData.phone})
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
-                placeholder="cth. 08123456789 atau nomor rekening"
+                placeholder={
+                  form.metodePencairan === 'gv_pay'
+                    ? 'cth. 08123456789 (No. HP GV Pay)'
+                    : 'cth. 1234567890 (No. rekening)'
+                }
                 value={form.nomorRekening}
                 onChange={(e) => setForm((f) => ({ ...f, nomorRekening: e.target.value }))}
                 className="w-full bg-white border border-surface-200 rounded-xl px-4 py-3 text-[13px] font-bold text-surface-900 focus:outline-none focus:border-purple-700 shadow-2xs transition"
@@ -767,9 +664,26 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
 
             {/* Nama Pemilik Rekening */}
             <div>
-              <label className="block text-xs font-semibold text-surface-700 mb-1.5">
-                Nama Pemilik Rekening <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-semibold text-surface-700">
+                  Nama Pemilik Rekening <span className="text-red-500">*</span>
+                </label>
+                {(userData?.name || userProfile?.name) &&
+                  form.namaPemilik !== (userData?.name || userProfile?.name) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((f) => ({
+                          ...f,
+                          namaPemilik: userData?.name || userProfile?.name,
+                        }))
+                      }
+                      className="text-[10.5px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 hover:bg-purple-100 transition active:scale-95"
+                    >
+                      Gunakan Nama ({userData?.name || userProfile?.name})
+                    </button>
+                  )}
+              </div>
               <input
                 type="text"
                 placeholder="Harus sesuai dengan nama identitas KTP"
@@ -802,15 +716,15 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
           <div className="max-w-sm mx-auto w-full pt-4 pb-2 space-y-2">
             <button
               type="button"
-              disabled={!isStep3Complete}
+              disabled={!isStep2Complete}
               onClick={() => setStep('setup-review')}
               className={`w-full py-3.5 rounded-xl font-bold text-[14.5px] transition flex items-center justify-center gap-2 ${
-                isStep3Complete
+                isStep2Complete
                   ? 'text-white shadow-md active:scale-[0.98] cursor-pointer'
                   : 'bg-surface-200 text-surface-400 cursor-not-allowed'
               }`}
               style={
-                isStep3Complete
+                isStep2Complete
                   ? {
                       background: 'linear-gradient(135deg, #4A148C, #7B1FA2)',
                       boxShadow: '0 4px 14px rgba(123,31,162,0.3)',
@@ -823,10 +737,10 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
             </button>
             <button
               type="button"
-              onClick={() => setStep('setup-konten')}
+              onClick={() => setStep('setup-channel')}
               className="w-full py-2.5 text-[13px] font-semibold text-surface-500 hover:text-surface-800 transition text-center"
             >
-              Kembali ke Pengaturan Konten
+              Kembali ke Identitas Channel
             </button>
           </div>
         </div>
@@ -835,13 +749,13 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   }
 
   // ═════════════════════════════════════════════════════════════
-  // ── SCREEN: TAHAP 4 — REVIEW & KONFIRMASI CHANNEL ───────────
+  // ── SCREEN: TAHAP 3 — REVIEW & KONFIRMASI CHANNEL ───────────
   // ═════════════════════════════════════════════════════════════
   if (step === 'setup-review') {
     return (
       <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
         <ScreenHeader title="Review Pendaftaran Channel" onBack={() => setStep('setup-rekening')} />
-        <StepperHeader currentStepIndex={3} />
+        <StepperHeader currentStepIndex={2} />
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
           <div className="max-w-sm mx-auto w-full space-y-4 pt-1">
@@ -880,17 +794,6 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
               <p className="text-[12px] text-surface-600 leading-relaxed italic">
                 "{form.bioChannel}"
               </p>
-
-              <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-surface-50">
-                {form.tipeKonten.map((tipe) => (
-                  <span
-                    key={tipe}
-                    className="bg-surface-100 text-surface-700 text-[10.5px] font-bold px-2.5 py-0.5 rounded-full"
-                  >
-                    {tipe}
-                  </span>
-                ))}
-              </div>
             </GlassCard>
 
             {/* Card Rekening Pencairan */}
@@ -913,7 +816,7 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-bold text-[13px] text-surface-900">
-                    {form.metodePencairan.toUpperCase()} · {form.nomorRekening}
+                    {form.metodePencairan === 'gv_pay' ? 'GV PAY' : form.metodePencairan.toUpperCase()} · {form.nomorRekening}
                   </p>
                   <p className="text-[11.5px] text-surface-500 mt-0.5">a.n. {form.namaPemilik}</p>
                 </div>
@@ -932,6 +835,19 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
               type="button"
               onClick={() => {
                 localStorage.setItem('mockCreatorAppStatus', 'pending')
+                localStorage.setItem(
+                  'mockCreatorChannelInfo',
+                  JSON.stringify({
+                    channelName: form.namaChannel || 'Channel Baru',
+                    category: form.kategoriChannel,
+                    bio: form.bioChannel,
+                    avatar: form.avatar || '🌾',
+                    contentTypes: ['Video', 'Podcast'],
+                    payoutMethod: form.metodePencairan,
+                    accountNumber: form.nomorRekening,
+                    accountHolder: form.namaPemilik,
+                  })
+                )
                 localStorage.removeItem('mockCreatorDraft')
                 updateUser?.({ kreatorStatus: 'pending' })
                 setAppStatus('pending')
@@ -964,7 +880,7 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
   // ═════════════════════════════════════════════════════════════
   return (
     <div className="h-full flex flex-col bg-[#FAFBF9] select-none overflow-hidden relative">
-      <ScreenHeader title="Kreator GV" onBack={() => navigate('profile')} />
+      <ScreenHeader title="Aktivasi Kreator GV" onBack={() => navigate('profile')} />
 
       <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between pb-6">
         <div className="max-w-sm mx-auto w-full space-y-4">
@@ -1001,19 +917,19 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
                   Tahapan Setup Channel
                 </p>
                 <p className="text-[11px] text-surface-500 mt-0.5">
-                  {completedStepsCount} dari 3 tahap terisi
+                  {completedStepsCount} dari 2 tahap terisi
                 </p>
               </div>
               <span
                 className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full ${
-                  completedStepsCount === 3
+                  completedStepsCount === 2
                     ? 'bg-purple-50 text-purple-800 border border-purple-200'
                     : completedStepsCount > 0
                     ? 'bg-blue-50 text-blue-800 border border-blue-200'
                     : 'bg-surface-100 text-surface-500'
                 }`}
               >
-                {completedStepsCount === 3
+                {completedStepsCount === 2
                   ? 'Siap Review'
                   : completedStepsCount > 0
                   ? 'Sedang Diproses'
@@ -1049,7 +965,7 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
 
               {/* Tahap 2 */}
               <div
-                onClick={() => setStep('setup-konten')}
+                onClick={() => setStep('setup-rekening')}
                 className="p-3 rounded-xl border border-surface-100 bg-surface-50/70 flex items-center justify-between cursor-pointer hover:bg-surface-100/70 transition"
               >
                 <div className="flex items-center gap-3">
@@ -1061,39 +977,16 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
                     {isStep2Complete ? <Check size={14} strokeWidth={3} /> : '2'}
                   </div>
                   <div>
-                    <p className="font-bold text-[12.5px] text-surface-900">Pengaturan Format Konten</p>
+                    <p className="font-bold text-[12.5px] text-surface-900">Rekening Monetisasi</p>
                     <p className="text-[11px] text-surface-400">
-                      {isStep2Complete ? form.tipeKonten.join(', ') : 'Video, Podcast, atau Live'}
+                      {isStep2Complete
+                        ? (form.metodePencairan === 'gv_pay' ? 'GV PAY' : form.metodePencairan.toUpperCase())
+                        : 'Bank atau Dompet GV Pay'}
                     </p>
                   </div>
                 </div>
                 <span className="text-[11px] font-bold text-purple-700">
                   {isStep2Complete ? 'Ubah' : 'Isi →'}
-                </span>
-              </div>
-
-              {/* Tahap 3 */}
-              <div
-                onClick={() => setStep('setup-rekening')}
-                className="p-3 rounded-xl border border-surface-100 bg-surface-50/70 flex items-center justify-between cursor-pointer hover:bg-surface-100/70 transition"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-extrabold ${
-                      isStep3Complete ? 'bg-purple-700 text-white' : 'bg-surface-200 text-surface-600'
-                    }`}
-                  >
-                    {isStep3Complete ? <Check size={14} strokeWidth={3} /> : '3'}
-                  </div>
-                  <div>
-                    <p className="font-bold text-[12.5px] text-surface-900">Rekening Monetisasi</p>
-                    <p className="text-[11px] text-surface-400">
-                      {isStep3Complete ? form.metodePencairan.toUpperCase() : 'Bank atau Dompet GV Pay'}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[11px] font-bold text-purple-700">
-                  {isStep3Complete ? 'Ubah' : 'Isi →'}
                 </span>
               </div>
             </div>
@@ -1132,12 +1025,10 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
           <button
             type="button"
             onClick={() => {
-              if (completedStepsCount === 3) {
+              if (completedStepsCount === 2) {
                 setStep('setup-review')
               } else if (!isStep1Complete) {
                 setStep('setup-channel')
-              } else if (!isStep2Complete) {
-                setStep('setup-konten')
               } else {
                 setStep('setup-rekening')
               }
@@ -1149,7 +1040,7 @@ export default function AktivasiKreator({ navigate, userData, updateUser, userPr
             }}
           >
             <span>
-              {completedStepsCount === 3
+              {completedStepsCount === 2
                 ? 'Review & Daftarkan Channel'
                 : completedStepsCount > 0
                 ? 'Lanjutkan Setup Channel'

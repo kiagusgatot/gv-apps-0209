@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
 import { ArrowLeft, ArrowRight, Upload, Play, Crown, BarChart2,
   Eye, TrendingUp, ChevronRight, Video as VideoIcon,
   Edit2, Trash2, Send, Heart, MessageCircle, MoreHorizontal,
@@ -15,6 +16,31 @@ const S = {
   card:   '0 2px 8px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04)',
   cardMd: '0 4px 16px rgba(0,0,0,0.09), 0 2px 4px rgba(0,0,0,0.06)',
 }
+
+const KATEGORI_CHANNEL = [
+  'Pertanian & Agribisnis',
+  'Edukasi & Tutorial Desa',
+  'Bisnis & UMKM Desa',
+  'Seni & Budaya Lokal',
+  'Kuliner Tradisional',
+  'Kesehatan & Herbal',
+  'Hiburan & Vlogging',
+]
+
+const BANK_OPTIONS = [
+  { id: 'gv_pay', label: 'GV Pay (Instan & Bebas Biaya)', icon: '⚡' },
+  { id: 'bri', label: 'Bank BRI', icon: '🏦' },
+  { id: 'mandiri', label: 'Bank Mandiri', icon: '🏦' },
+  { id: 'bca', label: 'Bank BCA', icon: '🏦' },
+  { id: 'bni', label: 'Bank BNI', icon: '🏦' },
+  { id: 'bsi', label: 'Bank Syariah Indonesia (BSI)', icon: '🏦' },
+]
+
+const PRIMARY_TABS = [
+  { id: 'konten', label: 'Konten' },
+  { id: 'membership', label: 'Membership' },
+  { id: 'analitik', label: 'Analitik' },
+]
 
 // ── Helpers ────────────────────────────────────────────────
 function now() {
@@ -174,12 +200,28 @@ function GlobalUploadModal({ onClose, onVideoUpload, onPostCompose }) {
   )
 }
 
-// ── Tab: Konten ────────────────────────────────────────────
-function TabKonten({ showUpload, setUpload }) {
+// ── Tab: Konten (Video & Post via Sub-Toggle) ──────────────
+function TabKonten({
+  subTab,
+  setSubTab,
+  showUpload,
+  setUpload,
+  postComposeType,
+  clearCompose,
+  postTrigger,
+  onEditVideoChange,
+  onComposePostChange,
+}) {
   const [contents, setContents] = useState(STUDIO_CONTENT_INIT)
   const [filter, setFilter]     = useState('all')
   const [editItem, setEditItem] = useState(null)
   const [editForm, setEditForm] = useState({})
+
+  useEffect(() => {
+    if (postComposeType) {
+      setSubTab?.('post')
+    }
+  }, [postComposeType, setSubTab])
 
   const filtered = contents.filter(c =>
     filter==='all'    ? true :
@@ -191,207 +233,241 @@ function TabKonten({ showUpload, setUpload }) {
   const openEdit = c => {
     setEditItem(c)
     setEditForm({ title:c.title, ep:c.ep, desc:c.desc||'', isExclusive:c.isExclusive })
+    onEditVideoChange?.(true)
+  }
+
+  const closeEdit = () => {
+    setEditItem(null)
+    onEditVideoChange?.(false)
   }
 
   const saveEdit = () => {
     setContents(prev => prev.map(c => c.id===editItem.id ? {...c,...editForm} : c))
-    setEditItem(null)
+    closeEdit()
   }
 
   const deleteItem = () => {
     setContents(prev => prev.filter(c => c.id!==editItem.id))
-    setEditItem(null)
+    closeEdit()
   }
 
+  useEffect(() => {
+    return () => {
+      onEditVideoChange?.(false)
+    }
+  }, [onEditVideoChange])
+
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-3 pb-24">
-      {/* Action Toolbar */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
-          {[['all','Semua'],['tayang','Tayang'],['review','Review'],['publik','Publik'],['member','Members only']].map(([id,label])=>(
-            <button key={id} onClick={()=>setFilter(id)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11.5px] font-bold border transition ${
-                filter===id
-                  ? 'bg-surface-900 text-white border-surface-900 shadow-2xs'
-                  : 'bg-white text-surface-600 border-surface-200 hover:bg-surface-50'
-              }`}>
-              {label}
-            </button>
-          ))}
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* ── Sub-Toggle (Video | Post) — Pill Style ── */}
+      <div className="px-4 pt-3 pb-1 flex-shrink-0">
+        <div className="flex bg-surface-100 p-1 rounded-2xl border border-surface-200/70 shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setSubTab?.('video')}
+            className={`flex-1 py-1.5 rounded-xl text-[12px] font-bold transition flex items-center justify-center gap-1.5 active:scale-[0.98] ${
+              subTab === 'video'
+                ? 'bg-white text-surface-900 shadow-xs'
+                : 'text-surface-500 hover:text-surface-800'
+            }`}
+          >
+            <VideoIcon size={13} className={subTab === 'video' ? 'text-purple-700' : 'text-surface-400'} />
+            <span>Video ({contents.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubTab?.('post')}
+            className={`flex-1 py-1.5 rounded-xl text-[12px] font-bold transition flex items-center justify-center gap-1.5 active:scale-[0.98] ${
+              subTab === 'post'
+                ? 'bg-white text-surface-900 shadow-xs'
+                : 'text-surface-500 hover:text-surface-800'
+            }`}
+          >
+            <PenSquare size={13} className={subTab === 'post' ? 'text-purple-700' : 'text-surface-400'} />
+            <span>Post ({STUDIO_POSTS_INIT.length})</span>
+          </button>
         </div>
-
-        <button onClick={()=>setUpload(true)}
-          className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-[11.5px] font-bold text-white shadow-sm active:scale-95 transition flex items-center gap-1"
-          style={{background:'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)'}}>
-          <Upload size={13}/>
-          <span>Upload</span>
-        </button>
       </div>
 
-      {/* Content list as elevated modern cards */}
-      <div className="space-y-3">
-        {filtered.map((c)=>(
-          <div key={c.id} className="bg-white rounded-3xl p-3.5 border border-surface-100 shadow-sm transition hover:shadow-brand-sm flex gap-3.5 items-start">
-            <div className="relative flex-shrink-0 rounded-2xl overflow-hidden shadow-xs"
-              style={{width:116,height:70,background:`linear-gradient(135deg,${c.g[0]},${c.g[1]})`}}>
-              <div className="absolute inset-0 flex items-center justify-center">
-                {c.isExclusive
-                  ? <Crown size={18} style={{color:'#F9A825'}}/>
-                  : <Play size={18} className="text-white/80" fill="rgba(255,255,255,0.6)"/>}
-              </div>
-              <span className="absolute bottom-1 end-1 text-[10px] font-black text-white px-1.5 py-0.5 rounded bg-black/60">
-                {c.dur}
-              </span>
-              {c.isExclusive && (
-                <div className="absolute top-1 start-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[9px] font-black">
-                  Members
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold text-surface-900 leading-snug line-clamp-2">{c.title}</p>
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                <span className="text-[11px] text-surface-400 font-medium">{c.ep}</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border"
-                  style={c.status==='review'
-                    ? {background:'#FFF7ED',color:'#EA580C',borderColor:'#FFEDD5'}
-                    : {background:'#ECFDF5',color:'#059669',borderColor:'#A7F3D0'}}>
-                  {c.status==='review' ? '⏳ Review' : '✓ Tayang'}
-                </span>
-              </div>
-              {!c.isExclusive && c.views!=='—' && (
-                <div className="flex items-center gap-3 mt-2 text-[11.5px] text-surface-400">
-                  <span className="flex items-center gap-1"><Eye size={11}/><span className="tabular-nums font-bold text-surface-700">{c.views}</span></span>
-                  <span className="flex items-center gap-1">❤️ <span className="tabular-nums font-bold text-surface-700">{c.likes}</span></span>
-                </div>
-              )}
-            </div>
-
-            <button onClick={()=>openEdit(c)}
-              className="p-2 rounded-xl bg-surface-100 hover:bg-surface-200 text-surface-600 transition active:scale-95 flex-shrink-0"
-              title="Edit Video">
-              <Edit2 size={14}/>
-            </button>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Edit metadata sheet ── */}
-      {editItem && (
-        <div className="absolute inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={()=>setEditItem(null)}/>
-          <div className="relative rounded-t-3xl bg-white px-5 pt-4 pb-8 animate-slide-up"
-            style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
-            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4"/>
-            {/* Preview */}
-            <div className="flex items-center gap-3 mb-5">
-              <div className="relative flex-shrink-0 rounded-xl overflow-hidden"
-                style={{width:64,height:40,background:`linear-gradient(135deg,${editItem.g[0]},${editItem.g[1]})`}}>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Play size={12} className="text-white/70" fill="rgba(255,255,255,0.5)"/>
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-gray-900 line-clamp-1">{editItem.title}</p>
-                <p className="text-[12px] text-gray-400 mt-0.5">{editItem.dur}</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 mb-5">
-              {/* Judul */}
-              <div>
-                <p className="text-[12px] font-semibold text-gray-400 mb-2">Judul</p>
-                <input value={editForm.title}
-                  onChange={e=>setEditForm(f=>({...f,title:e.target.value}))}
-                  className="w-full rounded-2xl px-4 py-3 text-[13px] outline-none spotlight-border"
-                  style={{border:'1.5px solid #E0E0E0',background:'#FAFAFA'}}/>
-              </div>
-
-              {/* Label Episode — opsional */}
-              <div>
-                <div className="flex items-center gap-1.5 mb-2">
-                  <p className="text-[12px] font-semibold text-gray-400">Label Episode</p>
-                  <span className="text-[11px] text-gray-400 px-1.5 py-0.5 rounded-md" style={{background:'#F0F0F0'}}>Opsional</span>
-                </div>
-                <input value={editForm.ep}
-                  onChange={e=>setEditForm(f=>({...f,ep:e.target.value}))}
-                  placeholder="Contoh: Eps. 4"
-                  className="w-full rounded-2xl px-4 py-3 text-[13px] outline-none spotlight-border"
-                  style={{border:'1.5px solid #E0E0E0',background:'#FAFAFA'}}/>
-              </div>
-
-              {/* Deskripsi */}
-              <div>
-                <p className="text-[12px] font-semibold text-gray-400 mb-2">Deskripsi</p>
-                <textarea value={editForm.desc}
-                  onChange={e=>setEditForm(f=>({...f,desc:e.target.value}))}
-                  placeholder="Ceritakan isi video ini kepada penonton..."
-                  className="w-full rounded-2xl px-4 py-3 text-[13px] outline-none resize-none spotlight-border"
-                  style={{border:'1.5px solid #E0E0E0',background:'#FAFAFA',minHeight:72}}/>
-              </div>
-
-              {/* Tipe konten */}
-              <div>
-                <p className="text-[12px] font-semibold text-gray-400 mb-2">Tipe Konten</p>
-                <div className="flex gap-2">
-                  {[[false,'🌐','Publik',PRIMARY],[true,'👑','Members only','#F9A825']].map(([val,ico,label,color])=>(
-                    <button key={label} onClick={()=>setEditForm(f=>({...f,isExclusive:val}))}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[11px] font-bold border-2 transition"
-                      style={editForm.isExclusive===val
-                        ? {borderColor:color,background:`${color}12`,color:color}
-                        : {borderColor:'#E0E0E0',background:'#FAFAFA',color:'#9CA3AF'}}>
-                      {ico} {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <button onClick={saveEdit}
-              className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white mb-2 transition active:scale-[0.96]"
-              style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:`0 4px 12px ${PRIMARY}40`}}>
-              Simpan Perubahan
-            </button>
-            <button onClick={deleteItem}
-              className="w-full py-3 rounded-2xl text-[12px] font-semibold flex items-center justify-center gap-2 transition active:scale-[0.96]"
-              style={{color:'#EF4444',background:'#FEF2F2'}}>
-              <Trash2 size={13}/> Hapus Konten
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Upload video modal — 2 opsi video */}
-      {showUpload && (
-        <div className="absolute inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={()=>setUpload(false)}/>
-          <div className="relative rounded-t-3xl px-5 pt-5 pb-8 bg-white animate-slide-up"
-            style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
-            <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5"/>
-            <p className="text-[16px] font-extrabold text-gray-900 mb-1">Upload Video</p>
-            <p className="text-[11px] text-gray-400 mb-4">Pilih tipe penayangan untuk video-mu.</p>
-            <div className="flex flex-col gap-3 mb-4">
-              {[
-                {icon:'🎬',label:'Video Publik',      sub:'Dapat ditonton semua pengguna GV',color:PRIMARY,  exclusive:false},
-                {icon:'👑',label:'Video Members only',sub:'Hanya untuk member channel-mu',  color:'#F9A825',exclusive:true},
-              ].map(opt=>(
-                <UploadVideoFlow key={opt.label} opt={opt} onDone={()=>setUpload(false)}/>
+      {subTab === 'video' ? (
+        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-28">
+          {/* Action Toolbar without Upload button */}
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
+              {[['all','Semua'],['tayang','Tayang'],['review','Review'],['publik','Publik'],['member','Members only']].map(([id,label])=>(
+                <button key={id} onClick={()=>setFilter(id)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11.5px] font-bold border transition ${
+                    filter===id
+                      ? 'bg-surface-900 text-white border-surface-900 shadow-2xs'
+                      : 'bg-white text-surface-600 border-surface-200 hover:bg-surface-50'
+                  }`}>
+                  {label}
+                </button>
               ))}
             </div>
-            <button onClick={()=>setUpload(false)}
-              className="w-full py-3 rounded-2xl text-[12px] font-semibold text-gray-400">
-              Batal
-            </button>
           </div>
+
+          {/* Content list as elevated modern cards */}
+          <div className="space-y-3">
+            {filtered.map((c)=>(
+              <div key={c.id} className="bg-white rounded-3xl p-3.5 border border-surface-100 shadow-sm transition hover:shadow-brand-sm flex gap-3.5 items-start">
+                <div className="relative flex-shrink-0 rounded-2xl overflow-hidden shadow-xs"
+                  style={{width:116,height:70,background:`linear-gradient(135deg,${c.g[0]},${c.g[1]})`}}>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    {c.isExclusive
+                      ? <Crown size={18} style={{color:'#F9A825'}}/>
+                      : <Play size={18} className="text-white/80" fill="rgba(255,255,255,0.6)"/>}
+                  </div>
+                  <span className="absolute bottom-1 end-1 text-[10px] font-black text-white px-1.5 py-0.5 rounded bg-black/60">
+                    {c.dur}
+                  </span>
+                  {c.isExclusive && (
+                    <div className="absolute top-1 start-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[9px] font-black">
+                      Members
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-surface-900 leading-snug line-clamp-2">{c.title}</p>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <span className="text-[11px] text-surface-400 font-medium">{c.ep}</span>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full border"
+                      style={c.status==='review'
+                        ? {background:'#FFF7ED',color:'#EA580C',borderColor:'#FFEDD5'}
+                        : {background:'#ECFDF5',color:'#059669',borderColor:'#A7F3D0'}}>
+                      {c.status==='review' ? '⏳ Review' : '✓ Tayang'}
+                    </span>
+                  </div>
+                  {!c.isExclusive && c.views!=='—' && (
+                    <div className="flex items-center gap-3 mt-2 text-[11.5px] text-surface-400">
+                      <span className="flex items-center gap-1"><Eye size={11}/><span className="tabular-nums font-bold text-surface-700">{c.views}</span></span>
+                      <span className="flex items-center gap-1">❤️ <span className="tabular-nums font-bold text-surface-700">{c.likes}</span></span>
+                    </div>
+                  )}
+                </div>
+
+                <button onClick={()=>openEdit(c)}
+                  className="p-2 rounded-xl bg-surface-100 hover:bg-surface-200 text-surface-600 transition active:scale-95 flex-shrink-0"
+                  title="Edit Video">
+                  <Edit2 size={14}/>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Edit metadata sheet ── */}
+          {editItem && (
+            <div className="absolute inset-0 z-50 flex flex-col justify-end">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeEdit}/>
+              <div className="relative rounded-t-3xl bg-white px-5 pt-4 pb-8 animate-slide-up"
+                style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
+                <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-4"/>
+                {/* Preview */}
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="relative flex-shrink-0 rounded-xl overflow-hidden"
+                    style={{width:64,height:40,background:`linear-gradient(135deg,${editItem.g[0]},${editItem.g[1]})`}}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play size={12} className="text-white/70" fill="rgba(255,255,255,0.5)"/>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-gray-900 line-clamp-1">{editItem.title}</p>
+                    <p className="text-[12px] text-gray-400 mt-0.5">{editItem.dur}</p>
+                  </div>
+                </div>
+
+                {/* Form edit */}
+                <div className="space-y-3 mb-5">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 block mb-1">Judul Video</label>
+                    <input value={editForm.title||''} onChange={e=>setEditForm(f=>({...f,title:e.target.value}))}
+                      className="w-full text-[13px] font-semibold text-gray-900 px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-700"/>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 block mb-1">Episode / Keterangan</label>
+                    <input value={editForm.ep||''} onChange={e=>setEditForm(f=>({...f,ep:e.target.value}))}
+                      placeholder="Eps. 1"
+                      className="w-full text-[13px] text-gray-800 px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-700"/>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 block mb-1">Deskripsi</label>
+                    <textarea value={editForm.desc||''} onChange={e=>setEditForm(f=>({...f,desc:e.target.value}))}
+                      rows={2}
+                      className="w-full text-[12px] text-gray-800 px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-purple-700 resize-none"/>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-400 block mb-1.5">Akses Video</label>
+                    <div className="flex gap-2">
+                      {[
+                        { val:false, label:'Publik',       ico:'🌐', color:'#1B6B3A' },
+                        { val:true,  label:'Members only', ico:'👑', color:'#F9A825' },
+                      ].map(({val,label,ico,color})=>(
+                        <button key={label} onClick={()=>setEditForm(f=>({...f,isExclusive:val}))}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl text-[11px] font-bold border-2 transition"
+                          style={editForm.isExclusive===val
+                            ? {borderColor:color,background:`${color}12`,color:color}
+                            : {borderColor:'#E0E0E0',background:'#FAFAFA',color:'#9CA3AF'}}>
+                          {ico} {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <button onClick={saveEdit}
+                  className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white mb-2 transition active:scale-[0.96]"
+                  style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:`0 4px 12px ${PRIMARY}40`}}>
+                  Simpan Perubahan
+                </button>
+                <button onClick={deleteItem}
+                  className="w-full py-3 rounded-2xl text-[12px] font-semibold flex items-center justify-center gap-2 transition active:scale-[0.96]"
+                  style={{color:'#EF4444',background:'#FEF2F2'}}>
+                  <Trash2 size={13}/> Hapus Konten
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Upload video modal — 2 opsi video */}
+          {showUpload && (
+            <div className="absolute inset-0 z-50 flex flex-col justify-end">
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={()=>setUpload(false)}/>
+              <div className="relative rounded-t-3xl px-5 pt-5 pb-8 bg-white animate-slide-up"
+                style={{boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
+                <div className="w-10 h-1 rounded-full bg-gray-200 mx-auto mb-5"/>
+                <p className="text-[16px] font-extrabold text-gray-900 mb-1">Upload Video</p>
+                <p className="text-[11px] text-gray-400 mb-4">Pilih tipe penayangan untuk video-mu.</p>
+                <div className="flex flex-col gap-3 mb-4">
+                  {[
+                    {icon:'🎬',label:'Video Publik',      sub:'Dapat ditonton semua pengguna GV',color:PRIMARY,  exclusive:false},
+                    {icon:'👑',label:'Video Members only',sub:'Hanya untuk member channel-mu',  color:'#F9A825',exclusive:true},
+                  ].map(opt=>(
+                    <UploadVideoFlow key={opt.label} opt={opt} onDone={()=>setUpload(false)}/>
+                  ))}
+                </div>
+                <button onClick={()=>setUpload(false)}
+                  className="w-full py-3 rounded-2xl text-[12px] font-semibold text-gray-400">
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+      ) : (
+        <TabPost
+          autoComposeType={postComposeType}
+          clearAutoCompose={clearCompose}
+          triggerOpenCompose={postTrigger}
+          onComposeChange={onComposePostChange}
+        />
       )}
     </div>
   )
 }
 
 // ── Tab: Post ──────────────────────────────────────────────
-function TabPost({ autoComposeType, clearAutoCompose }) {
+function TabPost({ autoComposeType, clearAutoCompose, triggerOpenCompose, onComposeChange }) {
   const [posts, setPosts]         = useState(STUDIO_POSTS_INIT)
   const [showCompose, setCompose] = useState(false)
   const [composeText, setText]    = useState('')
@@ -402,19 +478,16 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
   const [filter, setFilter]       = useState('all')
   const fileRef                   = useRef(null)
 
-  // Dibuka dari header Upload → Post Teks
-  useEffect(()=>{
-    if (autoComposeType) {
-      setType(autoComposeType)
-      setText(''); setPhoto(null); setEditing(null)
-      setCompose(true)
-      clearAutoCompose()
-    }
-  }, [autoComposeType])
-
   const openCompose = () => {
     setEditing(null); setText(''); setPhoto(null); setType('publik')
     setCompose(true)
+    onComposeChange?.(true)
+  }
+
+  const closeCompose = () => {
+    setText(''); setPhoto(null); setEditing(null)
+    setCompose(false)
+    onComposeChange?.(false)
   }
 
   const openEdit = p => {
@@ -424,7 +497,31 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
     setPhoto(p.photo || null)
     setMenu(null)
     setCompose(true)
+    onComposeChange?.(true)
   }
+
+  useEffect(() => {
+    if (triggerOpenCompose) {
+      openCompose()
+    }
+  }, [triggerOpenCompose])
+
+  // Dibuka dari header Upload → Post Teks
+  useEffect(()=>{
+    if (autoComposeType) {
+      setType(autoComposeType)
+      setText(''); setPhoto(null); setEditing(null)
+      setCompose(true)
+      onComposeChange?.(true)
+      clearAutoCompose()
+    }
+  }, [autoComposeType])
+
+  useEffect(() => {
+    return () => {
+      onComposeChange?.(false)
+    }
+  }, [onComposeChange])
 
   const handlePhoto = e => {
     const file = e.target.files?.[0]
@@ -448,7 +545,7 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
         likes:0, comments:0, isExclusive:composeType==='member', photo:composePhoto,
       }, ...prev])
     }
-    setText(''); setPhoto(null); setEditing(null); setCompose(false)
+    closeCompose()
   }
 
   const deletePost = id => { setPosts(p=>p.filter(x=>x.id!==id)); setMenu(null) }
@@ -460,16 +557,8 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
   )
 
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar pb-20">
-      <div className="px-4 pt-4 pb-3">
-        <button onClick={openCompose}
-          className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white flex items-center justify-center gap-2 transition active:scale-[0.96]"
-          style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)',boxShadow:`0 4px 12px ${PRIMARY}40`}}>
-          <PenSquare size={15}/> Buat Post Baru
-        </button>
-      </div>
-
-      <div className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
+    <div className="flex-1 overflow-y-auto no-scrollbar pb-28">
+      <div className="flex gap-2 px-4 pt-2 pb-3 overflow-x-auto no-scrollbar">
         {[['all','Semua'],['publik','Publik'],['member','Members only']].map(([id,label])=>(
           <button key={id} onClick={()=>setFilter(id)}
             className="flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border transition duration-300"
@@ -558,7 +647,7 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
       {/* ── Compose / Edit sheet ── */}
       {showCompose && (
         <div className="absolute inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/50" onClick={()=>setCompose(false)}/>
+          <div className="absolute inset-0 bg-black/50" onClick={closeCompose}/>
           <div className="relative rounded-t-3xl bg-white flex flex-col"
             style={{maxHeight:'85%',boxShadow:'0 -4px 32px rgba(0,0,0,0.18)'}}>
 
@@ -567,7 +656,7 @@ function TabPost({ autoComposeType, clearAutoCompose }) {
               <p className="text-[15px] font-extrabold text-gray-900">
                 {editingPost ? 'Edit Post' : 'Buat Post'}
               </p>
-              <button onClick={()=>setCompose(false)}
+              <button onClick={closeCompose}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
                 style={{background:'#F5F5F5'}}>
                 <X size={15} className="text-gray-500"/>
@@ -1013,132 +1102,315 @@ function TabMembership() {
   )
 }
 
-// ── Tab: Pengaturan ────────────────────────────────────────
-function TabPengaturan({ userProfile, userData, onSaveSuccess }) {
-  const [channelName, setChannelName] = useState(userProfile?.name ? `Channel ${userProfile.name}` : 'Pak Tani Inovatif')
-  const [cat, setCat] = useState('Pertanian & Agribisnis')
-  const [bank, setBank] = useState('Dompet Digital GV Pay')
-  const [rek, setRek] = useState(userData?.phone || '0812-3456-7890')
-  const [owner, setOwner] = useState(userProfile?.name || userData?.name || 'Pak Budi Santoso')
-  const [bio, setBio] = useState('Berbagi pengalaman dan edukasi teknik pertanian modern, pupuk organik, dan inovasi desa mandiri.')
+// ── Screen: Pengaturan Kreator (Halaman Sub-Screen Baru) ──
+function CreatorSettingsScreen({ onBack, userProfile, userData, triggerToast, royaltiBalance = 1840000, onWithdrawClick }) {
+  const [settingsTab, setSettingsTab] = useState('profil') // 'profil' | 'rekening'
+
+  // Load from mockCreatorChannelInfo or fallback
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem('mockCreatorChannelInfo')
+      if (saved) return JSON.parse(saved)
+    } catch (e) {}
+    return {
+      channelName: userProfile?.name ? `Channel ${userProfile.name}` : (userData?.name ? `Channel ${userData.name}` : 'Pak Tani Inovatif'),
+      category: 'Pertanian & Agribisnis',
+      bio: 'Berbagi pengalaman dan edukasi teknik pertanian modern, pupuk organik, dan inovasi desa mandiri.',
+      avatar: '🌾',
+      payoutMethod: 'gv_pay',
+      accountNumber: userData?.phone || '0812-3456-7890',
+      accountHolder: userProfile?.name || userData?.name || 'Pak Budi Santoso',
+    }
+  })
+
   const [saved, setSaved] = useState(false)
 
   const handleSave = () => {
+    try {
+      localStorage.setItem('mockCreatorChannelInfo', JSON.stringify(form))
+    } catch (e) {}
     setSaved(true)
-    onSaveSuccess?.('Pengaturan channel dan rekening royalti berhasil disimpan!')
-    setTimeout(() => setSaved(false), 2500)
+    triggerToast?.('Pengaturan Kreator berhasil disimpan!')
+    setTimeout(() => {
+      setSaved(false)
+      onBack?.()
+    }, 400)
   }
 
+  const SETTINGS_TABS = [
+    { id: 'profil', label: 'Profil Channel' },
+    { id: 'rekening', label: 'Rekening Pencairan' },
+  ]
+
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-4 pb-28">
-      {saved && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[12px] font-bold px-3.5 py-2.5 rounded-2xl flex items-center gap-2">
-          <Check size={16} className="text-emerald-600" />
-          <span>Pengaturan channel dan rekening berhasil disimpan!</span>
-        </div>
-      )}
+    <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      <ScreenHeader
+        title="Pengaturan Kreator"
+        onBack={onBack}
+      />
 
-      {/* Profil Channel */}
-      <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-surface-100">
-          <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
-            PROFIL CHANNEL KREATOR
-          </span>
-          <span className="text-[10px] font-extrabold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
-            <Sparkles size={10} className="text-purple-600"/> Kreator Terverifikasi
-          </span>
-        </div>
-
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nama Channel</label>
-          <input
-            type="text"
-            value={channelName}
-            onChange={(e) => setChannelName(e.target.value)}
-            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-extrabold text-surface-900 outline-none focus:border-purple-700 focus:bg-white"
-          />
-        </div>
-
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Kategori Utama Konten</label>
-          <input
-            type="text"
-            value={cat}
-            onChange={(e) => setCat(e.target.value)}
-            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] text-surface-800 outline-none focus:border-purple-700 focus:bg-white"
-          />
-        </div>
-
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Bio Channel Publik</label>
-          <textarea
-            rows={3}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[12.5px] text-surface-800 outline-none focus:border-purple-700 focus:bg-white resize-none"
-          />
-        </div>
+      {/* Tabs Switcher: Profil Channel | Rekening Pencairan */}
+      <div className="px-4 pt-1 bg-white border-b border-surface-200/80 flex-shrink-0">
+        <NavTabs
+          tabs={SETTINGS_TABS}
+          activeTab={settingsTab}
+          onChange={setSettingsTab}
+          variant="underline-light"
+        />
       </div>
 
-      {/* Rekening Monetisasi & Pencairan */}
-      <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
-        <div className="flex items-center justify-between pb-2 border-b border-surface-100">
-          <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
-            REKENING PENCAIRAN ROYALTI & MONETISASI
-          </span>
-          <Wallet size={16} className="text-purple-700" />
-        </div>
+      <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-4 pb-24">
+        {saved && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 text-[12px] font-bold px-3.5 py-2.5 rounded-2xl flex items-center gap-2 animate-fade-in">
+            <Check size={16} className="text-emerald-600" />
+            <span>Pengaturan berhasil disimpan!</span>
+          </div>
+        )}
 
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Metode / Bank Pencairan</label>
-          <input
-            type="text"
-            value={bank}
-            onChange={(e) => setBank(e.target.value)}
-            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-bold text-surface-800 outline-none focus:border-purple-700 focus:bg-white"
-          />
-        </div>
+        {settingsTab === 'profil' && (
+          <div className="space-y-4">
+            {/* Foto / Avatar Channel */}
+            <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3">
+              <label className="block text-[11.5px] font-bold text-surface-600">
+                Avatar / Foto Profil Channel
+              </label>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-sm border-2 border-purple-200 flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #F3E8FF 0%, #EDE9FE 100%)' }}
+                >
+                  {form.avatar || '🌾'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11.5px] font-bold text-surface-700 mb-1.5">Pilih Avatar Kreator:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {['🌾', '👨‍🌾', '🎥', '🌱', '💡', '🐔', '🚜', '🍲', '☕'].map((emo) => (
+                      <button
+                        key={emo}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, avatar: emo }))}
+                        className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center transition active:scale-95 border ${
+                          form.avatar === emo
+                            ? 'bg-purple-100 border-purple-600 scale-105 shadow-xs'
+                            : 'bg-surface-50 border-surface-200 hover:bg-surface-100'
+                        }`}
+                      >
+                        {emo}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nomor Rekening / No GV Pay</label>
-          <input
-            type="text"
-            value={rek}
-            onChange={(e) => setRek(e.target.value)}
-            className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-mono font-black text-surface-900 outline-none focus:border-purple-700 focus:bg-white"
-          />
-        </div>
+            {/* Nama Channel & Kategori & Bio */}
+            <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
+              <div>
+                <label className="block text-[11.5px] font-bold text-surface-600 mb-1">
+                  Nama Channel <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={form.channelName}
+                  onChange={(e) => setForm((f) => ({ ...f, channelName: e.target.value }))}
+                  placeholder="Contoh: Agrotech Desa Mandiri"
+                  className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-extrabold text-surface-900 outline-none focus:border-purple-700 focus:bg-white transition"
+                />
+              </div>
 
-        <div>
-          <label className="block text-[11.5px] font-bold text-surface-600 mb-1">Nama Pemilik Rekening</label>
-          <input
-            type="text"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[13px] font-semibold text-gray-800 outline-none focus:border-purple-700"
-          />
-        </div>
+              <div>
+                <label className="block text-[11.5px] font-bold text-surface-600 mb-1.5">
+                  Kategori Utama Konten <span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {KATEGORI_CHANNEL.map((cat) => {
+                    const active = form.category === cat
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, category: cat }))}
+                        className={`py-2 px-2.5 text-left text-[11px] rounded-xl font-bold transition flex items-center justify-between border ${
+                          active
+                            ? 'bg-purple-50 border-purple-700 text-purple-900 shadow-2xs'
+                            : 'bg-surface-50 border-surface-200 text-surface-600 hover:bg-white'
+                        }`}
+                      >
+                        <span className="truncate">{cat}</span>
+                        {active && <Check size={12} className="text-purple-700 flex-shrink-0 ml-1" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11.5px] font-bold text-surface-600">
+                    Bio / Deskripsi Singkat Channel
+                  </label>
+                  <span className="text-[10.5px] text-surface-400">
+                    {(form.bio || '').length}/180
+                  </span>
+                </div>
+                <textarea
+                  rows={3}
+                  maxLength={180}
+                  value={form.bio || ''}
+                  onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                  placeholder="Deskripsikan fokus materi video dan karya yang Anda bagikan..."
+                  className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[12.5px] text-surface-800 outline-none focus:border-purple-700 focus:bg-white resize-none transition"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {settingsTab === 'rekening' && (
+          <div className="space-y-4">
+            {/* Card Saldo Royalti & Pencairan */}
+            <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-surface-100">
+                <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
+                  SALDO ROYALTI TERSEDIA
+                </span>
+                <span className="text-[10px] font-extrabold text-purple-800 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                  <Sparkles size={10} className="text-purple-600"/> Siap Dicairkan
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3 pt-0.5">
+                <div>
+                  <p className="text-[20px] font-black text-surface-900 font-mono tracking-tight">
+                    Rp {royaltiBalance.toLocaleString('id')}
+                  </p>
+                  <p className="text-[11px] font-medium text-surface-400 mt-0.5">
+                    Royalti tayangan video & membership channel
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onWithdrawClick}
+                  className="px-3.5 py-2 rounded-xl text-white font-extrabold text-[12px] shadow-sm active:scale-95 transition flex items-center gap-1.5 flex-shrink-0 cursor-pointer"
+                  style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+                >
+                  <span>Tarik Royalti</span>
+                  <ArrowUpRight size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Pilihan Bank / GV Pay */}
+            <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-surface-100">
+                <span className="text-[11px] font-black uppercase tracking-wider text-surface-400">
+                  METODE PENCAIRAN ROYALTI
+                </span>
+                <Wallet size={16} className="text-purple-700" />
+              </div>
+
+              <div className="space-y-2">
+                {BANK_OPTIONS.map((b) => {
+                  const selected = form.payoutMethod === b.id
+                  return (
+                    <div
+                      key={b.id}
+                      onClick={() => setForm((f) => ({ ...f, payoutMethod: b.id }))}
+                      className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+                        selected
+                          ? 'border-purple-600 bg-purple-50/70 shadow-2xs font-bold text-purple-900'
+                          : 'border-surface-200 bg-surface-50 hover:bg-white text-surface-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[16px]">{b.icon}</span>
+                        <span className="text-[12.5px]">{b.label}</span>
+                      </div>
+                      <div
+                        className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                          selected ? 'border-purple-700 bg-purple-700' : 'border-surface-300'
+                        }`}
+                      >
+                        {selected && <Check size={10} className="text-white" strokeWidth={3} />}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Nomor Rekening & Nama Pemilik */}
+            <div className="bg-white rounded-3xl p-4 border border-surface-100 shadow-sm space-y-3.5">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11.5px] font-bold text-surface-600">
+                    {form.payoutMethod === 'gv_pay' ? 'Nomor GV Pay' : 'Nomor Rekening'} <span className="text-red-500">*</span>
+                  </label>
+                  {userData?.phone && form.accountNumber !== userData.phone && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, accountNumber: userData.phone }))}
+                      className="text-[10.5px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 hover:bg-purple-100 transition active:scale-95"
+                    >
+                      Gunakan No. HP ({userData.phone})
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder={
+                    form.payoutMethod === 'gv_pay'
+                      ? 'cth. 08123456789 (No. HP GV Pay)'
+                      : 'cth. 1234567890 (No. Rekening)'
+                  }
+                  value={form.accountNumber || ''}
+                  onChange={(e) => setForm((f) => ({ ...f, accountNumber: e.target.value }))}
+                  className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-mono font-bold text-surface-900 outline-none focus:border-purple-700 focus:bg-white transition"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11.5px] font-bold text-surface-600">
+                    Nama Pemilik Rekening <span className="text-red-500">*</span>
+                  </label>
+                  {(userProfile?.name || userData?.name) && form.accountHolder !== (userProfile?.name || userData?.name) && (
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, accountHolder: userProfile?.name || userData?.name }))}
+                      className="text-[10.5px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-lg border border-purple-200 hover:bg-purple-100 transition active:scale-95"
+                    >
+                      Gunakan Nama ({userProfile?.name || userData?.name})
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Nama sesuai KTP / Akun Bank"
+                  value={form.accountHolder || ''}
+                  onChange={(e) => setForm((f) => ({ ...f, accountHolder: e.target.value }))}
+                  className="w-full bg-surface-50 border border-surface-200 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold text-surface-800 outline-none focus:border-purple-700 focus:bg-white transition"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <button
-        type="button"
-        onClick={handleSave}
-        className="w-full py-3.5 rounded-xl text-white font-bold text-[14px] shadow-sm active:scale-[0.98] transition text-center"
-        style={{ background: 'linear-gradient(135deg, #4A148C, #7B1FA2)' }}
-      >
-        Simpan Pengaturan Channel
-      </button>
-    </div>
+      {/* Fixed Sticky Bottom Action */}
+      <div className="flex-shrink-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-surface-200/80 z-20 shadow-lg">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="w-full h-12 rounded-2xl text-white font-bold text-[13.5px] shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition"
+          style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
+        >
+          <Check size={18} strokeWidth={2.5} />
+          <span>Simpan Pengaturan Kreator</span>
+        </button>
+      </div>
+    </ScreenBackground>
   )
 }
-
-const TABS = [
-  {id:'konten',     label:'Konten',     Icon:VideoIcon},
-  {id:'post',       label:'Post',       Icon:PenSquare},
-  {id:'analitik',   label:'Analitik',   Icon:BarChart2},
-  {id:'membership', label:'Membership', Icon:Crown},
-  {id:'pengaturan', label:'Pengaturan', Icon:Settings},
-]
 
 // ── Creator Application Flow ──────────────────────────────────
 function CreatorApplicationFlow({ navigate }) {
@@ -1524,9 +1796,14 @@ function WithdrawRoyaltiModal({ balance, onClose, onSuccess }) {
 }
 
 // ── Main ───────────────────────────────────────────────────
-export default function Studio({ navigate, userProfile, initialUpload, initialTab, userData }) {
-  const [tab, setTab]                 = useState(initialUpload ? 'konten' : (initialTab || 'konten'))
+export default function Studio({ navigate, userProfile, initialUpload, initialTab, userData, initialView = 'main' }) {
+  const [currentView, setCurrentView] = useState(initialView)
+  const [tab, setTab]                 = useState(initialUpload ? 'konten' : (['konten', 'membership', 'analitik'].includes(initialTab) ? initialTab : 'konten'))
+  const [subTab, setSubTab]           = useState('video') // 'video' | 'post'
+  const [postTrigger, setPostTrigger] = useState(0)
   const [showUpload, setUpload]       = useState(initialUpload || false)
+  const [isEditingVideo, setIsEditingVideo] = useState(false)
+  const [isComposingPost, setIsComposingPost] = useState(false)
   const [tanyaOpen,  setTanyaOpen]    = useState(false)
   const [postComposeType, setPCType]  = useState(null)
   const [showWithdraw, setShowWithdraw] = useState(false)
@@ -1538,16 +1815,18 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
     setTimeout(() => setToastMsg(null), 3000)
   }
 
-  const [localCreatorStatus] = useState(() => {
+  const localCreatorStatus = (() => {
     try {
       return localStorage.getItem('mockCreatorAppStatus') || ''
     } catch (e) {
       return ''
     }
-  })
+  })()
 
   const isCreator = userProfile?.capabilities?.includes('Kreator') ||
                     userProfile?.capabilities?.includes('Super Admin') ||
+                    userProfile?.isCreator === true ||
+                    userData?.isCreator === true ||
                     userData?.capabilities?.includes('Kreator') ||
                     localCreatorStatus === 'active'
 
@@ -1588,17 +1867,60 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
     )
   }
 
+  // ── SUB-SCREEN PENGATURAN KREATOR MANDIRI ────────────────
+  if (currentView === 'settings') {
+    return (
+      <div className="h-full flex flex-col relative">
+        <CreatorSettingsScreen
+          onBack={() => setCurrentView('main')}
+          userProfile={userProfile}
+          userData={userData}
+          triggerToast={triggerToast}
+          royaltiBalance={royaltiBalance}
+          onWithdrawClick={() => setShowWithdraw(true)}
+        />
+        {showWithdraw && (
+          <WithdrawRoyaltiModal
+            balance={royaltiBalance}
+            onClose={() => setShowWithdraw(false)}
+            onSuccess={(wAmount) => {
+              setRoyaltiBalance(b => b - wAmount)
+              triggerToast(`Pencairan royalti Rp ${wAmount.toLocaleString('id')} sedang diproses ke GV Pay!`)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
+
+
   const handlePostCompose = type => {
-    setTab('post')
+    setTab('konten')
     setPCType(type)
   }
 
   return (
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      {/* ── 1. HEADER (Title: Kreator GV saja, tanpa subtitle, ada icon Settings) ── */}
       <ScreenHeader
         title="Kreator GV"
-        subtitle="Studio & Monetisasi Konten"
         onBack={() => navigate('profile')}
+        actions={
+          <button
+            type="button"
+            onClick={() => setCurrentView('settings')}
+            className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95 text-white/90 hover:text-white"
+            style={{
+              background: 'rgba(255, 255, 255, 0.12)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+            }}
+            title="Pengaturan Kreator"
+          >
+            <Settings size={17} />
+          </button>
+        }
       />
 
       {/* Floating Feedback Toast */}
@@ -1621,115 +1943,66 @@ export default function Studio({ navigate, userProfile, initialUpload, initialTa
         />
       )}
 
-      {/* ── 1. HERO CHANNEL & ROYALTI CARD ── */}
-      <div className="px-4 pt-3 flex-shrink-0">
-        <div
-          className="rounded-3xl p-4 bg-white border border-surface-100 shadow-sm relative overflow-hidden"
-          style={{
-            boxShadow: '0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)'
-          }}
-        >
-          {/* Channel Top Row */}
-          <div className="flex items-center gap-3 pb-3 border-b border-surface-100">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-[16px] flex-shrink-0 shadow-md relative overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
-            >
-              <span>{userProfile?.name?.charAt(0) || 'K'}</span>
-              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                <Sparkles size={10} className="text-white"/>
-              </span>
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <h2 className="text-[14.5px] font-black text-surface-900 truncate leading-snug">
-                {userProfile?.name ? `Channel ${userProfile.name}` : 'Pak Tani Inovatif'}
-              </h2>
-              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200/80 flex items-center gap-0.5">
-                  <Sparkles size={10} className="text-purple-600"/> Kreator Terverifikasi GV
-                </span>
-                <span className="text-[10.5px] text-surface-400">
-                  Pertanian & Edukasi Desa
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Royalti Box */}
-          <div className="mt-3 p-3.5 rounded-2xl bg-surface-50 border border-surface-100 flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1 text-[11px] font-bold text-surface-400 uppercase tracking-wider">
-                <Wallet size={12} className="text-purple-700"/>
-                <span>Saldo Royalti Konten</span>
-              </div>
-              <p className="text-[18px] font-black text-surface-900 leading-tight mt-0.5 tracking-tight">
-                Rp {royaltiBalance.toLocaleString('id')}
-              </p>
-              <p className="text-[11px] font-bold text-purple-700 mt-0.5 flex items-center gap-1">
-                <TrendingUp size={11}/>
-                <span>1.840 Poin Royalti Siap Cair</span>
-              </p>
-            </div>
-
-            <button
-              onClick={() => setShowWithdraw(true)}
-              className="flex-shrink-0 px-3.5 py-2 rounded-xl text-white font-extrabold text-[12px] shadow-sm active:scale-95 transition flex items-center gap-1"
-              style={{ background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)' }}
-            >
-              <span>Tarik Royalti</span>
-              <ArrowUpRight size={13}/>
-            </button>
-          </div>
-
-          {/* 3 Metric Stats Pill */}
-          <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-surface-100 text-center">
-            <div className="px-1">
-              <p className="text-[15px] font-black text-surface-900">24.8rb</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Pengikut</p>
-            </div>
-            <div className="px-1 border-x border-surface-100">
-              <p className="text-[15px] font-black text-surface-900">10.1rb</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Ditonton</p>
-            </div>
-            <div className="px-1">
-              <p className="text-[15px] font-black text-purple-700">142</p>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-surface-400 mt-0.5">Member GV+</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 2. SCROLLABLE SEGMENTED TAB BAR ── */}
-      <div className="px-4 pt-3 flex-shrink-0">
-        <div className="bg-surface-100 p-1 rounded-2xl flex gap-1 border border-surface-200/60 overflow-x-auto no-scrollbar">
-          {TABS.map(t => {
-            const active = tab === t.id
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`flex-1 min-w-[70px] py-2 rounded-xl text-[11.5px] font-bold transition flex items-center justify-center gap-1.5 whitespace-nowrap px-2.5 ${
-                  active ? 'bg-white text-surface-900 shadow-xs' : 'text-surface-500 hover:text-surface-800'
-                }`}
-              >
-                <t.Icon size={13} className={active ? 'text-purple-700' : 'text-surface-400'} />
-                <span>{t.label}</span>
-              </button>
-            )
-          })}
-        </div>
+      {/* ── 2. TAB UTAMA (KONTEN | MEMBERSHIP | ANALITIK) — UNDERLINE STYLE ── */}
+      <div className="px-4 pt-1 bg-white border-b border-surface-200/80 flex-shrink-0">
+        <NavTabs
+          tabs={PRIMARY_TABS}
+          activeTab={tab}
+          onChange={setTab}
+          variant="underline-light"
+        />
       </div>
 
       {/* ── 3. TAB BODY ── */}
-      <div className="flex-1 overflow-hidden flex flex-col relative">
-        {tab==='konten'     && isCreator && <TabKonten showUpload={showUpload} setUpload={setUpload}/>}
-        {tab==='post'       && isCreator && <TabPost composeType={postComposeType} clearCompose={()=>setPCType(null)}/>}
-        {tab==='analitik'   && <TabAnalitik/>}
-        {tab==='membership' && isCreator && <TabMembership/>}
-        {tab==='pengaturan' && isCreator && <TabPengaturan userProfile={userProfile} userData={userData} onSaveSuccess={triggerToast} />}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {tab === 'konten' && isCreator && (
+          <TabKonten
+            subTab={subTab}
+            setSubTab={setSubTab}
+            showUpload={showUpload}
+            setUpload={setUpload}
+            postComposeType={postComposeType}
+            clearCompose={() => setPCType(null)}
+            postTrigger={postTrigger}
+            onEditVideoChange={setIsEditingVideo}
+            onComposePostChange={setIsComposingPost}
+          />
+        )}
+        {tab === 'membership' && isCreator && <TabMembership />}
+        {tab === 'analitik'   && isCreator && <TabAnalitik />}
       </div>
-      <BottomNav active="profile" navigate={navigate}/>
+
+      {/* ── 5. PINNED BOTTOM ACTION: UPLOAD VIDEO ── */}
+      {tab === 'konten' && subTab === 'video' && isCreator && !isEditingVideo && !showUpload && (
+        <div className="flex-shrink-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-surface-200/80 z-20 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setUpload(true)}
+            className="w-full h-12 rounded-2xl text-white font-black text-[13.5px] shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A)' }}
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            <span>+ Upload Video</span>
+          </button>
+        </div>
+      )}
+
+      {/* ── 5. PINNED BOTTOM ACTION: BUAT POST BARU ── */}
+      {tab === 'konten' && subTab === 'post' && isCreator && !isComposingPost && (
+        <div className="flex-shrink-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-surface-200/80 z-20 shadow-lg">
+          <button
+            type="button"
+            onClick={() => setPostTrigger(Date.now())}
+            className="w-full h-12 rounded-2xl text-white font-black text-[13.5px] shadow-md flex items-center justify-center gap-2 active:scale-[0.98] transition cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A)' }}
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            <span>+ Buat Post Baru</span>
+          </button>
+        </div>
+      )}
+
+      <BottomNav active="profile" navigate={navigate} />
     </ScreenBackground>
   )
 }

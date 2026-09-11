@@ -24,7 +24,7 @@ import { AdsProvider } from './components/ads/AdsContext'
 const SCREEN_LABELS = {
   welcome:'Welcome', register:'Daftar', otp:'Verifikasi OTP',
   desa:'Pilih Desa', 'pilih-komunitas':'Pilih Komunitas', preferensi:'Preferensi', selesai:'Selesai',
-  beranda:'Beranda', siaran:'GV Media', 'siaran-live':'GV Media', 'siaran-kreator':'GV Media', 'siaran-video':'GV Media', 'siaran-podcast':'GV Media', 'siaran-gvplus':'GV Media', pasar:'ESTO', 'pasar-pesanan':'Pesanan Saya', 'pasar-toko':'ESTO', bayar:'Bayar', 'bayar-topup':'Bayar', 'bayar-transfer':'Bayar', 'bayar-qris':'Bayar', 'bayar-riwayat':'Bayar', 'bayar-listrik':'Bayar', 'bayar-pulsa':'Bayar', 'bayar-air':'Bayar', 'bayar-bpjs':'Bayar', 'bayar-tv':'Bayar', 'bayar-internet':'Bayar', 'bayar-gas':'Bayar', 'bayar-pendidikan':'Bayar', komunitas:'Komunitas & Arena', berita:'Berita', studio:'Kreator GV', 'studio-upload':'Kreator GV', 'studio-analitik':'Kreator GV', 'studio-membership':'GV Media', profile:'Profil Saya', 'profile-poin':'Profil Saya', 'profile-pesanan':'Pesanan Saya', 'profile-iklan':'Iklan Baris', 'komunitas-jualbeli':'Komunitas', verifikasi:'Verifikasi Data Diri', 'desa-profile':'Pilih Desa', 'aktivasi-toko':'Aktivasi Toko', 'aktivasi-kreator':'Aktivasi Kreator',
+  beranda:'Beranda', siaran:'GV Media', 'siaran-live':'GV Media', 'siaran-kreator':'GV Media', 'siaran-video':'GV Media', 'siaran-podcast':'GV Media', 'siaran-gvplus':'GV Media', pasar:'ESTO', 'pasar-pesanan':'Pesanan Saya', 'pasar-toko':'ESTO', toko:'Toko Saya', 'toko-chat':'Chat Pelanggan', 'toko-pengaturan':'Pengaturan Toko', bayar:'Bayar', 'bayar-topup':'Bayar', 'bayar-transfer':'Bayar', 'bayar-qris':'Bayar', 'bayar-riwayat':'Bayar', 'bayar-listrik':'Bayar', 'bayar-pulsa':'Bayar', 'bayar-air':'Bayar', 'bayar-bpjs':'Bayar', 'bayar-tv':'Bayar', 'bayar-internet':'Bayar', 'bayar-gas':'Bayar', 'bayar-pendidikan':'Bayar', komunitas:'Komunitas & Arena', berita:'Berita', studio:'Kreator GV', 'studio-upload':'Kreator GV', 'studio-analitik':'Kreator GV', 'studio-membership':'GV Media', 'studio-pengaturan':'Pengaturan Kreator', profile:'Profil Saya', 'profile-poin':'Profil Saya', 'profile-pesanan':'Pesanan Saya', 'profile-iklan':'Iklan Baris', 'komunitas-jualbeli':'Komunitas', verifikasi:'Verifikasi Data Diri', 'desa-profile':'Pilih Desa', 'aktivasi-toko':'Aktivasi Toko', 'aktivasi-kreator':'Aktivasi Kreator',
 }
 
 const NAV_SECTIONS = [
@@ -37,8 +37,10 @@ const DUMMY_USERS = [
   {
     id:'warga_baru', label:'Warga Baru', color:'#607D8B',
     desc:'Hari ke-1 · belum ada transaksi',
-    name:'Sari Dewi', desa:'Desa Sukamaju', komunitas:'', preferences:['Info Desa','Bayar Tagihan'],
-    capabilities:['Member'], balance:0, points:0,
+    name:'Sari Dewi', phone:'0812-1111-2222', desa:'Desa Sukamaju', komunitas:'', preferences:['Info Desa','Bayar Tagihan'],
+    capabilities:['Member'], verified:false, verificationStatus:'unverified',
+    isSeller:false, isCreator:false, sellerAppStatus:'not_applied', creatorAppStatus:'not_applied',
+    balance:0, points:0,
     hasWatchHistory:false, urgentOrders:0, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
     tokoStats:null, studioStats:null, adminStats:null,
@@ -49,8 +51,10 @@ const DUMMY_USERS = [
   {
     id:'warga_aktif', label:'Warga Aktif', color:'#1565C0',
     desc:'Hari ke-14 · ada pesanan aktif',
-    name:'Budi Santoso', desa:'Desa Cikaret', komunitas:'SINARTANI', preferences:['Belanja','Bayar Tagihan','Komunitas'],
-    capabilities:['Member'], balance:125000, points:450,
+    name:'Budi Santoso', phone:'0812-3456-7890', desa:'Desa Cikaret', komunitas:'SINARTANI', preferences:['Belanja','Bayar Tagihan','Komunitas'],
+    capabilities:['Member'], verified:true, verificationStatus:'verified',
+    isSeller:false, isCreator:false, sellerAppStatus:'not_applied', creatorAppStatus:'not_applied',
+    balance:125000, points:450,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:true,
     pendingContent:0, draftsPending:0,
     tokoStats:null, studioStats:null, adminStats:null,
@@ -61,8 +65,10 @@ const DUMMY_USERS = [
   {
     id:'penjual', label:'Penjual Aktif', color:'#1B6B3A',
     desc:'Hari ke-30 · 3 pesanan pending',
-    name:'Sari Dewi', desa:'Desa Sukamaju', komunitas:'Dekopin', preferences:['Jual Produk','Komunitas','Belanja'],
-    capabilities:['Penjual'], balance:248500, points:1240,
+    name:'Pak Budi', phone:'0813-9876-5432', desa:'Desa Sukamaju', komunitas:'Dekopin', preferences:['Jual Produk','Komunitas','Belanja'],
+    capabilities:['Penjual'], verified:true, verificationStatus:'verified',
+    isSeller:true, isCreator:false, sellerAppStatus:'active', creatorAppStatus:'not_applied',
+    balance:248500, points:1240,
     hasWatchHistory:true, urgentOrders:3, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
     tokoStats:{ orders:3, revenue:890000, products:12 },
@@ -74,8 +80,10 @@ const DUMMY_USERS = [
   {
     id:'kreator', label:'Kreator Konten', color:'#BF360C',
     desc:'Hari ke-21 · 1 video pending review',
-    name:'Rizky Fauzan', desa:'Desa Nagrak', komunitas:'NEXGENT', preferences:['Siaran','Komunitas'],
-    capabilities:['Kreator'], balance:180000, points:2100,
+    name:'Rizky Fauzan', phone:'0812-7788-9900', desa:'Desa Nagrak', komunitas:'NEXGENT', preferences:['Siaran','Komunitas'],
+    capabilities:['Kreator'], verified:true, verificationStatus:'verified',
+    isSeller:false, isCreator:true, sellerAppStatus:'not_applied', creatorAppStatus:'active',
+    balance:180000, points:2100,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:false,
     pendingContent:1, draftsPending:0,
     tokoStats:null,
@@ -88,8 +96,10 @@ const DUMMY_USERS = [
   {
     id:'admin_komunitas', label:'Admin Komunitas', color:'#6A1B9A',
     desc:'Mengelola 2 komunitas · 18rb+ anggota',
-    name:'Wawan Setiawan', desa:'Desa Sukamakmur', komunitas:'SINARTANI', preferences:['Komunitas','Media'],
-    capabilities:['Admin Komunitas'], balance:95000, points:3400,
+    name:'Wawan Setiawan', phone:'0856-4433-2211', desa:'Desa Sukamakmur', komunitas:'SINARTANI', preferences:['Komunitas','Media'],
+    capabilities:['Admin Komunitas'], verified:true, verificationStatus:'verified',
+    isAdmin:true, isSeller:false, isCreator:false, sellerAppStatus:'not_applied', creatorAppStatus:'not_applied',
+    balance:95000, points:3400,
     hasWatchHistory:true, urgentOrders:0, hasActiveOrder:false,
     pendingContent:0, draftsPending:0,
     tokoStats:null, studioStats:null,
@@ -102,8 +112,9 @@ const DUMMY_USERS = [
   {
     id:'super_admin', label:'Super Admin', color:'#B71C1C',
     desc:'Semua role aktif · Akses penuh',
-    name:'Admin GV', desa:'Desa Nagrak', komunitas:'SINARTANI', preferences:['Semua'],
-    capabilities:['Penjual','Kreator','Admin Komunitas','Super Admin'],
+    name:'Admin GV', phone:'0811-0000-9999', desa:'Desa Nagrak', komunitas:'SINARTANI', preferences:['Semua'],
+    capabilities:['Penjual','Kreator','Admin Komunitas','Super Admin'], verified:true, verificationStatus:'verified',
+    isSeller:true, isCreator:true, isAdmin:true, sellerAppStatus:'active', creatorAppStatus:'active',
     gvPlusActive:true,
     balance:750000, points:5800,
     hasWatchHistory:true, urgentOrders:5, hasActiveOrder:true,
@@ -126,15 +137,130 @@ export default function App() {
 
   const navigate   = (to) => setScreen(to)
   const updateUser = (d)  => setUser(p => ({ ...p, ...d }))
-  const reset      = ()   => { setScreen('welcome'); setUser({ name:'', phone:'', desa:'', komunitas:'', preferences:[] }); setPersona(null) }
+
+  const handleSelectPersona = (u) => {
+    const isDeactivating = activePersona?.id === u?.id
+    if (isDeactivating || !u) {
+      setPersona(null)
+      setUser({ name:'', phone:'', desa:'', komunitas:'', preferences:[], verificationStatus: 'unverified', isSeller: false, isCreator: false })
+      try {
+        localStorage.removeItem('mockVerificationStatus')
+        localStorage.removeItem('mockSellerAppStatus')
+        localStorage.removeItem('mockCreatorAppStatus')
+        localStorage.removeItem('mockSellerDraft')
+        localStorage.removeItem('mockCreatorDraft')
+        localStorage.removeItem('mockSellerStoreInfo')
+        localStorage.removeItem('mockCreatorChannelInfo')
+        localStorage.removeItem('gv_store_open')
+        localStorage.removeItem('gv_store_schedule')
+        localStorage.removeItem('gv_store_schedule_text')
+        localStorage.removeItem('gv_store_next_open')
+        localStorage.removeItem('gv_store_chats')
+      } catch (e) {}
+      setScreen('beranda')
+      return
+    }
+
+    const isUserSeller = u.id === 'penjual' || u.id === 'super_admin' || u.sellerAppStatus === 'active' || u.capabilities?.includes('Penjual') || false
+    const isUserCreator = u.id === 'kreator' || u.id === 'super_admin' || u.creatorAppStatus === 'active' || u.capabilities?.includes('Kreator') || false
+
+    setPersona(u)
+    setUser(prev => ({
+      ...prev,
+      name: u.name,
+      phone: u.phone || '0812-3456-7890',
+      desa: u.desa,
+      komunitas: u.komunitas,
+      preferences: u.preferences,
+      verificationStatus: u.verificationStatus || (u.verified ? 'verified' : 'unverified'),
+      isSeller: isUserSeller,
+      isCreator: isUserCreator,
+    }))
+
+    try {
+      localStorage.setItem('mockVerificationStatus', u.verified ? 'verified' : 'unverified')
+
+      if (isUserSeller) {
+        localStorage.setItem('mockSellerAppStatus', 'active')
+        localStorage.setItem('gv_store_open', 'true')
+        localStorage.setItem('mockSellerStoreInfo', JSON.stringify({
+          name: u.name === 'Pak Budi' ? 'Toko Berkah Tani Bojong' : (u.name + ' Store'),
+          category: 'Sayur, Buah & Pangan Pokok',
+          address: u.desa ? `RT 02 / RW 04, ${u.desa}` : 'RT 03/RW 01, Dusun Karanganyar',
+          phone: u.phone || '0813-9876-5432',
+          bankName: 'GV Pay (Dompet Digital Desa)',
+          accountNumber: u.phone || '0813-9876-5432',
+          accountHolder: u.name,
+        }))
+        localStorage.removeItem('mockSellerDraft')
+      } else {
+        // Reset SEMUA key toko untuk non-penjual (Warga Aktif, Warga Baru, Kreator, Admin Komunitas)
+        localStorage.setItem('mockSellerAppStatus', 'not_applied')
+        localStorage.removeItem('mockSellerDraft')
+        localStorage.removeItem('mockSellerStoreInfo')
+        localStorage.removeItem('gv_store_open')
+        localStorage.removeItem('gv_store_schedule')
+        localStorage.removeItem('gv_store_schedule_text')
+        localStorage.removeItem('gv_store_next_open')
+        localStorage.removeItem('gv_store_chats')
+      }
+
+      if (isUserCreator) {
+        localStorage.setItem('mockCreatorAppStatus', 'active')
+        localStorage.setItem('mockCreatorChannelInfo', JSON.stringify({
+          channelName: u.name === 'Rizky Fauzan' ? 'Rizky Agrotech Desa' : (u.name + ' Channel'),
+          category: 'Pertanian & Agribisnis',
+          bio: 'Berbagi edukasi seputar teknologi tani, bibit unggul, dan wirausaha desa.',
+          avatar: '🌾',
+          contentTypes: ['Video', 'Podcast'],
+          payoutMethod: 'gv_pay',
+          accountNumber: u.phone || '0812-7788-9900',
+          accountHolder: u.name,
+        }))
+        localStorage.removeItem('mockCreatorDraft')
+      } else {
+        // Reset SEMUA key kreator untuk non-kreator (Warga Aktif, Warga Baru, Penjual Aktif, Admin Komunitas)
+        localStorage.setItem('mockCreatorAppStatus', 'not_applied')
+        localStorage.removeItem('mockCreatorDraft')
+        localStorage.removeItem('mockCreatorChannelInfo')
+      }
+    } catch (e) {}
+
+    setScreen('beranda')
+  }
+
+  const reset = () => {
+    setScreen('welcome')
+    setUser({ name:'', phone:'', desa:'', komunitas:'', preferences:[], verificationStatus: 'unverified', isSeller: false, isCreator: false })
+    setPersona(null)
+    try {
+      localStorage.removeItem('mockVerificationStatus')
+      localStorage.removeItem('mockSellerAppStatus')
+      localStorage.removeItem('mockCreatorAppStatus')
+      localStorage.removeItem('mockSellerDraft')
+      localStorage.removeItem('mockCreatorDraft')
+      localStorage.removeItem('mockSellerStoreInfo')
+      localStorage.removeItem('mockCreatorChannelInfo')
+      localStorage.removeItem('gv_store_open')
+      localStorage.removeItem('gv_store_schedule')
+      localStorage.removeItem('gv_store_schedule_text')
+      localStorage.removeItem('gv_store_next_open')
+      localStorage.removeItem('gv_store_chats')
+      localStorage.removeItem('gv_seller_products')
+      localStorage.removeItem('gv_product_stocks')
+    } catch (e) {}
+  }
 
   const props = { navigate, userData, updateUser, userProfile: activePersona }
   const extraProps =
     screen === 'pasar-pesanan' || screen === 'profile-pesanan' ? { initialScreen: 'pesanan' }
     : screen === 'pasar-toko'    ? { initialTab: 'toko' }
+    : screen === 'toko-chat'     ? { initialView: 'chat' }
+    : screen === 'toko-pengaturan' ? { initialView: 'settings' }
     : screen === 'studio-upload' ? { initialUpload: true }
     : screen === 'studio-analitik' ? { initialTab: 'analitik' }
     : screen === 'studio-membership' ? { initialTab: 'kreator' }
+    : screen === 'studio-pengaturan' ? { initialView: 'settings' }
     : screen === 'siaran-live'   ? { initialTab: 'live' }
     : screen === 'siaran-kreator'? { initialTab: 'kreator' }
     : screen === 'siaran-video'  ? { initialTab: 'video' }
@@ -158,7 +284,7 @@ export default function App() {
     : screen === 'desa-profile' ? { fromProfile: true }
     : {}
   const Screen = { welcome:Welcome, register:Register, otp:OTP, desa:SelectDesa,
-    'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas, verifikasi:Verifikasi, 'desa-profile':SelectDesa, 'aktivasi-toko':AktivasiToko, 'aktivasi-kreator':AktivasiKreator }[screen] || Welcome
+    'pilih-komunitas':PilihKomunitas, preferensi:Preferensi, selesai:Selesai, beranda:Beranda, siaran:Siaran, 'siaran-live':Siaran, 'siaran-kreator':Siaran, 'siaran-video':Siaran, 'siaran-podcast':Siaran, 'siaran-gvplus':Siaran, pasar:Pasar, 'pasar-pesanan':Profile, 'pasar-toko':Pasar, toko:Toko, 'toko-chat':Toko, 'toko-pengaturan':Toko, bayar:Bayar, 'bayar-topup':Bayar, 'bayar-transfer':Bayar, 'bayar-qris':Bayar, 'bayar-riwayat':Bayar, 'bayar-listrik':Bayar, 'bayar-pulsa':Bayar, 'bayar-air':Bayar, 'bayar-bpjs':Bayar, 'bayar-tv':Bayar, 'bayar-internet':Bayar, 'bayar-gas':Bayar, 'bayar-pendidikan':Bayar, komunitas:Komunitas, berita:Berita, studio:Studio, 'studio-upload':Studio, 'studio-analitik':Studio, 'studio-membership':Siaran, 'studio-pengaturan':Studio, profile:Profile, 'profile-poin':Profile, 'profile-pesanan':Profile, 'profile-iklan':Profile, 'komunitas-jualbeli':Komunitas, verifikasi:Verifikasi, 'desa-profile':SelectDesa, 'aktivasi-toko':AktivasiToko, 'aktivasi-kreator':AktivasiKreator }[screen] || Welcome
 
   const isOnboarding = ['welcome','register','otp','desa','pilih-komunitas','preferensi','selesai'].includes(screen)
 
@@ -215,7 +341,15 @@ export default function App() {
                 {section.screens.map(s => {
                   const isActive = screen === s || (screen.startsWith(s + '-'))
                   return (
-                    <button key={s} onClick={() => navigate(s)}
+                    <button key={s} onClick={() => {
+                      if (s === 'aktivasi-toko' && (activePersona?.isSeller || activePersona?.capabilities?.includes('Penjual'))) {
+                        navigate('toko')
+                      } else if (s === 'aktivasi-kreator' && (activePersona?.isCreator || activePersona?.capabilities?.includes('Kreator'))) {
+                        navigate('studio')
+                      } else {
+                        navigate(s)
+                      }
+                    }}
                       className={`text-left px-3 py-2 rounded-xl text-[13px] font-medium transition-all flex items-center justify-between group
                         ${isActive
                           ? 'text-white shadow-brand'
@@ -261,7 +395,7 @@ export default function App() {
               const isActive = activePersona?.id === u.id
               return (
                 <button key={u.id}
-                  onClick={() => { setPersona(isActive ? null : u); setScreen('beranda') }}
+                  onClick={() => handleSelectPersona(u)}
                   className={`flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-left transition-all active:scale-[0.97] group
                     ${isActive ? 'shadow-brand-sm' : 'hover:bg-white/60'}`}
                   style={{
@@ -285,7 +419,7 @@ export default function App() {
           </div>
 
           {activePersona && (
-            <button onClick={() => setPersona(null)}
+            <button onClick={() => handleSelectPersona(null)}
               className="text-xs text-surface-400 hover:text-surface-700 py-2 mt-2 rounded-xl hover:bg-white/50 transition-colors text-center">
               ↺ Kembali ke data asli
             </button>

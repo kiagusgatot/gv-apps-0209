@@ -39,8 +39,8 @@ export default function ScreenHeader({
 
       <div className="relative px-4 pt-4 pb-2 z-10">
         {/* Title Bar Row */}
-        <div className="flex items-center justify-between min-h-[40px] mb-2.5">
-          <div className="flex items-center gap-2.5 min-w-0">
+        <div className={`flex items-center justify-between min-h-[40px] ${children ? 'mb-2.5' : 'mb-1'}`}>
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 me-2">
             {onBack && (
               <button
                 type="button"
@@ -56,9 +56,9 @@ export default function ScreenHeader({
               </button>
             )}
 
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               {typeof title === 'string' ? (
-                <h1 className="text-[20px] font-extrabold text-white tracking-tight leading-tight truncate drop-shadow-sm">
+                <h1 className="text-[18px] sm:text-[20px] font-extrabold text-white tracking-tight leading-tight truncate drop-shadow-sm">
                   {title}
                 </h1>
               ) : (

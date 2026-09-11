@@ -124,11 +124,15 @@ export default function StoreCard({
                   className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-200"
                   loading="lazy"
                 />
-                {prod.discount && (
+                {prod.stock === 0 ? (
+                  <span className="absolute inset-0 bg-black/55 backdrop-blur-[1px] flex items-center justify-center text-white text-[10px] font-black tracking-tight">
+                    ✕ Habis
+                  </span>
+                ) : prod.discount ? (
                   <span className="absolute top-1.5 start-1.5 px-1.5 py-0.5 rounded-md bg-[#E53935] text-white text-[9.5px] font-black leading-tight shadow-xs">
                     {prod.discount}
                   </span>
-                )}
+                ) : null}
               </div>
 
               {/* Product Name */}

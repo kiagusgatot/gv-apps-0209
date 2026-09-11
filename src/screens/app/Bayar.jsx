@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ScreenBackground from '@/components/atoms/ScreenBackground'
 import ScreenHeader from '@/components/molecules/ScreenHeader'
+import NavTabs from '@/components/molecules/NavTabs'
 import SkeuoIcon from '@/components/atoms/SkeuoIcon'
 import { Zap, Wifi, Phone, Tv2, Droplets, ArrowRightLeft, QrCode, History,
   ChevronRight, X, ArrowLeft, Check, Copy, CreditCard, Building2,
-  Smartphone, RefreshCw, Clock, TrendingDown, TrendingUp, Search, HeartPulse, Plus } from 'lucide-react'
+  Smartphone, RefreshCw, Clock, TrendingDown, TrendingUp, Search, HeartPulse, Plus,
+  Camera, ScanLine, Share2, CheckCircle2, AlertCircle, Store, ShieldCheck } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 
 const PRIMARY = '#1B6B3A'
@@ -468,70 +470,626 @@ function PulsaFlow({ onDone, onBack, onPay }) {
   )
 }
 
-// ── QRIS ──────────────────────────────────────────────────
-function QRISFlow({ onDone, onBack, onPay }) {
-  const [step,    setStep]   = useState('input')
-  const [nominal, setNominal]= useState('')
-  const [timer,   setTimer]  = useState(300)
-  useEffect(()=>{
-    if(step==='qr') { const t=setInterval(()=>setTimer(s=>s>0?s-1:0),1000); return ()=>clearInterval(t) }
-    if(step==='proses') { setTimeout(()=>{ onPay(Number(nominal)); setStep('sukses') },1500) }
-  },[step])
-  const fmt = s=>`${Math.floor(s/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`
-  if (step==='proses') return <Checking label="Memverifikasi pembayaran QRIS..."/>
-  if (step==='sukses') return <SuccessScreen title="Pembayaran QRIS Berhasil!" sub="Transaksi berhasil dikonfirmasi"
-    detail={{'Jumlah':`Rp ${Number(nominal).toLocaleString('id')}`,'No. Referensi':Math.random().toString(36).slice(2,10).toUpperCase()}} onDone={onDone}/>
-  if (step==='qr') return (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3" style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
-        <button onClick={()=>setStep('input')} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'#F0F2ED'}}><ArrowLeft size={16} className="text-gray-700"/></button>
-        <p className="font-bold text-gray-900">Scan QRIS</p>
-      </div>
-      <div className="flex-1 flex flex-col items-center justify-center px-6">
-        <p className="text-[13px] text-gray-400 mb-1">Jumlah Pembayaran</p>
-        <p className="text-[26px] font-extrabold mb-5 tabular-nums" style={{color:PRIMARY}}>Rp {Number(nominal).toLocaleString('id')}</p>
-        <div className="w-52 h-52 rounded-3xl p-4 mb-3" style={{background:'#fff',border:`3px solid ${PRIMARY}`,boxShadow:'0 4px 20px rgba(27,107,58,0.15)'}}>
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {[[0,0],[70,0],[0,70]].map(([x,y],i)=>(
-              <g key={i}><rect x={x+2} y={y+2} width={26} height={26} rx={3} fill="none" stroke={PRIMARY} strokeWidth={3}/><rect x={x+8} y={y+8} width={14} height={14} rx={1} fill={PRIMARY}/></g>
-            ))}
-            {Array.from({length:180}).map((_,i)=>Math.random()>0.45?<rect key={i} x={30+Math.random()*45} y={30+Math.random()*45} width={3} height={3} rx={0.5} fill={PRIMARY} opacity={0.8}/>:null)}
-          </svg>
-        </div>
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full animate-pulse inline-block" style={{background:timer>60?'#4CAF50':'#F44336'}}/>
-          <p className="text-[13px] font-bold" style={{color:timer>60?'#2E7D32':'#C62828'}}>Berlaku {fmt(timer)}</p>
-        </div>
-        <p className="text-[11px] text-gray-400 text-center mb-6">Scan menggunakan m-banking atau e-wallet QRIS</p>
-        <button onClick={()=>setStep('proses')} className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white active:scale-[0.96] transition-transform" style={{background:'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)'}}>Simulasi Bayar Berhasil</button>
-      </div>
-    </div>
-  )
-  return (
-    <div className="flex flex-col h-full" style={{background:'#FAFBF9'}}>
-      <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-white" style={{boxShadow:'0 1px 0 rgba(27,107,58,0.06)'}}>
-        <button onClick={onBack} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{background:'#F0F2ED'}}><ArrowLeft size={16} className="text-gray-700"/></button>
-        <p className="font-bold text-gray-900">Bayar dengan QRIS</p>
-      </div>
-      <div className="flex-1 flex flex-col justify-center px-6">
-        <p className="text-[13px] text-gray-500 text-center mb-6">Masukkan nominal yang ingin dibayar</p>
-        <div className="flex items-center gap-2 rounded-2xl px-4 py-4 bg-white mb-4" style={{border:`2px solid ${PRIMARY}`}}>
-          <span className="text-[16px] font-bold text-gray-400">Rp</span>
-          <input type="number" value={nominal} onChange={e=>setNominal(e.target.value)} placeholder="0"
-            className="flex-1 outline-none text-[24px] font-extrabold text-gray-900 bg-transparent text-center"/>
-        </div>
-        <div className="flex gap-2 flex-wrap justify-center mb-6">
-          {[20000,50000,100000,200000].map(n=>(
-            <button key={n} onClick={()=>setNominal(String(n))} className="px-3 py-1.5 rounded-xl text-[11px] font-bold border"
-              style={nominal===String(n)?{borderColor:PRIMARY,color:PRIMARY,background:`${PRIMARY}10`}:{borderColor:'#E0E0E0',color:'#6B7280'}}>
-              Rp {n>=1000?(n/1000)+'rb':n}
+// ── QRIS Redesigned (2 Tabs: Scan QR & Kode Bayar + Halaman Konfirmasi) ─────
+function QRISFlow({ balance = 248500, userProfile, userData, onDone, onBack, onPay, onPaySuccess }) {
+  const [step, setStep] = useState('scan') // 'scan' | 'confirm'
+  const [activeTab, setActiveTab] = useState('scan') // 'scan' | 'terima'
+  const [isTorchOn, setIsTorchOn] = useState(false)
+  const [cameraActive, setCameraActive] = useState(false)
+  const [cameraDenied, setCameraDenied] = useState(false)
+
+  // Nominal bayar di halaman konfirmasi
+  const [payAmount, setPayAmount] = useState('45000')
+  const [isPaying, setIsPaying] = useState(false)
+
+  // Tab 2 Kode Bayar state
+  const [nominalTerima, setNominalTerima] = useState('')
+  const [toastMsg, setToastMsg] = useState(null)
+
+  const videoRef = useRef(null)
+  const streamRef = useRef(null)
+
+  const triggerToast = (msg) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(null), 3200)
+  }
+
+  // Aktifkan Kamera nyata dengan getUserMedia
+  const startCamera = async () => {
+    try {
+      setCameraDenied(false)
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+        streamRef.current = null
+      }
+      if (!navigator?.mediaDevices?.getUserMedia) {
+        setCameraActive(false)
+        setCameraDenied(true)
+        return
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.play().catch(() => {})
+      }
+      setCameraActive(true)
+      setCameraDenied(false)
+    } catch (err) {
+      console.warn('Camera access unavailable or denied:', err)
+      setCameraActive(false)
+      setCameraDenied(true)
+    }
+  }
+
+  // Hentikan stream kamera saat unmount / pindah tab / pindah step
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop())
+      streamRef.current = null
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+    setCameraActive(false)
+  }
+
+  useEffect(() => {
+    if (step === 'scan' && activeTab === 'scan') {
+      startCamera()
+    } else {
+      stopCamera()
+    }
+    return () => stopCamera()
+  }, [step, activeTab])
+
+  // Sinkronkan video element saat cameraActive berubah
+  useEffect(() => {
+    if (cameraActive && streamRef.current && videoRef.current) {
+      if (videoRef.current.srcObject !== streamRef.current) {
+        videoRef.current.srcObject = streamRef.current
+        videoRef.current.play().catch(() => {})
+      }
+    }
+  }, [cameraActive])
+
+  // Handler Simulasi Scan Berhasil -> Navigasi ke halaman baru Konfirmasi Pembayaran
+  const handleSimulateScan = () => {
+    setStep('confirm')
+  }
+
+  // Handler Konfirmasi Pembayaran
+  const handleConfirmPay = () => {
+    const numAmt = Number(payAmount) || 0
+    if (numAmt <= 0) {
+      triggerToast('Nominal pembayaran harus lebih dari Rp 0!')
+      return
+    }
+    if (numAmt > balance) {
+      triggerToast('Saldo GV Pay tidak mencukupi!')
+      return
+    }
+
+    setIsPaying(true)
+    setTimeout(() => {
+      onPay(numAmt, 'Toko Berkah Tani Bojong')
+      setIsPaying(false)
+      const successMsg = `Pembayaran Rp ${numAmt.toLocaleString('id')} ke Toko Berkah Tani Bojong berhasil!`
+      if (onPaySuccess) {
+        onPaySuccess(successMsg)
+      } else {
+        triggerToast(successMsg)
+        onDone()
+      }
+    }, 600)
+  }
+
+  // Handler Salin Kode (Tab 2)
+  const handleCopyCode = () => {
+    const code = `GV-PAY-${userProfile?.phone?.replace(/\D/g, '').slice(-8) || '08219988'}${nominalTerima ? `-${nominalTerima}` : ''}`
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code).catch(() => {})
+    }
+    triggerToast('Kode bayar QRIS berhasil disalin!')
+  }
+
+  // Handler Bagikan QR (Tab 2)
+  const handleShareQR = () => {
+    const code = `GV-PAY-${userProfile?.phone?.replace(/\D/g, '').slice(-8) || '08219988'}`
+    if (navigator?.share) {
+      navigator.share({
+        title: 'QRIS GV Pay',
+        text: `Bayar ke ${userProfile?.name || 'Warga GV'} menggunakan QRIS GV Pay (${code})`,
+        url: window.location.href,
+      }).catch(() => {})
+    } else {
+      handleCopyCode()
+      triggerToast('Tautan QRIS berhasil disalin!')
+    }
+  }
+
+  const QUICK_CHIPS = [20000, 50000, 100000, 200000]
+  const currentNumAmt = Number(payAmount) || 0
+  const isBalanceSufficient = balance >= currentNumAmt
+  const userName = userProfile?.name || userData?.name || 'Warga Global Village'
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ── HALAMAN BARU: KONFIRMASI PEMBAYARAN QRIS ───────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (step === 'confirm') {
+    return (
+      <div className="flex flex-col h-full bg-[#FAFBF9] relative overflow-hidden select-none">
+        {/* Header Konfirmasi Pembayaran */}
+        <ScreenHeader
+          title="Konfirmasi Pembayaran"
+          subtitle="QRIS Toko Berkah Tani Bojong"
+          onBack={() => setStep('scan')}
+        />
+
+        {/* Floating Feedback Toast */}
+        {toastMsg && (
+          <div className="absolute top-20 inset-x-4 z-50 flex items-center justify-between bg-surface-900/95 text-white px-4 py-3 rounded-2xl shadow-xl backdrop-blur-md border border-white/10 animate-slide-down text-[12.5px] font-medium">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+              <span className="leading-snug">{toastMsg}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setToastMsg(null)}
+              className="text-white/60 hover:text-white p-0.5"
+            >
+              <X size={14} />
             </button>
-          ))}
+          </div>
+        )}
+
+        {/* Konten Halaman Konfirmasi */}
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            {/* Card Merchant */}
+            <div className="p-4 rounded-2xl bg-white border border-surface-200/80 shadow-xs flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0C3E1E] to-[#1B6B3A] flex items-center justify-center text-white flex-shrink-0 shadow-xs">
+                  <Store size={22} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-[15px] text-surface-900">
+                      Toko Berkah Tani Bojong
+                    </span>
+                    <ShieldCheck size={16} className="text-emerald-600 flex-shrink-0" />
+                  </div>
+                  <p className="text-[11.5px] text-surface-500 mt-0.5 font-mono">
+                    NMID: ID1020304050601 • Bojonggenteng
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Terverifikasi
+              </span>
+            </div>
+
+            {/* Input Nominal Pembayaran (Bisa Diedit) */}
+            <div className="bg-white rounded-2xl p-4 border border-surface-200/80 shadow-xs">
+              <label className="text-[12px] font-bold text-surface-600 mb-2 block">
+                Nominal Pembayaran (bisa diedit)
+              </label>
+              <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 bg-surface-50 border-2 border-[#1B6B3A]/30 focus-within:border-[#1B6B3A] transition-colors">
+                <span className="text-[20px] font-extrabold text-[#1B6B3A]">Rp</span>
+                <input
+                  type="number"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  placeholder="0"
+                  className="flex-1 outline-none text-[24px] font-extrabold text-surface-900 bg-transparent tabular-nums"
+                />
+                {payAmount && (
+                  <button
+                    type="button"
+                    onClick={() => setPayAmount('')}
+                    className="text-surface-400 hover:text-surface-600 p-1"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Info Saldo GV Pay Saat Ini & Status */}
+            <div className="p-4 rounded-2xl bg-white border border-surface-200/80 shadow-xs flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-[#1B6B3A]">
+                  <CreditCard size={18} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-surface-500">Saldo GV Pay Saat Ini</p>
+                  <p className="text-[15px] font-extrabold text-surface-900 tabular-nums mt-0.5">
+                    Rp {balance.toLocaleString('id')}
+                  </p>
+                </div>
+              </div>
+              {isBalanceSufficient ? (
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <Check size={12} />
+                  Saldo Cukup
+                </span>
+              ) : (
+                <span className="text-[11px] font-bold text-rose-700 bg-rose-100/80 px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <AlertCircle size={12} />
+                  Saldo Tidak Cukup
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Tombol Aksi Batal dan Bayar Sekarang */}
+          <div className="pt-6 pb-2 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setStep('scan')}
+              disabled={isPaying}
+              className="w-1/3 py-3.5 rounded-2xl border border-surface-300 font-bold text-[13.5px] text-surface-700 active:scale-95 transition hover:bg-surface-50 disabled:opacity-50"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmPay}
+              disabled={!payAmount || currentNumAmt <= 0 || !isBalanceSufficient || isPaying}
+              className="flex-1 py-3.5 rounded-2xl font-extrabold text-[13.5px] text-white active:scale-95 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-45 disabled:pointer-events-none"
+              style={{
+                background: 'linear-gradient(135deg, #0C3E1E 0%, #1B6B3A 50%, #15803d 100%)',
+                boxShadow: '0 4px 14px rgba(27,107,58,0.25)',
+              }}
+            >
+              {isPaying ? (
+                <>
+                  <RefreshCw size={16} className="animate-spin" />
+                  <span>Memproses...</span>
+                </>
+              ) : (
+                <>
+                  <Check size={17} />
+                  <span>Bayar Sekarang</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
-      <div className="flex-shrink-0 px-4 pb-8 pt-3 border-t border-gray-100 bg-white">
-        <button disabled={!nominal} onClick={()=>setStep('qr')} className="w-full py-3.5 rounded-2xl text-[13px] font-bold text-white active:scale-[0.96] transition-transform" style={{background:nominal?'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)':'#E0E0E0'}}>Tampilkan QR Code →</button>
+    )
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ── HALAMAN UTAMA: 2 TAB (SCAN QR & KODE BAYAR) ───────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  return (
+    <div className="flex flex-col h-full bg-[#FAFBF9] relative overflow-hidden select-none">
+      {/* ── Header ─────────────────────────────────────── */}
+      <ScreenHeader
+        title="Bayar & Terima"
+        subtitle="QRIS Standar Pembayaran Nasional"
+        onBack={onBack}
+      />
+
+      {/* ── Underline Tabs ─────────────────────────────── */}
+      <div className="px-4 pt-1 bg-white border-b border-surface-200/80 flex-shrink-0 z-10">
+        <NavTabs
+          tabs={[
+            { id: 'scan', label: 'Scan QR (Bayar)' },
+            { id: 'terima', label: 'Kode Bayar (Terima)' },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          variant="underline-light"
+        />
       </div>
+
+      {/* ── Floating Feedback Toast ────────────────────── */}
+      {toastMsg && (
+        <div className="absolute top-24 inset-x-4 z-50 flex items-center justify-between bg-surface-900/95 text-white px-4 py-3 rounded-2xl shadow-xl backdrop-blur-md border border-white/10 animate-slide-down text-[12.5px] font-medium">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+            <span className="leading-snug">{toastMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMsg(null)}
+            className="text-white/60 hover:text-white p-0.5"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* ── TAB 1: SCAN QR (BAYAR) — Kamera Sungguhan + Fallback Gelap ── */}
+      {activeTab === 'scan' && (
+        <div className="flex-1 flex flex-col relative overflow-hidden bg-[#111111]">
+          {/* Feed Kamera Sungguhan */}
+          {cameraActive && (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+
+          {/* Fallback & Scrim Overlay */}
+          <div
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${
+              cameraActive ? 'bg-black/25' : 'bg-[#111111]'
+            }`}
+          />
+
+          {/* Torch Overlay jika dinyalakan */}
+          {isTorchOn && (
+            <div className="absolute inset-0 pointer-events-none bg-amber-200/15 mix-blend-screen transition-opacity duration-300" />
+          )}
+
+          {/* Bar Atas Kamera: Indikator & Tombol Senter */}
+          <div className="relative z-10 px-4 pt-3 flex items-center justify-between">
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md border transition-colors ${
+                cameraActive
+                  ? 'bg-black/40 border-white/20 text-white'
+                  : 'bg-rose-950/60 border-rose-500/30 text-rose-200'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full inline-block ${
+                  cameraActive ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'
+                }`}
+              />
+              <span className="text-[11px] font-bold">
+                {cameraActive ? 'Kamera Aktif' : 'Kamera Tidak Aktif'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsTorchOn((v) => !v)}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center backdrop-blur-md transition-all active:scale-95 border ${
+                isTorchOn
+                  ? 'bg-amber-400 text-slate-900 border-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.6)]'
+                  : 'bg-black/40 text-white border-white/20 hover:bg-black/60'
+              }`}
+              title="Toggle Flash / Senter"
+            >
+              <Zap size={17} className={isTorchOn ? 'fill-slate-900' : ''} />
+            </button>
+          </div>
+
+          {/* Frame Scan di Tengah */}
+          <div className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 -mt-2">
+            <div className="relative w-[220px] h-[220px]">
+              {/* 4 Sudut Bracket Putih */}
+              <div className="absolute -top-1 -left-1 w-9 h-9 border-t-[3.5px] border-l-[3.5px] border-white rounded-tl-2xl shadow-md" />
+              <div className="absolute -top-1 -right-1 w-9 h-9 border-t-[3.5px] border-r-[3.5px] border-white rounded-tr-2xl shadow-md" />
+              <div className="absolute -bottom-1 -left-1 w-9 h-9 border-b-[3.5px] border-l-[3.5px] border-white rounded-bl-2xl shadow-md" />
+              <div className="absolute -bottom-1 -right-1 w-9 h-9 border-b-[3.5px] border-r-[3.5px] border-white rounded-br-2xl shadow-md" />
+
+              {/* Garis Laser Animasi */}
+              <div className="absolute inset-x-2 h-[2.5px] rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_14px_#34D399] animate-qris-laser pointer-events-none" />
+
+              {/* Watermark QR Halus di Tengah (hanya jika kamera tidak aktif) */}
+              {!cameraActive && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+                  <QrCode size={110} className="text-white" />
+                </div>
+              )}
+            </div>
+
+            {/* Teks Panduan */}
+            <div className="mt-5 px-4 py-2 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white text-[12px] font-bold shadow-lg flex items-center gap-2">
+              <ScanLine size={15} className="text-emerald-400 flex-shrink-0" />
+              <span>Arahkan kamera ke kode QRIS merchant</span>
+            </div>
+
+            {/* Pesan izin kamera jika ditolak atau tidak support */}
+            {cameraDenied && (
+              <p className="text-[11px] text-amber-300 font-medium mt-2.5 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-amber-400/30 text-center animate-fade-in shadow-sm">
+                Izin kamera diperlukan untuk scan QR
+              </p>
+            )}
+          </div>
+
+          {/* Tombol Prototype Pinned di Bawah */}
+          <div className="relative z-10 p-4 pt-2 bg-gradient-to-t from-black/85 via-black/45 to-transparent flex flex-col items-center">
+            <button
+              type="button"
+              onClick={handleSimulateScan}
+              className="w-full py-3.5 px-4 rounded-2xl text-[13.5px] font-extrabold text-white flex items-center justify-center gap-2.5 active:scale-[0.98] transition-transform shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, #0C3E1E 0%, #1B6B3A 50%, #15803d 100%)',
+                boxShadow: '0 6px 20px rgba(27,107,58,0.4)',
+              }}
+            >
+              <ScanLine size={17} className="text-emerald-200" />
+              <span>Simulasi Scan Berhasil</span>
+            </button>
+            <p className="text-[11px] text-white/70 mt-1.5 font-medium">
+              Mode Demo: Ketuk untuk membuka halaman konfirmasi
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 2: KODE BAYAR (TERIMA PEMBAYARAN) ───────── */}
+      {activeTab === 'terima' && (
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            {/* Input Nominal Opsional */}
+            <div className="bg-white rounded-2xl p-3.5 border border-surface-200/80 shadow-xs">
+              <label className="text-[11.5px] font-bold text-surface-600 block mb-1.5">
+                Nominal Pembayaran (Opsional)
+              </label>
+              <div className="flex items-center gap-2 rounded-xl px-3 py-2 bg-surface-50 border border-surface-200 focus-within:border-[#1B6B3A] transition-colors">
+                <span className="text-[14px] font-bold text-[#1B6B3A]">Rp</span>
+                <input
+                  type="number"
+                  value={nominalTerima}
+                  onChange={(e) => setNominalTerima(e.target.value)}
+                  placeholder="Tanpa nominal / Masukkan nominal"
+                  className="flex-1 outline-none text-[14px] font-bold text-surface-900 bg-transparent tabular-nums placeholder:text-surface-400 placeholder:font-normal"
+                />
+                {nominalTerima && (
+                  <button
+                    type="button"
+                    onClick={() => setNominalTerima('')}
+                    className="text-surface-400 hover:text-surface-600 p-0.5"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Amount Chips */}
+              <div className="flex gap-2 flex-wrap mt-2.5">
+                {QUICK_CHIPS.map((n) => {
+                  const isSelected = nominalTerima === String(n)
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setNominalTerima(isSelected ? '' : String(n))}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all active:scale-95 ${
+                        isSelected
+                          ? 'border-[#1B6B3A] text-[#1B6B3A] bg-emerald-50'
+                          : 'border-surface-200 text-surface-600 hover:bg-surface-50'
+                      }`}
+                    >
+                      Rp {n >= 1000 ? n / 1000 + 'rb' : n}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Kartu QR Code Milik User */}
+            <div className="bg-white rounded-3xl p-5 shadow-sm border border-surface-200/80 flex flex-col items-center">
+              {/* Official QRIS Header */}
+              <div className="w-full flex items-center justify-between pb-3 mb-3 border-b border-surface-100">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-6 h-6 rounded-lg bg-[#0C3E1E] flex items-center justify-center text-white font-extrabold text-[10px]">
+                    G
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-black tracking-tight text-surface-900 leading-none">
+                      QRIS
+                    </p>
+                    <p className="text-[8px] font-semibold text-surface-400 leading-none mt-0.5">
+                      STANDAR PEMBAYARAN NASIONAL
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  GV Pay
+                </span>
+              </div>
+
+              {/* SVG QR Code */}
+              <div className="w-48 h-48 relative flex items-center justify-center p-2 bg-white rounded-2xl border-2 border-[#1B6B3A]/20 shadow-inner">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  {[[6, 6], [68, 6], [6, 68]].map(([x, y], i) => (
+                    <g key={i}>
+                      <rect x={x} y={y} width={26} height={26} rx={4} fill="none" stroke="#0C3E1E" strokeWidth={3.5} />
+                      <rect x={x + 6} y={y + 6} width={14} height={14} rx={2} fill="#1B6B3A" />
+                    </g>
+                  ))}
+                  <line x1={36} y1={18} x2={64} y2={18} stroke="#1B6B3A" strokeWidth={2} strokeDasharray="3 3" />
+                  <line x1={18} y1={36} x2={18} y2={64} stroke="#1B6B3A" strokeWidth={2} strokeDasharray="3 3" />
+                  {Array.from({ length: 220 }).map((_, i) => {
+                    const seed = (i * 37 + (nominalTerima ? Number(nominalTerima) : 42)) % 100
+                    const row = 6 + (i % 22) * 4
+                    const col = 6 + Math.floor(i / 22) * 4
+                    if ((row < 36 && col < 36) || (row < 36 && col > 64) || (row > 64 && col < 36)) return null
+                    if (row >= 38 && row <= 62 && col >= 38 && col <= 62) return null
+                    return (
+                      <rect
+                        key={i}
+                        x={row}
+                        y={col}
+                        width={3.2}
+                        height={3.2}
+                        rx={0.8}
+                        fill={seed > 45 ? '#0C3E1E' : '#1B6B3A'}
+                        opacity={seed > 40 ? 0.9 : 0}
+                      />
+                    )
+                  })}
+                </svg>
+
+                {/* Center Badge */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-8 h-8 rounded-xl bg-white shadow-md border border-emerald-200 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#0C3E1E] to-[#1B6B3A] flex items-center justify-center shadow-xs">
+                      <span className="text-white font-black text-[10px]">GV</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Nama & Nominal di Bawah QR */}
+              <div className="text-center mt-3.5 w-full">
+                <p className="text-[14px] font-extrabold text-surface-900 truncate">
+                  {userName}
+                </p>
+                <div className="mt-1">
+                  {nominalTerima ? (
+                    <p className="text-[16px] font-black text-emerald-700 tabular-nums">
+                      Rp {Number(nominalTerima).toLocaleString('id')}
+                    </p>
+                  ) : (
+                    <p className="text-[11.5px] font-medium text-surface-500">
+                      Nominal bebas (diinput pembayar)
+                    </p>
+                  )}
+                </div>
+                <p className="text-[10px] text-surface-400 mt-1 font-mono tracking-wider">
+                  NMID: GV{userProfile?.phone?.replace(/\D/g, '').slice(-8) || '08219988'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Tombol Aksi Bagikan & Salin */}
+          <div className="pt-4 pb-2 space-y-2">
+            <div className="flex gap-2.5">
+              <button
+                type="button"
+                onClick={handleShareQR}
+                className="flex-1 py-3 px-3 rounded-xl border border-[#1B6B3A] text-[#1B6B3A] font-extrabold text-[12.5px] flex items-center justify-center gap-2 active:scale-95 transition bg-emerald-50/50 hover:bg-emerald-50"
+              >
+                <Share2 size={15} />
+                <span>Bagikan QR</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="flex-1 py-3 px-3 rounded-xl font-extrabold text-[12.5px] text-white flex items-center justify-center gap-2 active:scale-95 transition shadow-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #0C3E1E 0%, #1B6B3A 50%, #15803d 100%)',
+                }}
+              >
+                <Copy size={15} />
+                <span>Salin Kode</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-surface-400 text-center">
+              Tunjukkan QR ini ke pembeli atau teman untuk menerima pembayaran
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -613,6 +1171,7 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
   const initBal = userProfile?.balance ?? 248500
   const [balance,     setBalance]   = useState(initBal)
   const [screen,      setScreen]    = useState(initialScreen || 'main')
+  const [toastMsg,    setToastMsg]  = useState(null)
   const [transactions,setTransactions] = useState([
     { name:'Token Listrik PLN',  date:'Kemarin 14:32', amount:-145000, bg:'#FFF3E0', ic:'#E65100' },
     { name:'Top Up GV Pay',      date:'3 hari lalu',   amount:+200000, bg:'#E8F5E9', ic:'#1B6B3A' },
@@ -621,6 +1180,11 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
     { name:'Bayar PDAM',         date:'2 minggu lalu', amount:-80500,  bg:'#E3F2FD', ic:'#1565C0' },
     { name:'Top Up GV Pay',      date:'3 minggu lalu', amount:+500000, bg:'#E8F5E9', ic:'#1B6B3A' },
   ])
+
+  const triggerToast = (msg) => {
+    setToastMsg(msg)
+    setTimeout(() => setToastMsg(null), 3500)
+  }
 
   const addTrx = (name, amount, bg, ic) => {
     const newTrx = { name, date:`Baru saja`, amount, bg, ic }
@@ -643,14 +1207,35 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
     { label:'Riwayat',      Icon:History,         bg:'#EFEBE9', ic:'#5D4037', screen:'riwayat',  g: ['#3E2723', '#5D4037'] },
   ]
 
-  const goBack = () => setScreen('main')
+  const goBack = () => {
+    if (initialScreen === 'qris' && navigate) {
+      navigate('beranda')
+    } else {
+      setScreen('main')
+    }
+  }
   const done   = () => setScreen('main')
 
   // Render sub-screens
   if (screen==='topup')    return <TopUpFlow onDone={done} onBack={goBack} onTopUp={handleTopUp}/>
   if (screen==='transfer') return <TransferFlow onDone={done} onBack={goBack} onTransfer={handleTransfer}/>
   if (screen==='pulsa')    return <PulsaFlow onDone={done} onBack={goBack} onPay={amt=>handlePay('Pulsa & Data',amt,'#E8F5E9',PRIMARY)}/>
-  if (screen==='qris')     return <QRISFlow onDone={done} onBack={goBack} onPay={amt=>handlePay('Bayar QRIS',amt,'#FCE4EC','#AD1457')}/>
+  if (screen==='qris')     return (
+    <QRISFlow
+      balance={balance}
+      userProfile={userProfile}
+      userData={userData}
+      initialScreen={initialScreen}
+      navigate={navigate}
+      onDone={done}
+      onBack={goBack}
+      onPay={(amt, merchant) => handlePay(merchant ? `Bayar QRIS - ${merchant}` : 'Bayar QRIS', amt, '#E8F5E9', PRIMARY)}
+      onPaySuccess={(msg) => {
+        triggerToast(msg)
+        setScreen('main')
+      }}
+    />
+  )
   if (screen==='riwayat')  return <RiwayatScreen transactions={transactions} onBack={goBack}/>
   if (BILL_CONFIGS[screen]) {
     const cfg = BILL_CONFIGS[screen]
@@ -659,6 +1244,23 @@ export default function Bayar({ navigate, userData, userProfile, initialScreen }
 
   return (
     <ScreenBackground variant="clean" className="h-full flex flex-col relative bg-[#FAFBF9]">
+      {/* Floating Feedback Toast */}
+      {toastMsg && (
+        <div className="absolute top-4 inset-x-4 z-50 flex items-center justify-between bg-surface-900/95 text-white px-4 py-3 rounded-2xl shadow-xl backdrop-blur-md border border-white/10 animate-slide-down text-[12.5px] font-medium">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" />
+            <span className="leading-snug">{toastMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMsg(null)}
+            className="text-white/60 hover:text-white p-0.5"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Unified ScreenHeader */}
       <ScreenHeader
         title="GV Pay"

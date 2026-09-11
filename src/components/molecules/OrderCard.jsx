@@ -1,5 +1,5 @@
 import React from 'react'
-import { Navigation, Star, Package, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Navigation, Star, Package, RefreshCw, AlertCircle, CheckCircle2, MessageCircle } from 'lucide-react'
 import { getProductImage } from '@/utils/productImages'
 
 const STATUS_MAP = {
@@ -11,15 +11,15 @@ const STATUS_MAP = {
   },
   confirmed: {
     label: 'Dikonfirmasi',
-    bg: '#E8F5E9',
-    color: '#2E7D32',
-    border: '#C8E6C9',
-  },
-  preparing: {
-    label: 'Sedang Disiapkan',
     bg: '#E3F2FD',
     color: '#1565C0',
     border: '#BBDEFB',
+  },
+  preparing: {
+    label: 'Sedang Disiapkan',
+    bg: '#FFF3E0',
+    color: '#E65100',
+    border: '#FFE0B2',
   },
   shipped: {
     label: 'Dalam Pengiriman',
@@ -55,6 +55,7 @@ export default function OrderCard({
   onRate,
   onCancelPrompt,
   onBuyAgain,
+  onChatSeller,
   className = '',
 }) {
   const st = STATUS_MAP[order.status] || STATUS_MAP.waiting
@@ -124,9 +125,25 @@ export default function OrderCard({
               </span>
             )}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5 truncate">
-            Penjual: <span className="font-semibold text-emerald-800">{order.seller}</span>
-          </p>
+          <div className="flex items-center justify-between gap-1 mt-1">
+            <p className="text-[11px] text-gray-400 truncate">
+              Penjual: <span className="font-semibold text-emerald-800">{order.seller}</span>
+            </p>
+            {onChatSeller && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onChatSeller(order)
+                }}
+                className="px-2 py-0.5 rounded-lg border border-emerald-300 text-emerald-800 bg-emerald-50/80 hover:bg-emerald-100 text-[10.5px] font-bold inline-flex items-center gap-1 transition active:scale-95 flex-shrink-0"
+                title="Chat Penjual terkait pesanan ini"
+              >
+                <MessageCircle size={11} className="text-emerald-700" />
+                <span>Chat</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -179,7 +196,7 @@ export default function OrderCard({
       </div>
 
       {/* ── Contextual Actions Bar ── */}
-      {(isTrackable || (order.status === 'done' && !order.rating) || isCancellable) && (
+      {(isTrackable || order.status === 'done' || isCancellable || order.status === 'cancelled') && (
         <div
           className="pt-2 border-t border-gray-100 flex items-center justify-between gap-2"
           onClick={(e) => e.stopPropagation()}
@@ -188,7 +205,7 @@ export default function OrderCard({
             <>
               <span className="text-[11px] font-bold text-emerald-800 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping" />
-                <span>GV Man Sedang Mengantar</span>
+                <span>{order.status === 'shipped' ? 'GV Man Sedang Mengantar' : 'Pesanan Sedang Diproses'}</span>
               </span>
               <button
                 type="button"
@@ -213,6 +230,22 @@ export default function OrderCard({
                 <span>Beri Rating</span>
               </button>
             </>
+          ) : order.status === 'done' && order.rating ? (
+            <>
+              <span className="text-[11px] text-gray-400">
+                Pesanan selesai & telah diulas
+              </span>
+              {onBuyAgain && (
+                <button
+                  type="button"
+                  onClick={() => onBuyAgain(order)}
+                  className="px-3 py-1.5 rounded-xl text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-bold active:scale-95 transition flex items-center gap-1"
+                >
+                  <RefreshCw size={11} />
+                  <span>Beli Lagi</span>
+                </button>
+              )}
+            </>
           ) : isCancellable ? (
             <>
               <span className="text-[11px] text-gray-400">
@@ -224,6 +257,20 @@ export default function OrderCard({
                 className="px-3 py-1.5 rounded-xl text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 text-[11px] font-bold active:scale-95 transition"
               >
                 Batalkan
+              </button>
+            </>
+          ) : order.status === 'cancelled' && onBuyAgain ? (
+            <>
+              <span className="text-[11px] text-gray-400">
+                Ingin memesan kembali produk ini?
+              </span>
+              <button
+                type="button"
+                onClick={() => onBuyAgain(order)}
+                className="px-3 py-1.5 rounded-xl text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-[11px] font-bold active:scale-95 transition flex items-center gap-1"
+              >
+                <RefreshCw size={11} />
+                <span>Pesan Ulang</span>
               </button>
             </>
           ) : null}

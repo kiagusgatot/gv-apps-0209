@@ -14,6 +14,8 @@ export default function ProductCard({
   product,
   inCartQty = 0,
   isLiked = false,
+  isStoreClosed = false,
+  storeClosedText = 'Buka besok 07.00',
   onToggleLike,
   onOpenDetail,
   onAddToCart,
@@ -79,18 +81,33 @@ export default function ProductCard({
             />
           </button>
 
-          {/* Discount Badge */}
-          {product.orig && !isOutOfStock && (
+          {/* Store Closed, Out of Stock, or Discount Badge */}
+          {isOutOfStock ? (
+            <div
+              className="absolute top-2.5 start-2.5 px-2 py-0.5 rounded-lg text-white text-[10px] font-extrabold z-10 shadow-xs flex items-center gap-1"
+              style={{ background: '#DC2626' }}
+            >
+              ✕ Stok Habis
+            </div>
+          ) : isStoreClosed ? (
+            <div
+              className="absolute top-2.5 start-2.5 max-w-[85%] px-2 py-0.5 rounded-lg text-white text-[9.5px] font-extrabold z-10 shadow-xs flex items-center gap-1 backdrop-blur-xs truncate"
+              style={{ background: '#DC2626' }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse flex-shrink-0" />
+              <span className="truncate">Toko Tutup · {storeClosedText}</span>
+            </div>
+          ) : product.orig ? (
             <div
               className="absolute top-2.5 start-2.5 px-2 py-0.5 rounded-lg text-white text-[10px] font-bold z-10 shadow-xs"
               style={{ background: '#E53935' }}
             >
               DISKON
             </div>
-          )}
+          ) : null}
 
           {/* Low Stock Badge */}
-          {isLowStock && (
+          {!isOutOfStock && isLowStock && (
             <div className="absolute bottom-2 start-2 px-2 py-0.5 rounded-md bg-amber-500 text-white text-[10px] font-bold shadow-xs z-10">
               Sisa {product.stock}
             </div>
@@ -151,9 +168,21 @@ export default function ProductCard({
 
         {/* Action Button */}
         {isOutOfStock ? (
-          <span className="text-[11px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-200">
-            Habis
+          <span className="text-[11px] font-black text-red-600 bg-red-50 px-2.5 py-1 rounded-lg border border-red-200 shadow-2xs select-none">
+            ✕ Stok Habis
           </span>
+        ) : isStoreClosed ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenDetail?.(product)
+            }}
+            className="px-2.5 py-1 rounded-lg text-[10px] font-extrabold text-red-700 bg-red-50 border border-red-200 active:scale-95 transition hover:bg-red-100"
+            title="Toko Tutup - Ketuk untuk rincian & chat"
+          >
+            Tutup
+          </button>
         ) : inCartQty > 0 ? (
           <div
             onClick={(e) => e.stopPropagation()}

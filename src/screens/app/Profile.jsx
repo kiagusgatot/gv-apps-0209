@@ -16,7 +16,9 @@ import AdsSubmissionForm from '../../components/ads/AdsSubmissionForm'
 import UserAdsDashboard from '../../components/ads/UserAdsDashboard'
 import OrderCard from '@/components/molecules/OrderCard'
 import { useBuyerOrders } from '@/utils/orderStore'
-import { OrderDetailSheet, CancelOrderModal, RatingSheet, OrderTracking } from './Pasar'
+import { OrderDetailSheet, CancelOrderModal, RatingSheet, OrderTracking, AddressFormModal, AddressMapModal, getSavedAddresses, saveAddressesToStorage } from './Pasar'
+import LocationPickerMap from '@/components/maps/LocationPickerMap'
+import BuyerSellerChatSheet from '@/components/molecules/BuyerSellerChatSheet'
 
 const PRIMARY = '#1B6B3A'
 const S = { card: '0 2px 8px rgba(27,107,58,0.06), 0 1px 2px rgba(0,0,0,0.04)' }
@@ -66,6 +68,201 @@ function Row({ label, value, onPress, danger=false, last=false, right }) {
 }
 
 
+
+// ── Daftar Alamat Pengiriman ────────────────────────────────
+function DaftarAlamatScreen({ onBack, navigate }) {
+  const [addresses, setAddresses] = useState(() => getSavedAddresses())
+  const [selectedId, setSelectedId] = useState(() => getSavedAddresses()[0]?.id || 1)
+  const [modalView, setModalView] = useState(null) // 'form', 'map'
+  const [draft, setDraft] = useState({})
+  const [editingId, setEditingId] = useState(null)
+
+  const handleSelect = (id) => {
+    setSelectedId(id)
+    const updated = addresses.map((a) => ({ ...a, isDefault: a.id === id }))
+    setAddresses(updated)
+    saveAddressesToStorage(updated)
+  }
+
+  const handleAdd = () => {
+    setEditingId(null)
+    setDraft({})
+    setModalView('form')
+  }
+
+  const handleEdit = (addr) => {
+    setEditingId(addr.id)
+    setDraft({ ...addr })
+    setModalView('form')
+  }
+
+  const handleDelete = (id) => {
+    if (addresses.length <= 1) {
+      alert('Minimal harus ada 1 alamat pengiriman tersimpan.')
+      return
+    }
+    if (window.confirm('Hapus alamat ini dari daftar pengiriman?')) {
+      const updated = addresses.filter((a) => a.id !== id)
+      setAddresses(updated)
+      saveAddressesToStorage(updated)
+      if (selectedId === id) {
+        setSelectedId(updated[0]?.id || 1)
+      }
+    }
+  }
+
+  const handleSaveForm = () => {
+    const locStr = typeof draft?.locationLabel === 'string' ? draft.locationLabel : ''
+    if (editingId) {
+      const updated = addresses.map((a) =>
+        a.id === editingId ? { ...draft, locationLabel: locStr, id: editingId } : a
+      )
+      setAddresses(updated)
+      saveAddressesToStorage(updated)
+    } else {
+      const newAddr = { ...draft, locationLabel: locStr, id: Date.now() }
+      const updated = [...addresses, newAddr]
+      setAddresses(updated)
+      saveAddressesToStorage(updated)
+      setSelectedId(newAddr.id)
+    }
+    setEditingId(null)
+    setModalView(null)
+  }
+
+  return (
+    <SubScreen title="Daftar Alamat" onBack={onBack} navigate={navigate}>
+      <div className="p-4 flex flex-col gap-3 pb-24">
+        <div className="flex items-center justify-between px-1">
+          <p className="text-[11.5px] font-extrabold text-gray-400 uppercase tracking-wider">
+            Alamat Pengiriman Tersimpan
+          </p>
+          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+            {addresses.length} Alamat
+          </span>
+        </div>
+
+        {addresses.length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center py-16 opacity-60">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+              <MapPin size={24} className="text-gray-400" />
+            </div>
+            <p className="text-[14px] font-bold text-gray-700">Belum ada alamat</p>
+            <p className="text-[12px] text-gray-500 mt-1 max-w-[220px]">
+              Tambahkan alamat untuk memudahkan pengiriman belanja di Pasar ESTO.
+            </p>
+          </div>
+        ) : (
+          addresses.map((addr) => {
+            const isSelected = selectedId === addr.id
+            return (
+              <div
+                key={addr.id}
+                onClick={() => handleSelect(addr.id)}
+                className="p-4 rounded-2xl bg-white border shadow-xs transition relative cursor-pointer"
+                style={{
+                  borderColor: isSelected ? '#1B6B3A' : '#F0F0F0',
+                  background: isSelected ? '#1B6B3A06' : '#FFFFFF',
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                      style={{ borderColor: isSelected ? '#1B6B3A' : '#D1D5DB' }}
+                    >
+                      {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: '#1B6B3A' }} />}
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0 pr-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-extrabold text-gray-900">{addr.label}</p>
+                        {isSelected && (
+                          <span className="text-[9px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold border border-emerald-200/50">
+                            UTAMA
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Aksi Edit & Hapus */}
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(addr)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-700 hover:bg-emerald-50 active:scale-95 transition"
+                          title="Ubah Alamat"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(addr.id)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition"
+                          title="Hapus Alamat"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-[13px] font-semibold text-gray-800 mt-1">{addr.name}</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{addr.address}</p>
+                    <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5 font-medium">
+                      <Phone size={10} /> {addr.phone}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        )}
+
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="w-full mt-2 py-3.5 rounded-2xl text-[13px] font-bold text-white flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-md"
+          style={{
+            background: 'linear-gradient(135deg, #1B6B3A, #15803d)',
+            boxShadow: '0 4px 16px rgba(27,107,58,0.25)',
+          }}
+        >
+          <Plus size={16} /> Tambah Alamat Baru
+        </button>
+      </div>
+
+      {modalView === 'form' && (
+        <AddressFormModal
+          draft={draft}
+          setDraft={setDraft}
+          isEdit={!!editingId}
+          onBack={() => setModalView(null)}
+          onOpenMap={() => setModalView('map')}
+          onSave={handleSaveForm}
+        />
+      )}
+
+      {modalView === 'map' && (
+        <AddressMapModal
+          initialLocation={draft?.locationLabel || draft?.address || ''}
+          onBack={() => setModalView('form')}
+          onConfirm={(locationLabel) => {
+            const label = typeof locationLabel === 'string' && locationLabel.trim()
+              ? locationLabel.trim()
+              : 'Desa Sukamaju, Kec. Sukamakmur, Bogor'
+            setDraft((prev) => ({
+              ...prev,
+              locationLabel: label,
+              address: prev.address ? prev.address : label,
+            }))
+            setModalView('form')
+          }}
+        />
+      )}
+    </SubScreen>
+  )
+}
 
 // ── Notifikasi ──────────────────────────────────────────────
 function NotifikasiScreen({ onBack, navigate }) {
@@ -549,7 +746,7 @@ function EditProfilScreen({ userData, userProfile, onBack, onSave, navigate }) {
                 </p>
               </div>
             </div>
-          ) : userData?.verificationStatus === 'verified' ? (
+          ) : (userData?.verificationStatus === 'verified' || userProfile?.verified === true || userProfile?.capabilities?.includes('Penjual') || userProfile?.capabilities?.includes('Kreator') || userProfile?.capabilities?.includes('Admin Komunitas') || localStorage.getItem('mockVerificationStatus') === 'verified') ? (
             <div className="bg-[#E8F5E9] border border-green-200 rounded-xl p-3 flex items-center gap-2">
               <CheckCircle size={15} className="text-green-700 flex-shrink-0" />
               <span className="text-[12px] text-green-800 font-medium">Identitas Terverifikasi</span>
@@ -665,6 +862,7 @@ function AktivasiScreen({ onBack, onActivate, navigate }) {
     bankName: 'BRI', accountName: '', accountNum: '', method: 'Transfer Bank', agreed: false
   })
   const [errors, setErrors] = useState({})
+  const [showMapPicker, setShowMapPicker] = useState(false)
   const PRIMARY = '#E65100' // Using orange as the primary color for ESTO/Toko
 
   useEffect(() => {
@@ -877,11 +1075,27 @@ function AktivasiScreen({ onBack, onActivate, navigate }) {
               </p>
               <input value={estoForm.address} onChange={e=>setEstoForm(f=>({...f,address:e.target.value}))} placeholder="Alamat lengkap toko" className={`w-full bg-white border ${errors.address?'border-red-300':'border-gray-200'} rounded-2xl px-4 py-3.5 text-[13px] outline-none mb-3 focus:border-[#E65100]`} />
               
-              {/* Mock Map */}
-              <div className="w-full h-32 rounded-2xl bg-gray-100 relative overflow-hidden flex items-center justify-center border border-gray-200">
-                <div className="absolute inset-0 opacity-20" style={{backgroundImage:'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.4\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")'}}/>
-                <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center shadow-md relative z-10"><MapPin size={16} className="text-red-500"/></div>
-                <div className="absolute bottom-2 right-2 px-2 py-1 bg-white rounded-lg shadow-sm text-[10px] font-bold text-gray-600">Ketuk untuk ubah</div>
+              {/* Interactive Map Picker Trigger */}
+              <div
+                onClick={() => setShowMapPicker(true)}
+                className="w-full rounded-2xl bg-emerald-50/70 border border-emerald-200/80 p-3.5 flex items-center justify-between cursor-pointer hover:bg-emerald-100/60 active:scale-[0.98] transition group shadow-2xs"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                  <div className="w-10 h-10 rounded-xl bg-white shadow-xs flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                    <MapPin size={20} className="text-emerald-700" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12.5px] font-extrabold text-emerald-950 truncate">
+                      {estoForm.address || 'Pilih Titik Lokasi Toko di Peta'}
+                    </p>
+                    <p className="text-[11px] text-emerald-700 font-medium mt-0.5">
+                      {estoForm.address ? 'Titik lokasi terpilih · Ketuk untuk sesuaikan' : 'Buka peta desa interaktif'}
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-[11px] font-extrabold flex-shrink-0 shadow-xs group-hover:bg-emerald-800 transition">
+                  {estoForm.address ? 'Ubah' : 'Buka Peta'}
+                </span>
               </div>
             </div>
 
@@ -1063,6 +1277,29 @@ function AktivasiScreen({ onBack, onActivate, navigate }) {
           {step < STEPS.length ? 'Lanjut →' : 'Ajukan untuk Review'}
         </button>
       </div>
+
+      {/* Interactive Location Picker Modal */}
+      {showMapPicker && (
+        <LocationPickerMap
+          initialLocation={estoForm.address || 'Desa Sukamaju, Kec. Sukamakmur, Bogor'}
+          onBack={() => setShowMapPicker(false)}
+          onConfirm={(result) => {
+            const label =
+              typeof result === 'object' && result?.locationLabel
+                ? result.locationLabel
+                : typeof result === 'string'
+                ? result
+                : 'Desa Sukamaju, Kec. Sukamakmur, Bogor'
+            setEstoForm((f) => ({
+              ...f,
+              address: label,
+              lat: result?.lat,
+              lng: result?.lng,
+            }))
+            setShowMapPicker(false)
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -1219,31 +1456,34 @@ function IklanBarisScreen({ onBack, navigate }) {
 }
 
 // ── Pesanan Saya Sub-Screen ────────────────────────────────
-function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
+function PesananSayaScreen({ onBack, navigate, initialTab = 'all', userProfile }) {
   const { orders, cancelOrder, rateOrder, updateOrder } = useBuyerOrders()
   const [activeTab, setActiveTab] = useState(initialTab)
   const [orderDetailSheet, setOrderDetail] = useState(null)
   const [orderToCancel, setOrderToCancel] = useState(null)
   const [orderToRate, setOrderToRate] = useState(null)
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
+  const [chatOrder, setChatOrder] = useState(null)
 
   // Quick tab counts
-  const countActive = orders.filter((o) => !['done', 'cancelled'].includes(o.status)).length
+  const countShipped = orders.filter((o) => o.status === 'shipped').length
   const countDone = orders.filter((o) => o.status === 'done').length
   const countCancelled = orders.filter((o) => o.status === 'cancelled').length
 
   // Filter calculation
   const filteredList = (() => {
     if (activeTab === 'all') return orders
-    if (activeTab === 'active') return orders.filter((o) => !['done', 'cancelled'].includes(o.status))
+    if (activeTab === 'shipped' || activeTab === 'active') return orders.filter((o) => o.status === 'shipped')
     if (activeTab === 'waiting') return orders.filter((o) => o.status === 'waiting')
     if (activeTab === 'preparing') return orders.filter((o) => ['confirmed', 'preparing'].includes(o.status))
-    if (activeTab === 'shipped') return orders.filter((o) => o.status === 'shipped')
     if (activeTab === 'done') return orders.filter((o) => o.status === 'done')
     if (activeTab === 'review') return orders.filter((o) => o.status === 'done' && !o.rating)
     if (activeTab === 'cancelled') return orders.filter((o) => o.status === 'cancelled')
     return orders
   })()
+
+  // Active shipped order for quick live tracking
+  const activeShippedOrder = orders.find((o) => o.status === 'shipped')
 
   // If tracking subscreen is open
   if (activeTrackingOrder) {
@@ -1266,6 +1506,10 @@ function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
         <OrderDetailSheet
           order={orderDetailSheet}
           onClose={() => setOrderDetail(null)}
+          onChatSeller={(o) => {
+            setOrderDetail(null)
+            setChatOrder(o)
+          }}
           onRate={(o) => {
             setOrderToRate(o)
             setOrderDetail(null)
@@ -1337,24 +1581,52 @@ function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
           variant="underline-light"
           tabs={[
             { id: 'all', label: 'Semua' },
-            { id: 'active', label: 'Berlangsung', count: countActive },
+            { id: 'shipped', label: 'Dikirim', count: countShipped },
             { id: 'done', label: 'Selesai', count: countDone },
             { id: 'cancelled', label: 'Dibatalkan', count: countCancelled },
           ]}
-          activeTab={['waiting', 'preparing', 'shipped'].includes(activeTab) ? 'active' : activeTab === 'review' ? 'done' : activeTab}
+          activeTab={
+            activeTab === 'review'
+              ? 'done'
+              : ['waiting', 'preparing'].includes(activeTab)
+              ? 'all'
+              : activeTab === 'active'
+              ? 'shipped'
+              : activeTab
+          }
           onChange={setActiveTab}
         />
       </div>
 
+      {/* Active shipping pulse banner in PesananSayaScreen */}
+      {activeTab === 'all' && countShipped > 0 && activeShippedOrder && (
+        <div
+          onClick={() => setActiveTrackingOrder(activeShippedOrder)}
+          className="mx-3.5 mt-2.5 p-2.5 rounded-2xl bg-emerald-50/90 border border-emerald-200/80 flex items-center justify-between cursor-pointer hover:bg-emerald-100/60 transition shadow-2xs active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+            </span>
+            <span className="text-[11.5px] font-bold text-emerald-900">
+              {countShipped} paket sedang diantar ke rumahmu
+            </span>
+          </div>
+          <span className="text-[11px] font-extrabold text-[#1B6B3A] flex items-center gap-0.5">
+            Lacak <ChevronRight size={13} />
+          </span>
+        </div>
+      )}
+
       {/* Specific filter pill status banner if filtered via quick status buttons */}
-      {['waiting', 'preparing', 'shipped', 'review'].includes(activeTab) && (
+      {['waiting', 'preparing', 'review'].includes(activeTab) && (
         <div className="px-4 pt-2.5 pb-1 flex items-center justify-between">
           <span className="text-[11px] font-bold text-gray-500 flex items-center gap-1.5">
             Filter status:
             <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10.5px]">
               {activeTab === 'waiting' && 'Menunggu Konfirmasi'}
               {activeTab === 'preparing' && 'Sedang Dikemas'}
-              {activeTab === 'shipped' && 'Dalam Pengiriman'}
               {activeTab === 'review' && 'Belum Diulas'}
             </span>
           </span>
@@ -1377,6 +1649,8 @@ function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
             <p className="text-[14.5px] font-extrabold text-gray-900 mb-1">
               {activeTab === 'cancelled'
                 ? 'Tidak ada pesanan dibatalkan'
+                : activeTab === 'shipped'
+                ? 'Tidak ada paket dalam pengiriman'
                 : activeTab === 'review'
                 ? 'Semua pesanan selesai telah diulas'
                 : 'Belum ada pesanan'}
@@ -1384,6 +1658,8 @@ function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
             <p className="text-[12px] text-gray-400 max-w-xs leading-relaxed mb-5">
               {activeTab === 'cancelled'
                 ? 'Semua transaksi belanja desa Anda berjalan dengan lancar.'
+                : activeTab === 'shipped'
+                ? 'Belum ada paket yang sedang dalam perjalanan menuju rumahmu.'
                 : activeTab === 'review'
                 ? 'Terima kasih telah memberikan ulasan berharga bagi para penjual UMKM desa!'
                 : 'Yuk mulai belanja aneka produk segar desa berkualitas langsung dari petaninya!'}
@@ -1406,10 +1682,20 @@ function PesananSayaScreen({ onBack, navigate, initialTab = 'all' }) {
               onRate={(o) => setOrderToRate(o)}
               onCancelPrompt={(o) => setOrderToCancel(o)}
               onBuyAgain={() => navigate?.('pasar')}
+              onChatSeller={(o) => setChatOrder(o)}
             />
           ))
         )}
       </div>
+
+      {/* Customer to Seller Chat Drawer Sheet */}
+      <BuyerSellerChatSheet
+        isOpen={Boolean(chatOrder)}
+        onClose={() => setChatOrder(null)}
+        targetSeller={chatOrder?.seller}
+        targetOrder={chatOrder}
+        userProfile={userProfile}
+      />
 
       <BottomNav active="profile" navigate={navigate} />
     </div>
@@ -1439,7 +1725,8 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   const goBack = () => setScreen('main')
 
   // Sub-screens
-  if (screen==='pesanan')         return <PesananSayaScreen onBack={goBack} navigate={navigate} initialTab={pesananTab} />
+  if (screen==='pesanan')         return <PesananSayaScreen onBack={goBack} navigate={navigate} initialTab={pesananTab} userProfile={userProfile} />
+  if (screen==='daftar-alamat')   return <DaftarAlamatScreen onBack={goBack} navigate={navigate} />
   if (screen==='edit-profil')     return <EditProfilScreen userData={{...userData,photo:localPhoto}} userProfile={userProfile} onBack={goBack} onSave={d=>{updateUser?.(d);setLocalPhoto(d.photo)}} navigate={navigate}/>
   if (screen==='notifikasi')      return <NotifikasiScreen onBack={goBack} navigate={navigate}/>
   if (screen==='pengaturan')      return <PengaturanScreen onBack={goBack} onLogout={()=>navigate('welcome')} navigate={navigate}/>
@@ -1452,8 +1739,10 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
   // ── Status Verifikasi & Persona Multi-State ──────────────────────────────
   const isVerified = userData?.verificationStatus === 'verified' ||
     userProfile?.verified === true ||
+    userProfile?.verificationStatus === 'verified' ||
     userProfile?.capabilities?.includes('Penjual') ||
     userProfile?.capabilities?.includes('Kreator') ||
+    userProfile?.capabilities?.includes('Admin Komunitas') ||
     localStorage.getItem('mockVerificationStatus') === 'verified'
 
   // ── Penjual ESTO State ──
@@ -1618,6 +1907,7 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
     {
       section: 'PENGATURAN',
       items: [
+        { label: 'Daftar Alamat', sub: 'Atur alamat pengiriman belanja pasar', to: 'daftar-alamat', Icon: MapPin, g: ['#1B6B3A', '#2E7D32'] },
         { label: 'Edit Profil', sub: 'Ubah foto profil, nama, dan info desa', to: 'edit-profil', Icon: Edit3, g: ['#00695C', '#00897B'] },
         { label: 'Notifikasi', sub: 'Atur jenis notifikasi & pemberitahuan', to: 'notifikasi', Icon: Bell, g: ['#C62828', '#E53935'] },
         { label: 'Pengaturan & Keamanan', sub: 'Bahasa, privasi, PIN GV Pay & keamanan', to: 'pengaturan', Icon: Settings, g: ['#37474F', '#546E7A'] },
@@ -1691,8 +1981,8 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
 
               {/* Badge Terverifikasi */}
               <span className="bg-white/15 rounded-full px-2 py-0.5 flex items-center gap-1 text-[10px] font-semibold text-white">
-                <CheckCircle size={9} className="text-green-300" />
-                <span>Terverifikasi</span>
+                <CheckCircle size={9} className={isVerified ? "text-green-300" : "text-amber-300"} />
+                <span>{isVerified ? "Terverifikasi" : "Belum Verifikasi"}</span>
               </span>
 
               {userKomunitas && (
@@ -1904,10 +2194,13 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
                   setPesananTab('shipped')
                   setScreen('pesanan')
                 }}
-                className="mt-3 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between cursor-pointer hover:bg-emerald-100/60 transition"
+                className="mt-3 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between cursor-pointer hover:bg-emerald-100/60 transition active:scale-[0.99]"
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+                  </span>
                   <span className="text-[11px] font-bold text-emerald-900">
                     {countShipped} paket sedang diantar ke rumahmu
                   </span>
@@ -1923,35 +2216,26 @@ export default function Profile({ navigate, userData, updateUser, userProfile, s
         {/* ── Banner GV+ Premium ── */}
         <div
           onClick={() => setScreen('gvplus')}
-          className="mx-4 mt-3 p-4 rounded-2xl cursor-pointer transition active:scale-[0.99] flex items-center justify-between gap-3 shadow-md relative overflow-hidden"
+          className="mx-4 mt-3 p-4 rounded-2xl cursor-pointer transition active:scale-[0.99] flex items-center gap-3.5 shadow-md relative overflow-hidden border border-emerald-700/40"
           style={{
-            background: 'linear-gradient(135deg, #4A148C 0%, #7B1FA2 100%)',
+            background: 'linear-gradient(135deg, #092E16 0%, #0E4822 50%, #1B6B3A 100%)',
           }}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0 border border-white/20 backdrop-blur-sm">
-              <Crown size={20} className="text-white fill-white/20" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-bold text-white text-[14px] leading-snug">GV+ Premium</p>
-              <p className="text-white/75 text-[11px] mt-0.5 truncate">
-                {isGVPlus ? 'Aktif hingga 31 Des 2026' : 'Siaran & video eksklusif tanpa iklan'}
-              </p>
-            </div>
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm shadow-xs"
+            style={{
+              background: 'linear-gradient(135deg, rgba(245, 127, 23, 0.25), rgba(249, 168, 37, 0.15))',
+              border: '1px solid rgba(249, 168, 37, 0.45)',
+            }}
+          >
+            <Crown size={20} className="text-[#F9A825] fill-[#F9A825] drop-shadow-xs" />
           </div>
-
-          {!isGVPlus && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                setScreen('gvplus')
-              }}
-              className="bg-white/20 hover:bg-white/30 text-white font-bold text-[11px] px-3 py-1 rounded-lg flex-shrink-0 transition active:scale-95 border border-white/20 backdrop-blur-sm"
-            >
-              Aktifkan
-            </button>
-          )}
+          <div className="min-w-0 flex-1">
+            <p className="font-extrabold text-white text-[14px] leading-snug">GV+ Premium</p>
+            <p className="text-emerald-100/75 text-[11.5px] mt-0.5 truncate">
+              {isGVPlus ? 'Aktif hingga 31 Des 2026' : 'Siaran & video eksklusif tanpa iklan'}
+            </p>
+          </div>
         </div>
 
         {/* ── PERUBAHAN 5 & 6: Restrukturisasi Section Menu ── */}

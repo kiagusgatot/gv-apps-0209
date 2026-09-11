@@ -22,6 +22,11 @@ import { Search, SlidersHorizontal, ShoppingCart, Heart, Star, ChevronRight,
 } from 'lucide-react'
 import BottomNav from '../../components/BottomNav'
 import { addBuyerOrder, updateBuyerOrder, cancelBuyerOrder, rateBuyerOrder, useBuyerOrders } from '@/utils/orderStore'
+import { useStock, decreaseStock } from '@/utils/stockStore'
+import LocationPickerMap from '@/components/maps/LocationPickerMap'
+import LiveTrackingMap from '@/components/maps/LiveTrackingMap'
+import BuyerSellerChatSheet, { getBuyerTotalUnreadCount } from '@/components/molecules/BuyerSellerChatSheet'
+import { getStoredSchedule, calculateStoreStatus } from '@/utils/storeSchedule'
 
 const PRIMARY = '#1B6B3A'
 
@@ -252,7 +257,9 @@ const SORT_OPTIONS = [
   { id:'rating',     label:'Rating Tertinggi' },
 ]
 
-const INITIAL_ADDRESSES = [
+export const STORAGE_KEY_ADDRESSES = 'gv_saved_addresses'
+
+export const INITIAL_ADDRESSES = [
   {
     id: 1,
     label: 'Rumah',
@@ -273,8 +280,29 @@ const INITIAL_ADDRESSES = [
   },
 ]
 
+export function getSavedAddresses() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ADDRESSES)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed
+    }
+  } catch (e) {
+    console.error('Failed to parse saved addresses', e)
+  }
+  return INITIAL_ADDRESSES
+}
+
+export function saveAddressesToStorage(list) {
+  try {
+    localStorage.setItem(STORAGE_KEY_ADDRESSES, JSON.stringify(list))
+  } catch (e) {
+    console.error('Failed to save addresses', e)
+  }
+}
+
 // ── Address Management Modals ──────────────────────────────
-function AddressListModal({ addresses, selectedId, onSelect, onAdd, onClose }) {
+export function AddressListModal({ addresses, selectedId, onSelect, onAdd, onEdit, onDelete, onClose }) {
   return (
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
@@ -298,32 +326,69 @@ function AddressListModal({ addresses, selectedId, onSelect, onAdd, onClose }) {
               <p className="text-[12px] text-gray-500 mt-1 max-w-[200px]">Kamu belum menyimpan alamat pengiriman apapun.</p>
             </div>
           ) : (
-            addresses.map(addr => (
-              <button key={addr.id} onClick={() => onSelect(addr.id)}
-                className="flex gap-3 items-start p-4 rounded-2xl text-left transition"
-                style={{
-                  border: selectedId === addr.id ? `2px solid #1B6B3A` : '2px solid #F0F0F0',
-                  background: selectedId === addr.id ? `#1B6B3A08` : '#FAFAFA'
-                }}>
-                <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
-                    style={{borderColor: selectedId === addr.id ? '#1B6B3A' : '#D1D5DB'}}>
-                    {selectedId === addr.id && <div className="w-2 h-2 rounded-full" style={{background:'#1B6B3A'}}/>}
+            addresses.map(addr => {
+              const isSelected = selectedId === addr.id
+              return (
+                <div
+                  key={addr.id}
+                  onClick={() => onSelect(addr.id)}
+                  className="p-4 rounded-2xl text-left transition relative cursor-pointer group"
+                  style={{
+                    border: isSelected ? `2px solid #1B6B3A` : '2px solid #F0F0F0',
+                    background: isSelected ? `#1B6B3A08` : '#FAFAFA'
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
+                      <div
+                        className="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                        style={{ borderColor: isSelected ? '#1B6B3A' : '#D1D5DB' }}
+                      >
+                        {isSelected && <div className="w-2 h-2 rounded-full" style={{ background: '#1B6B3A' }} />}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0 pr-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <p className="text-[13px] font-bold text-gray-900">{addr.label}</p>
+                          {isSelected && (
+                            <span className="text-[9px] px-1.5 py-0.5 rounded-sm bg-green-100 text-green-700 font-bold">
+                              UTAMA
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Aksi Edit & Hapus */}
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => onEdit?.(addr)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-700 hover:bg-emerald-50 active:scale-95 transition"
+                            title="Ubah Alamat"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete?.(addr.id)}
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 active:scale-95 transition"
+                            title="Hapus Alamat"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className="text-[13px] font-semibold text-gray-800 mt-1">{addr.name}</p>
+                      <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{addr.address}</p>
+                      <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
+                        <Phone size={10} /> {addr.phone}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-gray-900 flex items-center gap-2">
-                    {addr.label}
-                    {selectedId === addr.id && <span className="text-[9px] px-1.5 py-0.5 rounded-sm bg-green-100 text-green-700 font-bold">UTAMA</span>}
-                  </p>
-                  <p className="text-[13px] font-semibold text-gray-800 mt-1">{addr.name}</p>
-                  <p className="text-[12px] text-gray-500 mt-0.5 leading-relaxed line-clamp-2">{addr.address}</p>
-                  <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1.5">
-                    <Phone size={10}/> {addr.phone}
-                  </p>
-                </div>
-              </button>
-            ))
+              )
+            })
           )}
         </div>
         <div className="absolute bottom-0 inset-x-0 p-4 bg-white/90 backdrop-blur-md" style={{borderTop:'1px solid #E8EBE5'}}>
@@ -338,17 +403,23 @@ function AddressListModal({ addresses, selectedId, onSelect, onAdd, onClose }) {
   )
 }
 
-function AddressFormModal({ draft, setDraft, onBack, onSave, onOpenMap }) {
-  const isComplete = draft.label && draft.name && draft.phone && draft.address
+export function AddressFormModal({ draft, setDraft, isEdit = false, onBack, onSave, onOpenMap }) {
+  const isComplete = draft?.label && draft?.name && draft?.phone && draft?.address
+  const locationDisplay = typeof draft?.locationLabel === 'string' && draft.locationLabel.trim()
+    ? draft.locationLabel
+    : null
+
   return (
     <div className="absolute inset-0 z-50 flex flex-col justify-end">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onBack} />
       <div className="relative rounded-t-3xl flex flex-col animate-slide-up bg-white h-[90vh]">
         <div className="flex items-center gap-3 px-5 py-4 flex-shrink-0" style={{borderBottom:'1px solid #E8EBE5'}}>
           <button onClick={onBack} className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 active:scale-[0.96] transition-transform">
             <ArrowLeft size={16} className="text-gray-700"/>
           </button>
-          <p className="text-[16px] font-extrabold headline-tight" style={{color:'#0F1A13'}}>Tambah Alamat</p>
+          <p className="text-[16px] font-extrabold headline-tight" style={{color:'#0F1A13'}}>
+            {isEdit ? 'Ubah Alamat' : 'Tambah Alamat'}
+          </p>
         </div>
         <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-5 pb-24 no-scrollbar">
           <div>
@@ -357,20 +428,20 @@ function AddressFormModal({ draft, setDraft, onBack, onSave, onOpenMap }) {
               <div className="flex items-center gap-3">
                 <MapPin size={18} className="text-gray-400" />
                 <div className="text-left min-w-0 flex-1 pr-2">
-                  <p className="text-[13px] font-bold text-gray-900 truncate">{draft.locationLabel || 'Pilih Lokasi di Peta'}</p>
-                  {draft.locationLabel && <p className="text-[11px] text-gray-500 mt-0.5">Sudah dipin</p>}
+                  <p className="text-[13px] font-bold text-gray-900 truncate">{locationDisplay || 'Pilih Lokasi di Peta'}</p>
+                  {locationDisplay && <p className="text-[11px] text-gray-500 mt-0.5">Sudah dipin</p>}
                 </div>
               </div>
               <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
             </button>
-            <textarea placeholder="Alamat lengkap (Nama jalan, RT/RW, Patokan)" value={draft.address||''} onChange={e=>setDraft({...draft, address:e.target.value})}
+            <textarea placeholder="Alamat lengkap (Nama jalan, RT/RW, Patokan)" value={typeof draft?.address === 'string' ? draft.address : ''} onChange={e=>setDraft({...draft, address:e.target.value})}
               className="w-full mt-3 p-3.5 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-green-600 bg-white min-h-[80px]" />
           </div>
           <div>
             <p className="text-[12px] font-bold text-gray-700 mb-2">Info Kontak Penerima</p>
-            <input type="text" placeholder="Nama Penerima" value={draft.name||''} onChange={e=>setDraft({...draft, name:e.target.value})}
+            <input type="text" placeholder="Nama Penerima" value={typeof draft?.name === 'string' ? draft.name : ''} onChange={e=>setDraft({...draft, name:e.target.value})}
               className="w-full p-3.5 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-green-600 bg-white mb-3" />
-            <input type="tel" placeholder="Nomor Telepon" value={draft.phone||''} onChange={e=>setDraft({...draft, phone:e.target.value})}
+            <input type="tel" placeholder="Nomor Telepon" value={typeof draft?.phone === 'string' ? draft.phone : ''} onChange={e=>setDraft({...draft, phone:e.target.value})}
               className="w-full p-3.5 rounded-xl border border-gray-200 text-[13px] outline-none focus:border-green-600 bg-white" />
           </div>
           <div>
@@ -378,7 +449,7 @@ function AddressFormModal({ draft, setDraft, onBack, onSave, onOpenMap }) {
             <div className="flex gap-2">
               {['Rumah', 'Kantor', 'Lainnya'].map(lbl => (
                 <button key={lbl} onClick={()=>setDraft({...draft, label:lbl})}
-                  className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-colors ${draft.label===lbl ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-transparent'} border`}>
+                  className={`flex-1 py-2 rounded-xl text-[12px] font-bold transition-colors ${draft?.label===lbl ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-transparent'} border`}>
                   {lbl}
                 </button>
               ))}
@@ -389,7 +460,7 @@ function AddressFormModal({ draft, setDraft, onBack, onSave, onOpenMap }) {
           <button onClick={onSave} disabled={!isComplete}
             className={`w-full py-3.5 rounded-2xl text-[13px] font-bold text-white transition-all ${isComplete ? 'active:scale-[0.96] opacity-100' : 'opacity-50'}`}
             style={{background:`linear-gradient(135deg, #1B6B3A, #15803d)`, boxShadow: isComplete ? '0 4px 16px rgba(27,107,58,0.25)' : 'none'}}>
-            Simpan Alamat
+            {isEdit ? 'Simpan Perubahan' : 'Simpan Alamat'}
           </button>
         </div>
       </div>
@@ -397,49 +468,23 @@ function AddressFormModal({ draft, setDraft, onBack, onSave, onOpenMap }) {
   )
 }
 
-function AddressMapModal({ onBack, onConfirm }) {
+export function AddressMapModal({ onBack, onConfirm, initialLocation }) {
   return (
-    <div className="absolute inset-0 z-50 flex flex-col bg-gray-100 animate-slide-up">
-      <div className="absolute top-4 left-4 z-10 flex gap-2 w-full pr-8">
-        <button onClick={onBack} className="w-10 h-10 rounded-full bg-white shadow-md flex items-center justify-center flex-shrink-0 active:scale-[0.96] transition-transform">
-          <ArrowLeft size={18} className="text-gray-800" />
-        </button>
-        <div className="flex-1 bg-white shadow-md rounded-2xl px-4 py-2 flex items-center gap-2">
-          <Search size={16} className="text-gray-400" />
-          <input type="text" placeholder="Cari alamat..." className="flex-1 text-[13px] outline-none" />
-        </div>
-      </div>
-      
-      {/* Map Graphic Mock */}
-      <div className="flex-1 relative overflow-hidden flex items-center justify-center">
-        <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop" alt="Map" className="absolute inset-0 w-full h-full object-cover opacity-80" style={{filter:'grayscale(0.3)'}} />
-        <div className="absolute inset-0 bg-green-900/10 pointer-events-none" />
-        
-        {/* Pin */}
-        <div className="relative z-10 flex flex-col items-center pb-10">
-          <div className="bg-gray-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg mb-2 shadow-lg whitespace-nowrap">
-            Geser peta untuk menyesuaikan
-          </div>
-          <div className="w-12 h-12 flex items-center justify-center drop-shadow-xl" style={{color:'#1B6B3A'}}>
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" stroke="white" strokeWidth="1.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3" fill="white"/></svg>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom confirmation sheet */}
-      <div className="p-4 bg-white rounded-t-3xl shadow-lg flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-gray-800">
-          <MapPin size={18} className="text-emerald-700" />
-          <span className="text-xs font-bold truncate">Desa Sukamaju, Kec. Sukamakmur, Bogor</span>
-        </div>
-        <button
-          onClick={onConfirm}
-          className="w-full py-3.5 rounded-2xl text-white font-bold text-sm bg-emerald-700 active:scale-95 transition shadow-md"
-        >
-          Pilih Lokasi Ini
-        </button>
-      </div>
-    </div>
+    <LocationPickerMap
+      initialLocation={initialLocation}
+      onBack={onBack}
+      onConfirm={(result) => {
+        const label =
+          typeof result === 'object' && result?.locationLabel
+            ? result.locationLabel
+            : typeof result === 'string'
+            ? result
+            : 'Desa Sukamaju, Kec. Sukamakmur, Bogor'
+        if (typeof onConfirm === 'function') {
+          onConfirm(label)
+        }
+      }}
+    />
   )
 }
 
@@ -926,8 +971,8 @@ function CheckoutScreen({
   setSelectedAddressId: propSetSelectedAddressId,
   hasVoucher = true,
 }) {
-  const [internalAddresses, setInternalAddresses] = useState(INITIAL_ADDRESSES)
-  const [internalSelectedAddressId, setInternalSelectedAddressId] = useState(INITIAL_ADDRESSES[0]?.id || 1)
+  const [internalAddresses, setInternalAddresses] = useState(() => getSavedAddresses())
+  const [internalSelectedAddressId, setInternalSelectedAddressId] = useState(() => getSavedAddresses()[0]?.id || 1)
 
   const addresses = (propAddresses && propAddresses.length > 0) ? propAddresses : internalAddresses
   const setAddresses = propSetAddresses || setInternalAddresses
@@ -940,6 +985,7 @@ function CheckoutScreen({
   // Address state
   const [addressModalView, setAddressModalView] = useState(null) // 'list', 'form', 'map'
   const [newAddressDraft, setNewAddressDraft] = useState({})
+  const [editingAddressId, setEditingAddressId] = useState(null)
 
   const userBalance = userProfile?.balance ?? 125000
 
@@ -1346,8 +1392,28 @@ function CheckoutScreen({
             setAddressModalView(null)
           }}
           onAdd={() => {
+            setEditingAddressId(null)
             setNewAddressDraft({})
             setAddressModalView('form')
+          }}
+          onEdit={(addr) => {
+            setEditingAddressId(addr.id)
+            setNewAddressDraft({ ...addr })
+            setAddressModalView('form')
+          }}
+          onDelete={(id) => {
+            if (addresses.length <= 1) {
+              alert('Minimal harus ada 1 alamat pengiriman tersimpan.')
+              return
+            }
+            if (window.confirm('Hapus alamat ini dari daftar pengiriman?')) {
+              const updated = addresses.filter(a => a.id !== id)
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+              if (selectedAddressId === id) {
+                setSelectedAddressId(updated[0]?.id || 1)
+              }
+            }
           }}
           onClose={() => setAddressModalView(null)}
         />
@@ -1356,21 +1422,44 @@ function CheckoutScreen({
         <AddressFormModal
           draft={newAddressDraft}
           setDraft={setNewAddressDraft}
+          isEdit={!!editingAddressId}
           onBack={() => setAddressModalView(addresses.length > 0 ? 'list' : null)}
           onOpenMap={() => setAddressModalView('map')}
           onSave={() => {
-            const newAddr = { ...newAddressDraft, id: Date.now() }
-            setAddresses([...addresses, newAddr])
-            setSelectedAddressId(newAddr.id)
+            const locStr = typeof newAddressDraft?.locationLabel === 'string' ? newAddressDraft.locationLabel : ''
+            if (editingAddressId) {
+              const updated = addresses.map(a =>
+                a.id === editingAddressId
+                  ? { ...newAddressDraft, locationLabel: locStr, id: editingAddressId }
+                  : a
+              )
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+            } else {
+              const newAddr = { ...newAddressDraft, locationLabel: locStr, id: Date.now() }
+              const updated = [...addresses, newAddr]
+              setAddresses(updated)
+              saveAddressesToStorage(updated)
+              setSelectedAddressId(newAddr.id)
+            }
+            setEditingAddressId(null)
             setAddressModalView(null)
           }}
         />
       )}
       {addressModalView === 'map' && (
         <AddressMapModal
+          initialLocation={newAddressDraft?.locationLabel || newAddressDraft?.address || ''}
           onBack={() => setAddressModalView('form')}
           onConfirm={(locationLabel) => {
-            setNewAddressDraft({ ...newAddressDraft, locationLabel })
+            const label = typeof locationLabel === 'string' && locationLabel.trim()
+              ? locationLabel.trim()
+              : 'Desa Sukamaju, Kec. Sukamakmur, Bogor'
+            setNewAddressDraft((prev) => ({
+              ...prev,
+              locationLabel: label,
+              address: prev.address ? prev.address : label,
+            }))
             setAddressModalView('form')
           }}
         />
@@ -1992,7 +2081,7 @@ export function CancelOrderModal({ order, onClose, onConfirm }) {
 }
 
 // ── Order Detail Sheet (Buyer - bottom sheet) ──────────────
-export function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCancelPrompt }) {
+export function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, onCancelPrompt, onChatSeller }) {
   const st = STATUS_CONFIG[order.status] || STATUS_CONFIG.waiting
   const isActive = ['confirmed', 'preparing', 'shipped'].includes(order.status)
   const canCancel = ['waiting', 'confirmed'].includes(order.status)
@@ -2095,17 +2184,34 @@ export function OrderDetailSheet({ order, onClose, onRate, onBuyAgain, onTrack, 
           {/* Info */}
           <div>
             <p className="text-[11px] font-bold text-gray-400 mb-2 uppercase tracking-wider">Info Pengiriman & Pembayaran</p>
-            {[
-              ['Alamat Pengiriman', order.address || 'Desa Sukamaju'],
-              ['Penjual', order.seller],
-              ['Pembayaran', order.payment],
-              ['Opsi Pengiriman', order.delivery],
-            ].map(([l, v]) => (
-              <div key={l} className="flex justify-between py-2 border-b border-gray-50 last:border-0">
-                <span className="text-[12px] text-gray-400">{l}</span>
-                <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{v}</span>
+            <div className="flex justify-between py-2 border-b border-gray-50">
+              <span className="text-[12px] text-gray-400">Alamat Pengiriman</span>
+              <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{order.address || 'Desa Sukamaju'}</span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-50">
+              <span className="text-[12px] text-gray-400">Penjual</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-bold text-emerald-800">{order.seller}</span>
+                {onChatSeller && (
+                  <button
+                    type="button"
+                    onClick={() => onChatSeller(order)}
+                    className="px-2 py-0.5 rounded-lg border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-[10.5px] font-bold inline-flex items-center gap-1 transition active:scale-95"
+                  >
+                    <MessageCircle size={11} className="text-emerald-700" />
+                    <span>Chat</span>
+                  </button>
+                )}
               </div>
-            ))}
+            </div>
+            <div className="flex justify-between py-2 border-b border-gray-50">
+              <span className="text-[12px] text-gray-400">Pembayaran</span>
+              <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{order.payment}</span>
+            </div>
+            <div className="flex justify-between py-2 border-b border-gray-50 last:border-0">
+              <span className="text-[12px] text-gray-400">Opsi Pengiriman</span>
+              <span className="text-[12px] font-semibold text-gray-800 text-right max-w-[60%]">{order.delivery}</span>
+            </div>
           </div>
 
           {/* Riwayat Status Stepper (Synchronized with OrderTracking design) */}
@@ -2895,27 +3001,20 @@ export function OrderTracking({ order, onBack, onDone }) {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-100 px-4 pt-4 pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <button
-              onClick={onBack}
-              className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center active:scale-95 text-gray-700 transition"
-            >
-              <ArrowLeft size={16} />
-            </button>
-            <div>
-              <p className="text-[15px] font-extrabold text-gray-900">Lacak Pengiriman</p>
-              <p className="text-[11px] text-gray-400 font-medium">{orderId}</p>
-            </div>
+      {/* Standardized ScreenHeader */}
+      <ScreenHeader
+        title="Lacak Pengiriman"
+        subtitle={`Pesanan #${orderId}`}
+        onBack={onBack}
+        actions={
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/35 backdrop-blur-xs select-none shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10.5px] font-black text-emerald-200 tracking-wide">
+              LIVE TRACKING
+            </span>
           </div>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/60">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[11px] font-extrabold text-emerald-800">LIVE TRACKING</span>
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Scrollable Content (Prioritized Information Hierarchy) */}
       <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3.5 pb-24">
@@ -2978,7 +3077,7 @@ export function OrderTracking({ order, onBack, onDone }) {
               <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                 {isArrived ? 'Status Pengantaran' : 'Estimasi Waktu Tiba'}
               </p>
-              <p className="text-2xl font-black text-gray-900 mt-0.5">
+              <p className="text-[17px] font-extrabold text-gray-900 mt-0.5">
                 {isArrived ? '🎉 Sudah Sampai!' : `${effectiveEta} Menit Lagi`}
               </p>
             </div>
@@ -2993,167 +3092,14 @@ export function OrderTracking({ order, onBack, onDone }) {
             </span>
           </div>
 
-          {/* Realistic Cartographic Delivery Map with Terrain, River, Asphalt & Glowing GPS Route */}
-          <div
-            className="relative h-44 rounded-2xl overflow-hidden border border-emerald-200/70 shadow-inner bg-[#EBF5ED]"
-          >
-            <svg viewBox="0 0 340 160" className="absolute inset-0 w-full h-full select-none" preserveAspectRatio="none">
-              <defs>
-                <pattern id="villageGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#D1E7D5" strokeWidth="0.6" strokeDasharray="2 2" />
-                </pattern>
-                <filter id="pinShadow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="3" stdDeviation="2" floodOpacity="0.25" />
-                </filter>
-              </defs>
-
-              {/* Base terrain */}
-              <rect width="340" height="160" fill="#E8F4EA" />
-              <rect width="340" height="160" fill="url(#villageGrid)" />
-
-              {/* Natural Agriculture & Plantation Zones */}
-              <path d="M 0,0 L 110,0 C 95,30 115,55 90,75 L 0,80 Z" fill="#DCFCE7" opacity="0.75" />
-              <path d="M 180,0 L 340,0 L 340,65 C 290,50 270,70 230,45 Z" fill="#DCFCE7" opacity="0.6" />
-              <path d="M 160,110 C 200,95 240,120 340,105 L 340,160 L 140,160 Z" fill="#DCFCE7" opacity="0.7" />
-              <path d="M 0,110 L 80,100 C 65,130 90,150 70,160 L 0,160 Z" fill="#DCFCE7" opacity="0.6" />
-
-              {/* Village River / Canal */}
-              <path
-                d="M 130,0 C 135,45 105,75 145,115 C 160,130 150,150 165,160"
-                fill="none"
-                stroke="#BAE6FD"
-                strokeWidth="7"
-                strokeLinecap="round"
-                opacity="0.75"
-              />
-              <path
-                d="M 130,0 C 135,45 105,75 145,115 C 160,130 150,150 165,160"
-                fill="none"
-                stroke="#7DD3FC"
-                strokeWidth="2"
-                strokeDasharray="4 6"
-                opacity="0.8"
-              />
-
-              {/* Secondary Local Village Streets */}
-              <path d="M 0,40 L 95,40 L 95,110 L 15,110" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
-              <path d="M 170,30 L 260,30 L 260,95 L 340,95" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
-              <path d="M 115,140 L 240,140 L 240,80" fill="none" stroke="#CBD5E1" strokeWidth="3" strokeLinecap="round" opacity="0.7" />
-
-              {/* Street Label Watermarks */}
-              <text x="45" y="34" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Gg. Melati</text>
-              <text x="200" y="24" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Jl. Sukamaju Raya</text>
-              <text x="250" y="145" fontSize="7" fill="#64748B" fontWeight="700" opacity="0.7" letterSpacing="0.5">Kawasan Pertanian</text>
-
-              {/* Main Asphalt Road */}
-              <path
-                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
-                fill="none"
-                stroke="#334155"
-                strokeWidth="12"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
-                fill="none"
-                stroke="#E2E8F0"
-                strokeWidth="14"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                opacity="0.3"
-              />
-
-              {/* Glowing Emerald GPS Route */}
-              <path
-                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
-                fill="none"
-                stroke="#10B981"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray="360"
-                strokeDashoffset={360 * (1 - progressRatio)}
-                style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
-                opacity="0.85"
-              />
-              <path
-                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
-                fill="none"
-                stroke="#1B6B3A"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeDasharray="360"
-                strokeDashoffset={360 * (1 - progressRatio)}
-                style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
-              />
-
-              {/* Road White Center Dashes */}
-              <path
-                d="M 35 115 C 95 115 80 45 170 50 C 245 55 255 125 305 75"
-                fill="none"
-                stroke="#FFFFFF"
-                strokeWidth="1.5"
-                strokeDasharray="4 6"
-                strokeLinecap="round"
-                opacity="0.9"
-              />
-
-              {/* Origin Store Pinpoint */}
-              <g transform="translate(35, 115)" filter="url(#pinShadow)">
-                <circle cx="0" cy="0" r="14" fill="#FFFFFF" stroke="#059669" strokeWidth="2.5" />
-                <text x="0" y="4" fontSize="13" textAnchor="middle">🏪</text>
-              </g>
-
-              {/* Destination Home Pinpoint */}
-              <g transform="translate(305, 75)" filter="url(#pinShadow)">
-                <circle cx="0" cy="0" r="14" fill="#FFFFFF" stroke="#DC2626" strokeWidth="2.5" />
-                <text x="0" y="4" fontSize="13" textAnchor="middle">🏠</text>
-              </g>
-            </svg>
-
-            {/* Dynamic Motorcycle Pin along realistic asphalt road */}
-            <div
-              className="absolute pointer-events-none transition-all duration-700 ease-out z-10"
-              style={{
-                left: `${motoPos.x}%`,
-                top: `${motoPos.y}%`,
-                transform: 'translate(-50%, -50%)',
-                filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.35))',
-              }}
-            >
-              <div className="relative flex items-center justify-center">
-                <span className="absolute -inset-2.5 rounded-full bg-emerald-500/40 animate-ping" />
-                <span className="absolute -inset-1 rounded-full bg-emerald-400/60" />
-                <div className="w-9 h-9 rounded-full bg-[#1B6B3A] border-2 border-white flex items-center justify-center text-lg shadow-md relative z-10">
-                  🏍️
-                </div>
-                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-xs text-white text-[9px] font-extrabold px-1.5 py-0.2 rounded-md whitespace-nowrap shadow-xs">
-                  {courier.name?.split(' ')[0]} · 30 km/j
-                </div>
-              </div>
-            </div>
-
-            {/* Top Overlay HUD */}
-            <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none">
-              <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200/80 shadow-xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-extrabold text-emerald-950">GPS AKTIF · RUTE OPTIMAL</span>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-md border border-gray-200/80 flex items-center justify-center shadow-xs text-[11px] font-bold text-gray-700">
-                🧭
-              </div>
-            </div>
-
-            {/* Origin & Destination Floating Tags */}
-            <div className="absolute bottom-2 inset-x-2.5 flex items-center justify-between pointer-events-none">
-              <span className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-gray-200/80 text-[9.5px] font-bold text-gray-700 shadow-2xs">
-                🏪 Toko {order?.seller || 'Ibu Sari'}
-              </span>
-              <span className="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-gray-200/80 text-[9.5px] font-bold text-gray-700 shadow-2xs">
-                🏠 Lokasi Tujuan
-              </span>
-            </div>
-          </div>
+          {/* Interactive Live GPS Delivery Map (Leaflet + CartoDB Voyager) */}
+          <LiveTrackingMap
+            phase={phase}
+            courier={courier}
+            storeName={order?.seller ? `Toko ${order.seller}` : 'Toko Ibu Sari'}
+            buyerAddress={order?.address || 'Jl. Melati No. 14, Desa Sukamaju'}
+            height="210px"
+          />
 
           <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-50 text-[11px]">
             <div>
@@ -3609,6 +3555,9 @@ function StoreDetailScreen({
   onToggleLike,
   onOpenDetail,
   onOpenCart,
+  onOpenChat,
+  isProductStoreClosed,
+  storeClosedText = 'Buka besok 07.00',
   totalCart = 0,
   totalPrice = 0,
 }) {
@@ -3662,56 +3611,56 @@ function StoreDetailScreen({
         </div>
       )}
 
-      {/* Fixed Store Header Navigation */}
-      <div className="sticky top-0 z-30 bg-[#0C3E1E] text-white px-3.5 py-2.5 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <button
-            onClick={onBack}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition flex-shrink-0"
-            aria-label="Kembali"
-          >
-            <ArrowLeft size={18} className="text-white" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-[14.5px] font-extrabold truncate text-white leading-tight">
-              {store?.name || 'Detail Toko'}
-            </h1>
-            <p className="text-[10px] text-white/70 truncate flex items-center gap-1">
-              <ShieldCheck size={11} className="text-emerald-400" />
-              <span>{store?.type || 'Kios Resmi ESTO'}</span>
-              <span>·</span>
-              <span>{store?.region || 'Jawa'}</span>
-            </p>
+      {/* Standardized ScreenHeader (Opsi A: Clean Title tanpa duplikasi) */}
+      <ScreenHeader
+        title="Profil Toko"
+        onBack={onBack}
+        actions={
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.clipboard) {
+                  navigator.clipboard.writeText(window.location.href)
+                }
+                showToast('Tautan toko disalin!')
+              }}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+              aria-label="Bagikan"
+              title="Bagikan Tautan Toko"
+            >
+              <Share2 size={16} className="text-white/85" />
+            </button>
+            <button
+              type="button"
+              onClick={onOpenCart}
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+              style={{
+                background: 'rgba(255, 255, 255, 0.14)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+              }}
+              aria-label="Keranjang"
+              title="Keranjang Belanja"
+            >
+              <ShoppingCart size={16} className="text-white/85" />
+              {totalCart > 0 && (
+                <span
+                  className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full text-white text-[9.5px] font-black flex items-center justify-center tabular-nums bg-red-500 shadow-xs"
+                  style={{ boxShadow: '0 0 0 2px #0C3E1E' }}
+                >
+                  {totalCart}
+                </span>
+              )}
+            </button>
           </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 flex-shrink-0">
-          <button
-            onClick={() => {
-              if (navigator.clipboard) {
-                navigator.clipboard.writeText(window.location.href)
-              }
-              showToast('Tautan toko disalin!')
-            }}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition"
-            aria-label="Bagikan"
-          >
-            <Share2 size={15} className="text-white/80" />
-          </button>
-          <button
-            onClick={onOpenCart}
-            className="relative w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center active:scale-95 transition"
-            aria-label="Keranjang"
-          >
-            <ShoppingCart size={15} className="text-white/80" />
-            {totalCart > 0 && (
-              <span className="absolute -top-1 -end-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-xs">
-                {totalCart}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Scrollable Body */}
       <div className="flex-1 overflow-y-auto no-scrollbar" style={{ paddingBottom: totalCart > 0 ? 80 : 24 }}>
@@ -3814,7 +3763,13 @@ function StoreDetailScreen({
               </button>
 
               <button
-                onClick={() => showToast('Membuka obrolan resmi dengan penjual...')}
+                onClick={() => {
+                  if (onOpenChat) {
+                    onOpenChat({ seller: store?.name, store })
+                  } else {
+                    showToast('Membuka obrolan resmi dengan penjual...')
+                  }
+                }}
                 className="py-2.5 rounded-xl text-[12px] font-extrabold border border-emerald-300 text-emerald-800 bg-emerald-50/60 hover:bg-emerald-100/60 flex items-center justify-center gap-1.5 transition active:scale-95"
               >
                 <MessageCircle size={14} className="text-emerald-700" />
@@ -3887,6 +3842,8 @@ function StoreDetailScreen({
                   product={p}
                   inCartQty={cart[p.id] || 0}
                   isLiked={liked.has(p.id)}
+                  isStoreClosed={isProductStoreClosed ? isProductStoreClosed(p) : false}
+                  storeClosedText={storeClosedText}
                   onToggleLike={onToggleLike}
                   onOpenDetail={onOpenDetail}
                   onAddToCart={onAddToCart}
@@ -4011,6 +3968,8 @@ function SearchScreenESTO({
   onOpenCart,
   initialQuery = '',
   onApplyQuery,
+  isProductStoreClosed,
+  storeClosedText = 'Buka besok 07.00',
 }) {
   const [query, setQuery] = useState(initialQuery)
   const [isSubmitted, setIsSubmitted] = useState(Boolean(initialQuery.trim()))
@@ -4342,6 +4301,8 @@ function SearchScreenESTO({
                   product={p}
                   inCartQty={cart[p.id] || 0}
                   isLiked={liked.has(p.id)}
+                  isStoreClosed={isProductStoreClosed ? isProductStoreClosed(p) : false}
+                  storeClosedText={storeClosedText}
                   onToggleLike={onToggleLike}
                   onOpenDetail={onOpenDetail}
                   onAddToCart={onAddToCart}
@@ -4431,6 +4392,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [showEmptyCart, setEmptyCart] = useState(false)
   const [paymentMethod, setPayMethod] = useState('gvpay')
   const { orders: buyerOrders, cancelOrder, updateOrder } = useBuyerOrders()
+  const { stocks, getStock } = useStock()
   const [orderDetailSheet, setOrderDetail] = useState(null)
   const [orderToCancel, setOrderToCancel] = useState(null)
   const [orderToRate, setOrderToRate] = useState(null)
@@ -4461,20 +4423,109 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   const [showAllStoresSheet, setShowAllStoresSheet] = useState(false)
   const [voucherClaimed, setVoucherClaimed] = useState(false)
 
+  // ── Store Operational Schedule & Info (Sync from localStorage) ──
+  const [storeSchedule, setStoreSchedule] = useState(getStoredSchedule)
+  const [storeInfo, setStoreInfo] = useState(() => {
+    const s = localStorage.getItem('mockSellerStoreInfo')
+    if (s) {
+      try { return JSON.parse(s) } catch (e) {}
+    }
+    return { name: 'Toko Berkah Tani Bojong' }
+  })
+  const storeStatus = calculateStoreStatus(storeSchedule)
+
+  useEffect(() => {
+    const handleSyncStore = () => {
+      setStoreSchedule(getStoredSchedule())
+      const s = localStorage.getItem('mockSellerStoreInfo')
+      if (s) {
+        try { setStoreInfo(JSON.parse(s)) } catch (e) {}
+      }
+    }
+    window.addEventListener('storage', handleSyncStore)
+    window.addEventListener('gv_schedule_updated', handleSyncStore)
+    window.addEventListener('focus', handleSyncStore)
+    return () => {
+      window.removeEventListener('storage', handleSyncStore)
+      window.removeEventListener('gv_schedule_updated', handleSyncStore)
+      window.removeEventListener('focus', handleSyncStore)
+    }
+  }, [])
+
+  const isProductFromSellerStore = (p) => {
+    if (!p) return false
+    const sellerName = (p.seller || '').toLowerCase()
+    const myStoreName = (storeInfo?.name || 'Toko Berkah Tani Bojong').toLowerCase()
+    return (
+      sellerName === 'pak budi' ||
+      sellerName === 'pak budi santoso' ||
+      sellerName === myStoreName ||
+      p.id === 1 ||
+      (p.id >= 101 && p.id <= 105)
+    )
+  }
+
+  const isProductStoreClosed = (p) => {
+    if (isProductFromSellerStore(p)) {
+      return !storeStatus.isOpen
+    }
+    return false
+  }
+
+  const storeClosedInfo = storeStatus.nextOpenInfo || 'Buka besok 07.00'
+
+  // ── Customer to Seller Chat Drawer Sheet State ──
+  const [buyerChatData, setBuyerChatData] = useState(null)
+  const [buyerUnreadCount, setBuyerUnreadCount] = useState(getBuyerTotalUnreadCount)
+
+  useEffect(() => {
+    const handleChatsUpdate = () => {
+      setBuyerUnreadCount(getBuyerTotalUnreadCount())
+    }
+    window.addEventListener('storage', handleChatsUpdate)
+    window.addEventListener('gv_chats_updated', handleChatsUpdate)
+    return () => {
+      window.removeEventListener('storage', handleChatsUpdate)
+      window.removeEventListener('gv_chats_updated', handleChatsUpdate)
+    }
+  }, [])
+
+  const openBuyerChat = ({ seller, product, store, order, initialView }) => {
+    setBuyerChatData({
+      isOpen: true,
+      initialView: initialView || (order || product || seller ? 'thread' : 'inbox'),
+      targetSeller: seller || order?.seller || store?.name || (initialView === 'inbox' ? null : storeInfo?.name || 'Toko Berkah Tani Bojong'),
+      targetProduct: product || null,
+      targetOrder: order || null,
+    })
+  }
+
   // Order routing details
   const [lastCreatedOrder, setLastCreatedOrder] = useState(null)
   const [activeTrackingOrder, setActiveTrackingOrder] = useState(null)
   const [checkoutData, setCheckoutData] = useState(null)
-  const [addresses, setAddresses] = useState(INITIAL_ADDRESSES)
-  const [selectedAddressId, setSelectedAddressId] = useState(INITIAL_ADDRESSES[0]?.id || 1)
+  const [addresses, setAddresses] = useState(() => getSavedAddresses())
+  const [selectedAddressId, setSelectedAddressId] = useState(() => getSavedAddresses()[0]?.id || 1)
 
   const isSeller = userProfile?.capabilities?.includes('Penjual')
 
+  // Live stock synced product catalogs
+  const liveProducts = PRODUCTS.map((p) => ({ ...p, stock: getStock(p.id, p.stock) }))
+  const liveStoreProducts = ALL_STORE_PRODUCTS.map((p) => ({ ...p, stock: getStock(p.id, p.stock) }))
+  const liveAllProducts = [...liveProducts, ...liveStoreProducts]
+  const liveEstoStores = ESTO_STORES.map((st) => ({
+    ...st,
+    products: (st.products || []).map((p) => ({
+      ...p,
+      stock: getStock(p.id, p.stock),
+    })),
+  }))
+
   // Filter + search + sort (for community products in Produk dari Penjual)
-  const communityProducts = PRODUCTS
+  const communityProducts = liveProducts
     .filter(p => !searchQ || p.name.toLowerCase().includes(searchQ.toLowerCase()) || p.seller.toLowerCase().includes(searchQ.toLowerCase()))
 
-  const filtered = PRODUCTS
+  const filtered = liveProducts
     .filter(p => selectedCats.length === 0 || selectedCats.includes(p.cat))
     .filter(p => !searchQ || p.name.toLowerCase().includes(searchQ.toLowerCase()) || p.seller.toLowerCase().includes(searchQ.toLowerCase()))
     .sort((a,b) => {
@@ -4486,12 +4537,12 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
   const totalCart = Object.values(cart).reduce((a, b) => a + b, 0)
   const totalPrice = Object.entries(cart).reduce((s, [id, q]) => {
-    const p = ALL_PRODUCTS.find(x => x.id === parseInt(id))
+    const p = liveAllProducts.find(x => x.id === parseInt(id))
     return s + (p?.price || 0) * q
   }, 0)
 
   const addToCart = (id, qty = 1) => {
-    const p = ALL_PRODUCTS.find(x => x.id === Number(id))
+    const p = liveAllProducts.find(x => x.id === Number(id))
     if (!p || p.stock === 0) return
     setCart((prev) => {
       const current = prev[id] || 0
@@ -4501,13 +4552,23 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   }
 
   const updateCartQty = (id, qty) => {
+    const p = liveAllProducts.find(x => x.id === Number(id))
+    if (p && p.stock === 0) {
+      setCart((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+      return
+    }
     setCart((prev) => {
       if (qty <= 0) {
         const next = { ...prev }
         delete next[id]
         return next
       }
-      return { ...prev, [id]: qty }
+      const maxAllowed = p ? Math.min(p.stock, qty) : qty
+      return { ...prev, [id]: maxAllowed }
     })
   }
 
@@ -4526,13 +4587,14 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
   })
 
   const openDetail = (p) => {
-    setDetail(p)
+    const fresh = liveAllProducts.find(x => x.id === p.id) || p
+    setDetail(fresh)
     setDQty(1)
   }
 
   const checkoutItems = Object.entries(cart)
     .map(([id, qty]) => {
-      const p = ALL_PRODUCTS.find(x => x.id === Number(id))
+      const p = liveAllProducts.find(x => x.id === Number(id))
       return p ? { ...p, qty } : null
     })
     .filter(Boolean)
@@ -4617,6 +4679,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               { s: 'confirmed', time: nowStr, label: 'Pembayaran sukses, penjual mengonfirmasi' },
             ],
           }
+          decreaseStock(createdOrder.items)
           addBuyerOrder(createdOrder)
           setLastCreatedOrder(createdOrder)
           setCart({})
@@ -4686,11 +4749,14 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           }}
           totalCart={totalCart}
           totalPrice={totalPrice}
+          onOpenChat={(chatPayload) => openBuyerChat(chatPayload)}
+          isProductStoreClosed={isProductStoreClosed}
+          storeClosedText={storeClosedInfo}
         />
 
         {/* Product detail bottom sheet inside Store view if detail opened */}
         {detail && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 z-50 flex flex-col justify-end overflow-hidden">
             <div className="absolute inset-0 bg-black/50" onClick={() => setDetail(null)} />
             <div
               className="relative bg-white rounded-t-3xl overflow-hidden max-h-[85vh] flex flex-col"
@@ -4726,7 +4792,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                       {detail.cat}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 font-semibold">
+                  <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 font-semibold flex-wrap">
                     <span className="flex items-center gap-0.5 text-amber-500">
                       <Star size={12} className="fill-amber-400 text-amber-400" />
                       {detail.rating || 4.8}
@@ -4735,7 +4801,27 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                     <span>{detail.sold || '100+'} terjual</span>
                     <span>·</span>
                     <span>Toko: {detail.seller}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDetail(null)
+                        openBuyerChat({ seller: detail.seller, product: detail })
+                      }}
+                      className="ms-auto px-2.5 py-1 rounded-xl border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-[11px] font-bold flex items-center gap-1 transition active:scale-95"
+                    >
+                      <MessageCircle size={12} className="text-emerald-700" />
+                      <span>Chat</span>
+                    </button>
                   </div>
+                  {isProductStoreClosed(detail) && (
+                    <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 mt-2">
+                      <Clock size={15} className="text-red-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[11px] font-extrabold text-red-700">Toko Sedang Tutup ({storeClosedInfo})</p>
+                        <p className="text-[10px] text-red-700/80 mt-0.5">Penjual tidak melayani pesanan saat ini. Anda tetap dapat bertanya via Chat Penjual.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-baseline gap-2">
@@ -4755,56 +4841,99 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                 </p>
 
                 {/* Quantity Selector */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                  <span className="text-xs font-bold text-gray-700">Jumlah Pembelian</span>
-                  <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-xl">
-                    <button
-                      onClick={() => setDQty(Math.max(1, detailQty - 1))}
-                      className="text-gray-600 hover:text-black font-extrabold"
-                    >
-                      <Minus size={15} />
-                    </button>
-                    <span className="text-sm font-extrabold tabular-nums text-gray-900 w-5 text-center">
-                      {detailQty}
-                    </span>
-                    <button
-                      onClick={() => setDQty(Math.min(detail.stock, detailQty + 1))}
-                      className="text-[#1B6B3A] font-extrabold"
-                    >
-                      <Plus size={15} />
-                    </button>
+                {detail.stock > 0 && (
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <span className="text-xs font-bold text-gray-700">Jumlah Pembelian</span>
+                    <div className="flex items-center gap-3 bg-gray-100 px-3 py-1.5 rounded-xl">
+                      <button
+                        onClick={() => setDQty(Math.max(1, detailQty - 1))}
+                        className="text-gray-600 hover:text-black font-extrabold"
+                      >
+                        <Minus size={15} />
+                      </button>
+                      <span className="text-sm font-extrabold tabular-nums text-gray-900 w-5 text-center">
+                        {detailQty}
+                      </span>
+                      <button
+                        onClick={() => setDQty(Math.min(detail.stock, detailQty + 1))}
+                        className="text-[#1B6B3A] font-extrabold"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
+              {/* Banner Stok Habis */}
+              {detail.stock === 0 && (
+                <div className="mx-4 p-3 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-2.5 text-[12px] text-red-700 font-bold">
+                  <AlertTriangle size={16} className="text-red-600 flex-shrink-0" />
+                  <span>Stok Habis — Produk ini sementara tidak dapat dipesan</span>
+                </div>
+              )}
+
               {/* Action Buttons */}
-              <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0 pb-6">
+              <div className="p-4 border-t border-gray-100 bg-white flex gap-2.5 flex-shrink-0 pb-6">
                 <button
+                  type="button"
                   onClick={() => {
-                    addToCart(detail.id, detailQty)
                     setDetail(null)
+                    openBuyerChat({ seller: detail.seller, product: detail })
                   }}
-                  className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold border-2 active:scale-95 transition"
-                  style={{ borderColor: PRIMARY, color: PRIMARY }}
+                  className="p-3 rounded-2xl border-2 border-emerald-600 text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-center transition active:scale-95 flex-shrink-0"
+                  title="Chat Penjual"
                 >
-                  + Keranjang
+                  <MessageCircle size={18} />
                 </button>
-                <button
-                  onClick={() => {
-                    addToCart(detail.id, detailQty)
-                    setDetail(null)
-                    setSelectedStore(null)
-                    setScreen('checkout')
-                  }}
-                  className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold text-white active:scale-95 transition shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)' }}
-                >
-                  Beli Sekarang
-                </button>
+                {detail.stock === 0 ? (
+                  <button
+                    disabled
+                    className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 flex items-center justify-center gap-1.5 select-none"
+                  >
+                    <span>✕ Stok Habis</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        addToCart(detail.id, detailQty)
+                        setDetail(null)
+                      }}
+                      className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold border-2 active:scale-95 transition"
+                      style={{ borderColor: PRIMARY, color: PRIMARY }}
+                    >
+                      + Keranjang
+                    </button>
+                    <button
+                      onClick={() => {
+                        addToCart(detail.id, detailQty)
+                        setDetail(null)
+                        setSelectedStore(null)
+                        setScreen('checkout')
+                      }}
+                      className="flex-1 py-3 rounded-2xl text-[13px] font-extrabold text-white active:scale-95 transition shadow-md"
+                      style={{ background: 'linear-gradient(135deg, #0C3E1E, #1B6B3A, #15803d)' }}
+                    >
+                      Beli Sekarang
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
+
+        {/* Customer to Seller Chat Drawer Sheet inside Store View */}
+        <BuyerSellerChatSheet
+          isOpen={Boolean(buyerChatData?.isOpen)}
+          onClose={() => setBuyerChatData(null)}
+          initialView={buyerChatData?.initialView}
+          targetSeller={buyerChatData?.targetSeller}
+          targetProduct={buyerChatData?.targetProduct}
+          targetOrder={buyerChatData?.targetOrder}
+          userProfile={userProfile}
+        />
       </ScreenBackground>
     )
   }
@@ -4941,7 +5070,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               </h1>
             </div>
 
-            {/* Action Buttons: Wishlist & Cart */}
+            {/* Action Buttons: Wishlist, Chat Toko & Cart */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -4964,6 +5093,30 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                     style={{ boxShadow: '0 0 0 2px #0C3E1E' }}
                   >
                     {liked.size}
+                  </span>
+                )}
+              </button>
+
+              {/* Chat Toko Inbox Button */}
+              <button
+                type="button"
+                className="relative w-9 h-9 rounded-xl flex items-center justify-center transition active:scale-95"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.14)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                }}
+                onClick={() => openBuyerChat({ initialView: 'inbox' })}
+                aria-label="Obrolan dengan Toko"
+                title="Pesan & Obrolan Toko"
+              >
+                <MessageCircle size={16} className="text-white/90" />
+                {buyerUnreadCount > 0 && (
+                  <span
+                    className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full text-white text-[9.5px] font-black flex items-center justify-center tabular-nums bg-red-500 animate-pulse"
+                    style={{ boxShadow: '0 0 0 2px #0C3E1E' }}
+                  >
+                    {buyerUnreadCount}
                   </span>
                 )}
               </button>
@@ -5155,7 +5308,7 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
 
             {/* Standard Vertical Store Cards Stack */}
             <div className="px-4 flex flex-col gap-3.5">
-              {ESTO_STORES.slice(0, 2).map((store) => (
+              {liveEstoStores.slice(0, 2).map((store) => (
                 <StoreCard
                   key={store.id}
                   store={store}
@@ -5216,6 +5369,8 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                   product={p}
                   inCartQty={cart[p.id] || 0}
                   isLiked={liked.has(p.id)}
+                  isStoreClosed={isProductStoreClosed(p)}
+                  storeClosedText={storeClosedInfo}
                   onToggleLike={toggleLike}
                   onOpenDetail={openDetail}
                   onAddToCart={(id, qty) => addToCart(id, qty)}
@@ -5249,9 +5404,11 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
       {showSearch && (
         <SearchScreenESTO
           onClose={() => setShowSearch(false)}
-          allProducts={ALL_PRODUCTS}
+          allProducts={liveAllProducts}
           cart={cart}
           liked={liked}
+          isProductStoreClosed={isProductStoreClosed}
+          storeClosedText={storeClosedInfo}
           onToggleLike={toggleLike}
           onOpenDetail={openDetail}
           onAddToCart={addToCart}
@@ -5306,16 +5463,9 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                   <Package size={64} className="text-gray-400" />
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setDetail(null)}
-                  className="absolute top-3 start-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center shadow-xs active:scale-90 transition text-gray-700"
-                >
-                  <X size={16} />
-                </button>
-
+                {/* Badge Stok (Pojok Kiri Atas) */}
                 <span
-                  className={`absolute top-3 end-3 text-xs font-extrabold px-3 py-1 rounded-xl shadow-xs ${
+                  className={`absolute top-3 start-3 z-10 text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-xs backdrop-blur-md ${
                     detail.stock === 0
                       ? 'bg-red-600 text-white'
                       : detail.stock <= 3
@@ -5327,6 +5477,15 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
                     ? 'Stok Habis'
                     : `Stok: ${detail.stock} (${detail.unit})`}
                 </span>
+
+                {/* Tombol Tutup / X (Pojok Kanan Atas) */}
+                <button
+                  type="button"
+                  onClick={() => setDetail(null)}
+                  className="absolute top-3 end-3 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center shadow-xs active:scale-90 transition text-gray-700 hover:bg-white"
+                >
+                  <X size={16} />
+                </button>
               </div>
 
               <h2 className="text-[18px] font-extrabold text-gray-900 mb-2 leading-snug">
@@ -5334,21 +5493,51 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               </h2>
 
               {/* Seller details badge */}
-              <div className="flex items-center gap-3 pb-3 mb-3.5 border-b border-gray-100">
+              <div className="flex items-center gap-2.5 pb-3 mb-3.5 border-b border-gray-100 flex-wrap">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100 font-extrabold text-emerald-800 text-[14px] shadow-2xs">
                   {detail.seller[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-bold text-gray-900">{detail.seller}</p>
+                  <p className="text-[12.5px] font-bold text-gray-900 truncate">{detail.seller}</p>
                   <p className="text-[11px] text-gray-400">Desa Sukamaju · Petani Mitra Resmi ESTO</p>
                 </div>
-                <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200/60">
+                {/* Chat Penjual Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDetail(null)
+                    openBuyerChat({ seller: detail.seller, product: detail })
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl border border-emerald-300 text-emerald-800 bg-emerald-50 hover:bg-emerald-100 text-[11px] font-bold flex items-center gap-1 transition active:scale-95 flex-shrink-0"
+                >
+                  <MessageCircle size={13} className="text-emerald-700" />
+                  <span>Chat</span>
+                </button>
+                <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg border border-amber-200/60 flex-shrink-0">
                   <Star size={12} className="fill-amber-400 text-amber-400" />
                   <span className="text-[11.5px] font-bold text-gray-800">
                     {detail.rating} ({detail.sold})
                   </span>
                 </div>
               </div>
+
+              {/* Store Closed Banner */}
+              {isProductStoreClosed(detail) && (
+                <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 mb-3.5 flex items-start gap-3">
+                  <Clock size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-red-700">Toko Sedang Tutup</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-100 text-red-700">
+                        {storeClosedInfo}
+                      </span>
+                    </div>
+                    <p className="text-[11.5px] text-red-700/90 mt-1 leading-relaxed">
+                      Penjual saat ini tidak memproses pesanan langsung. Anda tetap dapat bertanya via Chat Penjual untuk persiapan saat toko buka kembali.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Low stock alert */}
               {detail.stock > 0 && detail.stock <= 3 && (
@@ -5421,14 +5610,35 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
               </div>
             </div>
 
+            {/* Banner Stok Habis di atas area tombol aksi */}
+            {detail.stock === 0 && (
+              <div className="px-5 py-2.5 bg-red-50 border-t border-red-100 flex items-center gap-2 text-[12px] text-red-700 font-bold">
+                <AlertTriangle size={16} className="text-red-600 flex-shrink-0" />
+                <span>Stok Habis — Produk ini sementara tidak dapat dipesan</span>
+              </div>
+            )}
+
             {/* Sticky Bottom Actions inside Bottom Sheet */}
-            <div className="p-4 border-t border-gray-100 bg-white flex gap-3 flex-shrink-0 pb-6">
+            <div className="p-4 border-t border-gray-100 bg-white flex gap-2.5 flex-shrink-0 pb-6">
+              {/* Chat Penjual Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setDetail(null)
+                  openBuyerChat({ seller: detail.seller, product: detail })
+                }}
+                className="p-3.5 rounded-2xl border-2 border-emerald-600 text-emerald-700 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-center transition active:scale-95 flex-shrink-0"
+                title="Chat Penjual"
+              >
+                <MessageCircle size={20} />
+              </button>
+
               {detail.stock === 0 ? (
                 <button
                   disabled
-                  className="w-full py-3.5 rounded-2xl text-[13px] font-extrabold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                  className="flex-1 py-3.5 rounded-2xl text-[13px] font-extrabold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200 flex items-center justify-center gap-1.5 select-none shadow-none"
                 >
-                  Stok Habis
+                  <span>✕ Stok Habis</span>
                 </button>
               ) : (
                 <>
@@ -5461,6 +5671,17 @@ export default function Pasar({ navigate, userProfile, initialTab }) {
           </div>
         </div>
       )}
+
+      {/* Customer to Seller Chat Drawer Sheet */}
+      <BuyerSellerChatSheet
+        isOpen={Boolean(buyerChatData?.isOpen)}
+        onClose={() => setBuyerChatData(null)}
+        initialView={buyerChatData?.initialView}
+        targetSeller={buyerChatData?.targetSeller}
+        targetProduct={buyerChatData?.targetProduct}
+        targetOrder={buyerChatData?.targetOrder}
+        userProfile={userProfile}
+      />
 
       {/* Dedicated Wishlist Drawer Sheet */}
       <WishlistSheet

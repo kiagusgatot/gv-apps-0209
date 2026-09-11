@@ -111,7 +111,11 @@ export default function NavTabs({
               {tab.count !== undefined && tab.count > 0 && (
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-                    isActive ? 'bg-brand/10 text-brand' : 'bg-surface-200 text-surface-600'
+                    tab.badgeClassName
+                      ? tab.badgeClassName
+                      : isActive
+                      ? 'bg-brand/10 text-brand'
+                      : 'bg-surface-200 text-surface-600'
                   }`}
                 >
                   {tab.count}
